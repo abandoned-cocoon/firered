@@ -346,7 +346,7 @@ bool sub_806CAC8(u8 *d) {
     sub_8069A54();
 
     struct npc_position n;
-    u8 udir = player_get_direction();
+    u8 ndir = player_get_direction();
     player_get_pos_to_and_height(&n);
     block b = cur_mapdata_block_get_field_at(n.x, n.y, 0xFF);
     u8 role = cur_mapdata_block_role_at(n.x, n.y);
@@ -355,8 +355,52 @@ bool sub_806CAC8(u8 *d) {
     byte_3005078[2] = d[2];
     if (sub_8081B30()) return 1;
 
-    mapheader_run_first_tag2_script_list_match_conditionally();
-    
+    if (mapheader_run_first_tag2_script_list_match_conditionally()) return 1;
+
+    // executed every frame
+    if (walkrun.bitfield & 0x40) {
+        // executed every step
+        sub_8054E90(5);
+        sub_8146CA4();
+        increment_var_x4023_until_1500();
+        increment_var_x4025_until_500();
+        sub_80CB054();
+        increment_var_x4026_on_birth_island_modulo_100();
+        if (per_step_2(&n, role, ndir)) {
+            byte_3005078[0] |= 0x40;
+            return 1;
+        }
+    }
+
+    if (d[0] & 0x2) { // set in sub_806C8BC when !override && running1 == 2
+        if (d[2] == 0 || d[2] == ndir) {
+            sub_806CE38(n); // shifts coordinates in the direction the player is looking, updates height
+            role = cur_mapdata_block_role_at(n.x, n.y);
+            if (launch_signpost_script(&n, role, ndir)) {
+                byte_3005078 |= 2;
+                return 0;
+            }
+            // restore old values
+            player_get_pos_to_and_height(&n);
+            role = cur_mapdata_block_role_at(n.x, n.y);
+        }
+        //if (d[0] & 0x2) { // always true
+        if (trigger_battle(b)) {
+            byte_3005078 |= 2;
+            return 0;
+        }
+        //}
+    }
+
+    if ((d[0] & 0x10) && d[2] == ndir) {
+        if (map_warp_consider(&n, role, ndir)) {
+            byte_3005078 |= 0x10;
+            return 0;
+        }
+    }
+
+    // TODO
+
 }
 
 // 0203AE8C
