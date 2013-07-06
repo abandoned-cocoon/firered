@@ -424,12 +424,9 @@ void c1_overworld_prev_quest() {
         if (sub_806CAC8(d)) {
             script_env_2_enable();
             coro_show_mapname_clamp_arg0_low_6();
-        } else {
-            sub_805B3E0(walkrun.running2, keypad_new, keypad_held);
-        }
-    } else
-        call_203AE8C();
-    if (sub_8111CD0())
+        } else
+            call_203AE8C();
+    } else if (sub_8111CD0())
         call_203AE8C();
 }
 
@@ -447,9 +444,8 @@ void c1_overworld_normal(u16 keypad_new, u16 keypad_held) {
         if (sub_806CAC8(d)) {
             script_env_2_enable();
             coro_show_mapname_clamp_arg0_low_6();
-        } else {
+        } else
             sub_805B3E0(walkrun.running2, keypad_new, keypad_held);
-        }
     }
     call_203AE8C();
 }
@@ -457,7 +453,7 @@ void c1_overworld_normal(u16 keypad_new, u16 keypad_held) {
 // 08056534
 void c1_overworld() {
     if (super.callback2 != &c2_overworld) return;
-    if (byte_203ADFA == 1 || byte_203ADFA == 2)
+    if (sub_8112CAC() == 1 || byte_203ADFA == 2)
         c1_overworld_prev_quest();
     else
         c1_overworld_normal(super.buttons3_new_remapped,
