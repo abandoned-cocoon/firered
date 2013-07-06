@@ -5,7 +5,6 @@ struct npc_position {
     u8 height;
 };
 
-
 // 0805C6C4
 u8 player_get_direction() {
     return npc_states[walkrun.npcid].direction & 0xF;
