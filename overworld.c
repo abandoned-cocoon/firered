@@ -10,6 +10,11 @@ struct mapdata {
     u16 field_1A;
 };
 
+struct mapscript {
+    u8 tag;
+    u8 *data; // unaligned
+};
+
 struct map {
     struct mapdata   *data;
     struct mapevents *events;
@@ -38,6 +43,51 @@ struct tileset {
     block *blocks;
 }; // 0xC
 
+struct conditional_script {
+    u16 var1; // not guaranteed to be aligned.
+    u16 var2; // read bytewise.
+    u8 *ptr;
+}
+
+    /* tagged pointers
+    [00] end
+    [01][ptr] -> script
+    [02][ptr] -> [var][var][ptr->script]  [var][var][ptr] ... [0000]
+    [03][ptr] -> script
+    [04][ptr] -> [var][var][ptr->script]  [var][var][ptr] ... [0000]
+    [05][ptr] -> script
+    [06][ptr] -> script
+    [07][ptr] -> script
+    */
+
+// 08069B80
+u8 *mapheader_get_tagged_pointer(u8 tag) {
+    for (struct mapscript s = current_mapheader->scripts; s->tag; s++)
+        if (s->tag == tag)
+            return s->data;
+}
+
+// 08069BD8
+u8 *mapheader_get_first_match_from_tagged_ptr_list(u8 tag) {
+
+    struct conditional_script *c;
+
+    if (!c) return 0;
+    for (c = (struct conditional_script *)mapheader_get_tagged_pointer(tag); c->var1; c++)
+        if (var_load(c->var1) == var_load(c->var2))
+            return c->ptr;
+
+    return 0;
+}
+
+// 08069C74
+bool mapheader_run_first_tag2_script_list_match_conditionally() {
+    u8 *ptr;
+    if (byte_203ADFA==3) return 0;
+    if (!(ptr = mapheader_get_first_match_from_tagged_ptr_list(2))) return 0;
+    script_env_12_start_and_stuff(ptr);
+    return 1;
+}
 
 static inline u16 helper1(s16 x, s16 y) {
     u8  hsize = current_mapheader.data->bb_width;
@@ -132,7 +182,7 @@ u32 cur_mapdata_block_get_field_at(u16 x, u16 y, u8 fieldid) {
 
 // 08058F78
 u8 cur_mapdata_block_role_at(u16 x, u16 y) {
-    return cur_mapdata_block_get_field_at(x, y, 0);
+    return (u8)cur_mapdata_block_get_field_at(x, y, 0);
 }
 
 // 0806CE74
@@ -149,18 +199,72 @@ void sub_806C888(u8 *d) {
     d[2] = 0;
 }
 
+// 08069AE4
+void script_env_12_start_and_stuff(u8 *scr) {
+
+    script_env_2_x76_clear();
+    script_env_2_x75_clear();
+    keypad_override_through_script_env_2_disable();
+
+    // XXX: It's 1, not 2!
+    script_env_init(script_env_1, script_cmds, script_cmd_max);
+    script_mode_set_bytecode_and_goto(script_env_1, scr);
+
+    script_env_2_enable();
+    script_env_2_context = 0; // running
+}
+
+/*
+    ignore this
+
+    if (sub_80BD674() != 4) {
+        if ((keypad_new & KEYPAD_START)  && (walkrun.bitfield & 0x40))
+            d[0] |= 0x04;
+        if ((byte_203ADFA-2) >= 2) {
+            if (walkrun.bitfield & 0x40) {
+                if ((keypad_new & KEYPAD_SELECT))
+                    d[0] |= 0x08;
+                if ((keypad_new & KEYPAD_A))
+                    d[0] |= 0x01;
+                if ((keypad_new & KEYPAD_B))
+                    d[0] |= 0x80;
+
+            }
+        }
+    }
+    if ((byte_203ADFA-2) >= 2 && keypad_held & 0xF0) // any direction
+        d[0] |= 0x30;
+*/
+
+// 0806CA4C
+void script_env_2_apply_keypad_override(u8 *ignored, u16 *keypad_new, u16 *keypad_held) {
+    u8 q[] = {0x40, 0x80, 0x20, 0x10, 0x200, 0x100, 0x8, 0x4};
+    u8 i = script_env_2_keypad_override_direction_query();
+    if (0<i && i<=8)
+        *keypad_new = *keypad_held = q[i-1];
+}
+
 // 0806C8BC
 void sub_806C8BC(u8 *d, u16 keypad_new, u16 keypad_held) {
     u8 role = cur_mapdata_block_role_at_player_pos();
     bool override = is_tile_that_overrides_player_control(role);
 
-    if (!script_env_2_context_is_normal() && is_x03000FA0_eq_1())
-        sub_806CA4C(d, keypad_new, keypad_held);
+    if (!script_env_2_context_is_normal() && keypad_override_through_script_env_2_enabled())
+        script_env_2_apply_keypad_override(d, &keypad_new, &keypad_held);
 
-    if ((running1 == 2 && !override) || running1 == 0) {
-        // TODO
-        if ((byte_203ADFA-2) >= 2 && keypad_held & 0xF0) // any direction
-            d[0] |= 0x30;
+    if (((running1 == 2 && !override) || running1 == 0) && (walkrun.bitfield & 0x40)) {
+        if (sub_80BD674() != 4) {
+            if ((keypad_new & KEYPAD_START)) d[0] |= 0x04;
+
+            if ((byte_203ADFA-2) >= 2) {
+                if ((keypad_new & KEYPAD_SELECT)) d[0] |= 0x08;
+                if ((keypad_new & KEYPAD_A))      d[0] |= 0x01;
+                if ((keypad_new & KEYPAD_B))      d[0] |= 0x80;
+                if ((keypad_new & KEYPAD_R))      d[1] |= 0x01;
+            }
+        }
+        if ((byte_203ADFA-2) >= 2)
+            if (keypad_held & KEYPAD_ANYDIR) d[0] |= 0x30;
     }
     if (!override) {
         if (running1 == 2 && running2 == 2)
@@ -168,13 +272,91 @@ void sub_806C8BC(u8 *d, u16 keypad_new, u16 keypad_held) {
         if (running1 == 2)
             d[0] |= 0x02;
     }
-    // TODO
     if ((byte_203ADFA-2) >= 2) {
-             if (keypad_held & 0x40) d[2] = 2; // up
-        else if (keypad_held & 0x80) d[2] = 1; // down
-        else if (keypad_held & 0x20) d[2] = 3; // left
-        else if (keypad_held & 0x10) d[2] = 4; // right
+             if (keypad_held & KEYPAD_UP)    d[2] = 2;
+        else if (keypad_held & KEYPAD_DOWN)  d[2] = 1;
+        else if (keypad_held & KEYPAD_LEFT)  d[2] = 3;
+        else if (keypad_held & KEYPAD_RIGHT) d[2] = 4;
+        else return;
     }
+}
+
+// 0806CD30
+void sub_806CD30(u8 *d) {
+    if (script_env_2_context_is_normal())
+        return;
+
+    if (script_env_2_keypad_sync_lock_countdown) {
+        script_env_2_keypad_sync_lock_countdown--;
+        return;
+    }
+
+    if (script_env_2_x76_query() == 0)
+        return;
+
+    u8 direction_held = d[2];
+
+    if (direction_held == 0 || direction_held == player_get_direction()) {
+
+        if (!(walkrun.bitfield & 0x40))
+            return;
+
+        script_env_2_start_and_stuff(scr_special_15A);
+        script_env_2_enable();
+
+        if (!coro_is_running(&c3_0806CDF8))
+            coro_add_and_set_field_7(&c3_0806CDF8, 0x8);
+
+    } else {
+
+        if (script_env_2_x75_query() == 1)
+            return;
+
+        u8 dir;
+             if (direction_held == 2) dir = 1;
+        else if (direction_held == 1) dir = 2;
+        else if (direction_held == 3) dir = 3;
+        else if (direction_held == 4) dir = 4;
+        else return;
+
+        script_env_2_keypad_override_direction_set(dir);
+        script_env_2_start_and_stuff(scr_special_15A);
+        script_env_2_enable();
+
+    }
+}
+
+// 03005074
+u32 scripting_npc; // the npc currently executing a script
+
+// 080CBDE8
+void context_npc_set_0() {
+    scripting_npc = 0;
+    var_8012 = 0xFF; // current text color
+}
+
+// 08069A54
+void sub_8069A54() {
+    context_npc_set_0();
+    set_03000FA1_to_0();
+}
+
+// 0806CAC8
+bool sub_806CAC8(u8 *d) {
+    sub_8069A54();
+
+    struct npc_position n;
+    u8 udir = player_get_direction();
+    player_get_pos_to_and_height(&n);
+    block b = cur_mapdata_block_get_field_at(n.x, n.y, 0xFF);
+    u8 role = cur_mapdata_block_role_at(n.x, n.y);
+
+    sub_806C888(&byte_3005078);
+    byte_3005078[2] = d[2];
+    if (sub_8081B30()) return 1;
+
+    mapheader_run_first_tag2_script_list_match_conditionally();
+    
 }
 
 // 0203AE8C
