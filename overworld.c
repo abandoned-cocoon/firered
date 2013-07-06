@@ -417,7 +417,7 @@ void c1_overworld_prev_quest() {
     sub_8112B3C();
     sub_805BEB8();
 
-    u8 *d = (u8*)dword_3005E90;
+    u8 *d[4]; *(u32*)d = dword_3005E90;
     sub_806C888(d);
     sub_806CD30(d);
     if (!script_env_2_is_enabled()) {
@@ -428,6 +428,7 @@ void c1_overworld_prev_quest() {
             call_203AE8C();
     } else if (sub_8111CD0())
         call_203AE8C();
+    sub_806C888((u8*)dword_3005E90);
 }
 
 
