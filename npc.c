@@ -5,6 +5,29 @@ struct npc_position {
     u8 height;
 };
 
+
+// 0805C6C4
+u8 player_get_direction() {
+    return npc_states[walkrun.npcid].direction & 0xF;
+}
+
+// 0805C700
+u8 player_get_height() {
+    return npc_states[walkrun.npcid].height >> 4;
+}
+
+// 0805C538
+void player_get_pos_to(u16 x, u16 y) {
+    *x = npc_states[walkrun.npcid].y;
+    *y = npc_states[walkrun.npcid].y;
+}   
+
+// 0806CE20
+void player_get_pos_to_and_height(struct npc_position *n) {
+    player_get_pos_to(&n->x, &n->y);
+    n->height = player_get_height();
+}
+
 // 0805DF60
 u8 npc_id_by_local_id(u8 local_id, u8 mapnr, u8 mapgroup) {
     if (local_id == 0xFF)
