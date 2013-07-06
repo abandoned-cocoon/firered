@@ -62,7 +62,7 @@ struct conditional_script {
 
 // 08069B80
 u8 *mapheader_get_tagged_pointer(u8 tag) {
-    for (struct mapscript s = current_mapheader->scripts; s->tag; s++)
+    for (struct mapscript *s = current_mapheader->scripts; s->tag; s++)
         if (s->tag == tag)
             return s->data;
 }
@@ -412,8 +412,30 @@ void call_203AE8C() {
         funcptr_203AE8C();
 }
 
+// 080564C8
+void c1_overworld_prev_quest() {
+    sub_8112B3C();
+    sub_805BEB8();
+
+    u8 *d = (u8*)dword_3005E90;
+    sub_806C888(d);
+    sub_806CD30(d);
+    if (!script_env_2_is_enabled()) {
+        if (sub_806CAC8(d)) {
+            script_env_2_enable();
+            coro_show_mapname_clamp_arg0_low_6();
+        } else {
+            sub_805B3E0(walkrun.running2, keypad_new, keypad_held);
+        }
+    } else
+        call_203AE8C();
+    if (sub_8111CD0())
+        call_203AE8C();
+}
+
+
 // 0805644C
-void sub_805644C(u16 keypad_new, u16 keypad_held) {
+void c1_overworld_normal(u16 keypad_new, u16 keypad_held) {
     sub_8112B3C();
     sub_805BEB8();
 
@@ -423,11 +445,21 @@ void sub_805644C(u16 keypad_new, u16 keypad_held) {
     sub_806CD30(d);
     if (!script_env_2_is_enabled()) {
         if (sub_806CAC8(d)) {
-            sub_805B3E0(walkrun.running2, keypad_new, keypad_held);
-        } else {
             script_env_2_enable();
-            sub_80982EC();
+            coro_show_mapname_clamp_arg0_low_6();
+        } else {
+            sub_805B3E0(walkrun.running2, keypad_new, keypad_held);
         }
     }
     call_203AE8C();
+}
+
+// 08056534
+void c1_overworld() {
+    if (super.callback2 != &c2_overworld) return;
+    if (byte_203ADFA == 1 || byte_203ADFA == 2)
+        c1_overworld_prev_quest();
+    else
+        c1_overworld_normal(super.buttons3_new_remapped,
+                            super.buttons2_held_remapped);
 }
