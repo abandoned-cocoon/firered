@@ -47,7 +47,7 @@ struct conditional_script {
     u16 var1; // not guaranteed to be aligned.
     u16 var2; // read bytewise.
     u8 *ptr;
-}
+};
 
     /* tagged pointers
     [00] end
@@ -459,4 +459,70 @@ void c1_overworld() {
     else
         c1_overworld_normal(super.buttons3_new_remapped,
                             super.buttons2_held_remapped);
+}
+
+// 08059D70
+bool is_tile_that_overrides_player_control(u8 role) {
+    // 0x40:0x44 walk
+    // 0x44:0x48 slide
+    // 0x49      random slide?
+    if (role >= 0x40 && role < 0x49)
+        return 1;
+    // 0x50:0x54 run
+    if (role >= 0x50 && role < 0x54)
+        return 1;
+    // 0x13 waterfall down
+    if (role == 0x13)
+        return 1;
+    // 0x23 ???
+    if (role == 0x23)
+        return 1;
+    // 0x54:0x58 ???
+    if (role >= 0x54 && role < 0x58)
+        return 1;
+    return 0;
+}
+
+// 0806D5E8
+bool per_step_2(struct npc_state *npc, u16 role, u8 direction) {
+    // role = player_pos_to_block_role
+    if (sub_806D660(npc) == 1)
+        return 1;
+    if (sub_806DA10(npc, role) == 1)
+        return 1;
+    if (is_tile_XX_prevent_per_step_scripts(role) == 1)
+        return 1;
+    if (per_step_scripts(role) == 1)
+        return 1;
+    if (walkrun.bitfield & 0x40)
+        return 0;
+    if (is_tile_that_overrides_player_control(role))
+        return 0;
+    if (repel_per_step() == 1)
+        return 1;
+    return 0;
+}
+
+// 0806D694
+bool is_tile_XX_prevent_per_step_scripts(u16 role) {
+    return 0;
+}
+
+// 080830B8
+bool repel_per_step() {
+    if (in_trade_center())
+        return 0;
+    if (byte_203ADFA == 2)
+        return 0;
+
+    u16 remaining_steps = var_load(VAR_REPEL_STEPS);
+    if (remaining_steps == 0)
+        return 0;
+
+    var_set(VAR_REPEL_STEPS, remaining_steps-1)
+    if (remainings_steps > 0)
+        return 0;
+
+    script_env_12_start_and_stuff(scr_repel_wore_off);
+    return 1;
 }

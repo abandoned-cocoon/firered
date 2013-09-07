@@ -1,24 +1,202 @@
 #define MAX_NPCS 0x10
 
-struct npc_position {
+struct coord { u16 x, y; };
+
+struct npc_pos_h {
     u16 x, y;
     u8 height;
 };
 
+// 080083C0
+void sub_80083C0(struct oamt *oamt, u8 f) {
+    oamt.anim_frame = f-1;
+    u8 q = oamt.field_2C & 0x40;
+    oamt.field_2C &= ~0x41;
+    oamt.bitfield &= ~0x17;
+    anim_player_1(oamt);
+    if (oamt.field_2C & 0xC0) {
+    }
+    oamt.field_2C |= q;
+}
+
+// 0805BCEC
+void sub_805BCEC(u16 x, u16 y, u8 direction) {
+    u8 npc_id;
+
+    if (!flag_check(F_COLLISIONS_ENABLED))
+        return 0;
+    if ((npc_id = npc_id_by_pos(x, y)) == MAX_NPCS)
+        return 0;
+
+    struct npc_state *npc = &npc_states[npc_id];
+    if (npc->type_id != 0x61)
+        return 0;
+
+    p = npc_states[npc_id].to;
+    numbers_move_direction(direction, &next_p.x, &next_p.y);
+
+    u8 role = cur_mapdata_block_role_at(p.x, p.y);
+    if (role != 0x66) {
+        enum block_reason br = npc_block_way(npc_id, x, y);
+        if (block_reason != 0) return 0;
+        if (is_tile_x60(role)) return 0;
+    }
+    sub_805CCD0(npc_id, direction);
+    return 1;
+}
+
+struct coro_args_0805CD0C {
+    enum mode_0805CD0C {
+        ZERO = 0,
+        ONE = 1,
+        TWO = 2
+    } mode;
+    u8 npc_id;
+    u8 direction;
+};
+
+// 0805CCD0
+void sub_805CCD0(u8 npc_id, u8 direction) {
+    u8 cid = coro_add_and_set_field_7(&c3_805CD0C, 0xFF);
+    struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &coro[cid].args;
+    args.npc_id = npc_id;
+    args.direction = direction;
+    c3_805CD0C(&coro[cid]);
+}
+
+// 0805CD0C
+void c3_805CD0C(u8 cid) {
+    struct npc_state *player_npc, *other_npc;
+    struct coro *c = &coro[cid];
+    struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &c->args;
+    do {
+        player_npc = npc_states[walkrun.npc_id];
+         other_npc = npc_states[  args->npc_id];
+    } while(off_835B8A0[args->mode](c, player_npc, other_npc));
+}
+
+// 0805CD64
+bool sub_805CD64_mode_0(struct coro* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+    struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &c->args;
+
+    script_env_2_enable();
+    walkrun.lock = 1;
+    args->mode++; // from 0 to 1
+    return 0;
+}
+
+// 0805CD84
+bool sub_805CD84_mode_1(struct coro* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+    // TODO
+    args->mode++; // from 1 to 2
+    return 0;
+}
+
+// 0805CE20
+bool sub_805CE20_mode_2(struct coro* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+    if (npc_get_bit7_or_const_x10_when_inactive(player_npc) == 0) return 0;
+    if (npc_get_bit7_or_const_x10_when_inactive(other_npc) == 0) return 0;
+    npc_destruct_when_bit7_is_set(player_npc);
+    npc_destruct_when_bit7_is_set(other_npc);
+    npc_hide_and_trainer_flag_clear_on_tile_x66_at_pos(other_npc);
+    struct coords *o_to = other_npc.to;
+    if_tile_x20_run_trigger_at_position_maybe(o_to->x, o_to->y);
+
+    walkrun.lock = 0;
+    script_env_2_disable();
+    u8 cid = coro_find_id_by_funcptr(&c3_805CD0C);
+    coro_del(cid);
+
+    return 0;
+}
+
+// 0835B8A0
+bool (off_835B8A0[])(struct coro*, struct npc_state*, struct npc_state*) = {
+    &sub_805CD64_mode_0,
+    &sub_805CD84_mode_1,
+    &sub_805CE20_mode_2
+};
+
+// 0805F700
+void npc_coord_step(struct npc_state *n, u16 x, u16 y) {
+    n->from.x = n->to.x;
+    n->from.y = n->to.y;
+    n->to.x = x;
+    n->to.y = y;
+}
+
+#define ANYDIR(m) m(1, down) m(2, up) m(3, left) m(4, right)
+
+bool an_look1_2(struct npc_state *npc, struct oamt *oamt) { oamt.field_2C |= 0x40; return 1; }
+#define AN_LOOK1(i, l) \
+    bool an_look1_##l##_1(struct npc_state *npc, struct oamt *oamt) { an_look_any(npc, oamt, i); return 1; } \
+    bool (*an_look1_##l[])(struct npc_state *, struct oamt *) = { &an_look1_##l##_1, &an_look1_2 };
+ANYDIR(AN_LOOK1, unused)
+
+#define Q(n) n##_down, n##_up, n##_left, n##_right
+
+// 083A65BC
+bool (**an_table[])(struct npc_state *, struct oamt *) = {
+    Q(&an_look1)   // 0x00
+    Q(&an_look2) // 0x04
+    Q(&an_walk)   // 0x08
+    Q(&an_go)     // 0x0C; can't remember the difference between "walk" and "go"
+    Q(&an_pulse)  // 0x10
+    &off_83A6964, &off_83A6970, &off_83A697C, &off_83A6988, // 0x14
+    &off_83A6994, &off_83A69A0, &off_83A69AC, &off_83A69B8, // 0x18
+    &off_83A69C4,
+        Q(&an_run)
+                  &off_83A6A50, &off_83A6A5C, &off_83A6A68, // 0x20
+    &off_83A6A74, &off_83A6A80, &off_83A6A8C, &off_83A6A98, // 0x24
+    &off_83A6AA4, &off_83A6AB0, &off_83A6ABC, &off_83A6AC8, // 0x28
+    &off_83A6AD4, &off_83A6AE0, &off_83A6AEC, &off_83A6AF8, // 0x2C
+    &off_83A6B04, &off_83A6B10, &off_83A6B1C, &off_83A6B28, // 0x30
+    &off_83A6B34, &off_83A6B40, &off_83A6B4C, &off_83A6B58, // 0x34
+    &off_83A6B64, &off_83A6B70, &off_83A6B7C, &off_83A6B88, // 0x38
+    &off_83A6B94, &off_83A6BA0, &off_83A6BAC, &off_83A6BB8, // 0x3C
+    &off_83A6BC4, &off_83A6BD0, &off_83A6BDC, &off_83A6BE8, // 0x40
+    &off_83A6BF4, &off_83A6C00, &off_83A6C0C, &off_83A6C18, // 0x44
+    &off_83A6C24, &off_83A6C30, &off_83A6C6C, &off_83A6C74, // 0x48
+    &off_83A6C7C, &off_83A6C84, &off_83A6C8C, &off_83A6C98, // 0x4C
+    &off_83A6CA4, &off_83A6CB0, &off_83A6CBC, &off_83A6CC8, // 0x50
+    &off_83A6CD4, &off_83A6CE0, &off_83A6CEC, &off_83A6CF8, // 0x54
+    &off_83A6D04, &off_83A6D10, &off_83A6D1C, &off_83A6D24, // 0x58
+    &off_83A6D30, &off_83A6D38, &off_83A6D40, &off_83A6D48, // 0x5C
+    &off_83A6D50, &off_83A6D58, &off_83A6D60, &off_83A6D68, // 0x60
+    &off_83A6D70, &off_83A6D78, &off_83A6D80, &off_83A6D88, // 0x64
+    &off_83A6D94, &off_83A6DA4, &off_83A6DB4, &off_83A6DBC, // 0x68
+    &off_83A6DC4, &off_83A6DCC, &off_83A6DD4, &off_83A6DE0, // 0x6C
+    &off_83A6DEC, &off_83A6DF4, &off_83A6DFC, &off_83A6E04, // 0x70
+    &off_83A6E0C, &off_83A6E18, &off_83A6E24, &off_83A6E30, // 0x74
+    &off_83A6E3C, &off_83A6E48, &off_83A6E54, &off_83A6E60, // 0x78
+    &off_83A6E9C, &off_83A6EA8, &off_83A6EB4, &off_83A6EC0, // 0x7C
+    &off_83A6ECC, &off_83A6ED8, &off_83A6EE4, &off_83A6EF0, // 0x80
+    &off_83A6EFC, &off_83A6F08, &off_83A6F14, &off_83A6F20, // 0x84
+    &off_83A6F2C, &off_83A6F38, &off_83A6F44, &off_83A6F50, // 0x88
+    &off_83A6F5C, &off_83A6F68, &off_83A6F74, &off_83A6F80, // 0x8C
+    &off_83A6F8C, &off_83A6F98, &off_83A6FA4, &off_83A6FB0, // 0x90
+    &off_83A6FBC, &off_83A6FC8, &off_83A6FD4, &off_83A6FE0, // 0x94
+    &off_83A6FEC, &off_83A6FF4, &off_83A6FFC, &off_83A6898, // 0x98
+    &off_83A68A4, &off_83A68B0, &off_83A68BC, &off_83A7004, // 0x9C
+    &off_83A6A00, &off_83A6A0C, &off_83A6A18, &off_83A6A24, // 0xA0
+    &off_83A700C, &off_83A7018, &off_83A6C3C, &off_83A6C48, // 0xA4 
+    &off_83A6C54, &off_83A6C60                              // 0xA8
+};
+
 // 0805C6C4
 u8 player_get_direction() {
-    return npc_states[walkrun.npcid].direction & 0xF;
+    return npc_states[walkrun.npc_id].direction & 0xF;
 }
 
 // 0805C700
 u8 player_get_height() {
-    return npc_states[walkrun.npcid].height >> 4;
+    return npc_states[walkrun.npc_id].height >> 4;
 }
 
 // 0805C538
 void player_get_pos_to(u16 x, u16 y) {
-    *x = npc_states[walkrun.npcid].y;
-    *y = npc_states[walkrun.npcid].y;
+    *x = npc_states[walkrun.npc_id].x;
+    *y = npc_states[walkrun.npc_id].y;
 }   
 
 // 0806CE20
@@ -97,6 +275,19 @@ struct rom_npc *rom_npc_by_nr_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
     // To be written.
 }
 
+
+// 08063554
+void sub_8063554(struct npc_state *npc, struct oamt *oamt, u8 anim_number) {
+    if (npc.field_1 & 0x8) return;
+    oamt.anim_number = anim_number;
+    u8 *tp = animtable_get_tp(oamt.anim_table);
+    if (tp) {
+             if (oamt.anim_frame == tp[4]) oamt.anim_frame = tp[7];
+        else if (oamt.anim_frame == tp[5]) oamt.anim_frame = tp[6];
+    }
+    sub_80083C0(oamt, oamt.anim_frame); // decrements anim_frame
+}
+
 // 0806CEA0
 bool onpress_a(struct npc_position *n, u8 tt, u8 d) {
     // tt = tile type
@@ -124,7 +315,7 @@ u32 onpress_a_get_script_npc(struct npc_position *n, u8 tt, u8 d) {
     // tt = tile type
     // d = direction in which the player is looking
 
-    u8 npc_id = npc_at_pos_and_height(
+    u8 npc_id = npc_id_by_pos_and_height(
         n->x,
         n->y,
         n->height
@@ -132,7 +323,7 @@ u32 onpress_a_get_script_npc(struct npc_position *n, u8 tt, u8 d) {
     if (npc_id == MAX_NPCS || npc_states[npc_id].local_id == 0xFF) {
         if (!is_tile_x80(tt)) return 0;
 
-        npc_id = npc_at_pos_and_height(
+        npc_id = npc_id_by_pos_and_height(
             n->x + directions_i32[d*2+0],
             n->y + directions_i32[d*2+1],
             n->height
@@ -202,6 +393,25 @@ u32 onpress_a_get_script_tile(struct npc_position *n, u8 tt, u8 d) {
         return 0x081A76E7; // Heal Your POKeMON! POKeMON CENTER
     }
     return 0;
+}
+
+// 0806DE28
+void npc_hide_and_trainer_flag_clear_on_tile_x66_at_pos(stuct npc_state *npc) {
+    u8 role = cur_mapdata_block_role_at(npc->to.x, npc->to.y);
+    if (role != 0x66) return;
+    sound_play(0x25);
+
+    npc_hide_by_local_id_and_map(
+        npc->local_id,
+        sav1->location.map,
+        sav1->location.bank);
+
+    u16 flag = rom_npc_by_local_id_and_map_get_trainer_flag(
+        npc->local_id,
+        sav1->location.map,
+        sav1->location.bank);
+
+    flag_clear(flag);
 }
 
 // 0826D2D8
