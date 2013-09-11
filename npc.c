@@ -1,10 +1,62 @@
 #define MAX_NPCS 0x10
 
-struct coord { u16 x, y; };
+struct ptr_and_size {
+    void *data;
+    u32 size;
+};
+typedef struct ptr_and_size *gfxtable_t;
+
+typedef struct { u16 x, y; } coords;
 
 struct npc_pos_h {
     u16 x, y;
     u8 height;
+};
+
+struct npc_state {
+    u8 bitfield1;
+    u8 bitfield2;
+    u8 field_2;
+    u8 field_3;
+    u8 oam_id;
+    u8 type_id;
+    u8 running_behaviour;
+    u8 is_trainer;
+    u8 local_id;
+    u8 local_mapnr;
+    u8 local_mapgroup;
+    u8 height; // stored in lower 4 bits
+    coords stay_around;
+    coords to;
+    coords from;
+    u8 direction;
+    u8 movement_area;
+    u8 field_1A;
+    u8 oam_id2;
+    u8 state;
+    u8 sight_distance;
+    u8 tile_to;
+    u8 tile_from;
+    u8 field_20;
+    u8 field_21;
+    u8 field_22;
+    u8 field_23;
+};
+
+struct npc_type {
+    u16 field_0;
+    u16 pal_num;
+    u16 pal_tag_2;
+    u16 field_6;
+    coords pos_neg_center;
+    u8 pal_slot; // stored in lower 4 bits
+    u8 field_D;
+    u16 _unused;
+    struct oam_t *oam;
+    void *field_14;
+    animtable_t *animtable1;
+    gfxtable_t  *gfxtable;
+    animtable_t *animtable2;
 };
 
 // 080083C0
@@ -269,6 +321,15 @@ void hide_sprite(u8 local_id, u8 mapnr, u8 mapgroup) {
     }
 }
 
+// 0805F2C8
+struct npc_type *npc_get_type(u8 type_id) {
+    if (type_id >= 0xF0)
+        type_id = var_load_x4010_plus(type_id-0xF0);
+    if (type_id >= 152)
+        type_id = 10;
+    return npc_types[type_id];
+}
+
 // 0805FC5C
 u16 trainerid_by_local_id_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
     struct rom_npc *rnpc = rom_npc_by_nr_and_map(local_id, mapnr, mapgroup);
@@ -285,7 +346,6 @@ u16 trainerid_by_npc_id(u8 npc_id) {
 struct rom_npc *rom_npc_by_nr_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
     // To be written.
 }
-
 
 // 08063554
 void sub_8063554(struct npc_state *npc, struct oamt *oamt, u8 anim_number) {
