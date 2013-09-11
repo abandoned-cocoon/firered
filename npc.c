@@ -117,6 +117,17 @@ bool (off_835B8A0[])(struct coro*, struct npc_state*, struct npc_state*) = {
     &sub_805CE20_mode_2
 };
 
+// 0805E080
+u8 rom_npc_to_npc_state(struct rom_npc *rnpc, u8, u8) {
+    // TODO
+}
+
+// 0805E590
+void *npc_spawn_with_provided_template(byte, void*, byte, byte, short, short) {
+    // TODO
+    return 0;
+}
+
 // 0805F700
 void npc_coord_step(struct npc_state *n, u16 x, u16 y) {
     n->from.x = n->to.x;
@@ -131,7 +142,7 @@ bool an_look1_2(struct npc_state *npc, struct oamt *oamt) { oamt.field_2C |= 0x4
 #define AN_LOOK1(i, l) \
     bool an_look1_##l##_1(struct npc_state *npc, struct oamt *oamt) { an_look_any(npc, oamt, i); return 1; } \
     bool (*an_look1_##l[])(struct npc_state *, struct oamt *) = { &an_look1_##l##_1, &an_look1_2 };
-ANYDIR(AN_LOOK1, unused)
+ANYDIR(AN_LOOK1)
 
 #define Q(n) n##_down, n##_up, n##_left, n##_right
 
