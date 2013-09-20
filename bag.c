@@ -9,6 +9,6 @@ void coro_WIN0V_open_close_above(coro_id c) {
 	lcd_io_set_and_sync_asap(WIN0V, min(priv->visible_lines, 160));
 
 	if ((priv->direction ==  16 && priv->visible_lines == 160)
-	 || (priv->direction == -16 && priv->visible_lines == 160))
+	 || (priv->direction == -16 && priv->visible_lines == 0))
 		coro_del(c);
 }
