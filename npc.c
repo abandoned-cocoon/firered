@@ -109,15 +109,15 @@ struct coro_args_0805CD0C {
 
 // 0805CCD0
 void sub_805CCD0(u8 npc_id, u8 direction) {
-    u8 cid = coro_add_and_set_field_7(&c3_805CD0C, 0xFF);
+    u8 cid = coro_add_and_set_field_7(&coro_805CD0C, 0xFF);
     struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &coro[cid].args;
     args.npc_id = npc_id;
     args.direction = direction;
-    c3_805CD0C(&coro[cid]);
+    coro_805CD0C(&coro[cid]);
 }
 
 // 0805CD0C
-void c3_805CD0C(u8 cid) {
+void coro_805CD0C(u8 cid) {
     struct npc_state *player_npc, *other_npc;
     struct coro *c = &coro[cid];
     struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &c->args;
@@ -156,7 +156,7 @@ bool sub_805CE20_mode_2(struct coro* c, struct npc_state* player_npc, struct npc
 
     walkrun.lock = 0;
     script_env_2_disable();
-    u8 cid = coro_find_id_by_funcptr(&c3_805CD0C);
+    u8 cid = coro_find_id_by_funcptr(&coro_805CD0C);
     coro_del(cid);
 
     return 0;
