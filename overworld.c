@@ -304,8 +304,8 @@ void sub_806CD30(u8 *d) {
         script_env_2_start_and_stuff(scr_special_15A);
         script_env_2_enable();
 
-        if (!coro_is_running(&c3_0806CDF8))
-            coro_add_and_set_field_7(&c3_0806CDF8, 0x8);
+        if (!coro_is_running(&coro_0806CDF8))
+            coro_add_and_set_field_7(&coro_0806CDF8, 0x8);
 
     } else {
 
