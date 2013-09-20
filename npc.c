@@ -109,7 +109,7 @@ struct coro_args_0805CD0C {
 
 // 0805CCD0
 void sub_805CCD0(u8 npc_id, u8 direction) {
-    u8 cid = coro_add_and_set_field_7(&coro_805CD0C, 0xFF);
+    u8 cid = coro_add(&coro_805CD0C, 0xFF);
     struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &coro[cid].args;
     args.npc_id = npc_id;
     args.direction = direction;
@@ -119,7 +119,7 @@ void sub_805CCD0(u8 npc_id, u8 direction) {
 // 0805CD0C
 void coro_805CD0C(u8 cid) {
     struct npc_state *player_npc, *other_npc;
-    struct coro *c = &coro[cid];
+    struct coro_t *c = &coro[cid];
     struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &c->args;
     do {
         player_npc = npc_states[walkrun.npc_id];
@@ -128,7 +128,7 @@ void coro_805CD0C(u8 cid) {
 }
 
 // 0805CD64
-bool sub_805CD64_mode_0(struct coro* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+bool sub_805CD64_mode_0(struct coro_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
     struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &c->args;
 
     script_env_2_enable();
@@ -138,14 +138,14 @@ bool sub_805CD64_mode_0(struct coro* c, struct npc_state* player_npc, struct npc
 }
 
 // 0805CD84
-bool sub_805CD84_mode_1(struct coro* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+bool sub_805CD84_mode_1(struct coro_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
     // TODO
     args->mode++; // from 1 to 2
     return 0;
 }
 
 // 0805CE20
-bool sub_805CE20_mode_2(struct coro* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+bool sub_805CE20_mode_2(struct coro_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
     if (npc_get_bit7_or_const_x10_when_inactive(player_npc) == 0) return 0;
     if (npc_get_bit7_or_const_x10_when_inactive(other_npc) == 0) return 0;
     npc_destruct_when_bit7_is_set(player_npc);
@@ -163,7 +163,7 @@ bool sub_805CE20_mode_2(struct coro* c, struct npc_state* player_npc, struct npc
 }
 
 // 0835B8A0
-bool (off_835B8A0[])(struct coro*, struct npc_state*, struct npc_state*) = {
+bool (off_835B8A0[])(struct coro_t*, struct npc_state*, struct npc_state*) = {
     &sub_805CD64_mode_0,
     &sub_805CD84_mode_1,
     &sub_805CE20_mode_2

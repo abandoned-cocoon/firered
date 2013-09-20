@@ -47,12 +47,13 @@ void animcmd_03_normal_frame(struct oamt *o) {
 	if (duration) duration--;
 	o->field_2C &= 0xC0;
 	o->field_2C |= 0x3F & duration;
-	
+
 	if (o->oam.attr0 & 0x100 == 0) { // no rotate/scale
 		oamt_set_horizonal_and_vertical_flip(o, frame->hflip, frame->vflip);
 	}
 	if (o->bitfield & 0x40) {
-		data += o->anime_data_offset;
+		// set oam-start-tile to data + data_offset
+		data += o->anim_data_offset;
 		o->oam.attr2 &= 0xFC00;
 		o->oam.attr2 |= 0x03FF & data;
 	} else {
