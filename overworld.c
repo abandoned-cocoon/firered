@@ -483,6 +483,52 @@ bool is_tile_that_overrides_player_control(u8 role) {
     return 0;
 }
 
+// 03005014
+u16 *override_bg2_tilemap;
+// 03005018
+u16 *override_bg1_tilemap;
+// 0300501C
+u16 *override_bg3_tilemap;
+
+// 0805A9B4
+void overworld_draw_tile(u32 ttype, u16 *blockdef, u16 pos) {
+    u16 *side_a, *side_b, *side_c;
+    u16 empty;
+
+    if (ttype == 0) {
+        side_c = override_bg3_tilemap;
+        side_a = override_bg2_tilemap;
+        side_b = override_bg1_tilemap;
+        empty = 0x3014;
+    } else if (ttype == 1) {
+        side_a = override_bg3_tilemap;
+        side_b = override_bg2_tilemap;
+        side_c = override_bg1_tilemap;
+        empty = 0x0000;
+    } else if (ttype == 2) {
+        side_a = override_bg3_tilemap;
+        side_c = override_bg2_tilemap;
+        side_b = override_bg1_tilemap;
+        empty = 0x0000;
+    } else
+        return;
+
+    side_a[pos+ 0] = blockdef[0];
+    side_a[pos+ 1] = blockdef[1];
+    side_a[pos+32] = blockdef[2];
+    side_a[pos+33] = blockdef[3];
+
+    side_b[pos+ 0] = blockdef[4];
+    side_b[pos+ 1] = blockdef[5];
+    side_b[pos+32] = blockdef[6];
+    side_b[pos+33] = blockdef[7];
+
+    side_c[pos+ 0] = empty;
+    side_c[pos+ 1] = empty;
+    side_c[pos+32] = empty;
+    side_c[pos+33] = empty;
+}
+
 // 0806D5E8
 bool per_step_2(struct npc_state *npc, u16 role, u8 direction) {
     // role = player_pos_to_block_role

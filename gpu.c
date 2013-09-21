@@ -94,3 +94,14 @@ void gpu_text_mode_and_hide_bgs() {
 	u16 dispcnt = lcd_io_get(0);
 	lcd_io_set(dispcnt & 0xF0F8);
 }
+// 080019BC
+void gpu_sync_bg_show(u8 bg_id) {
+	gpu_bg_show(bg_id);
+	gpu_sync_bg_visibility_and_mode();
+}
+
+// 080019D0
+void gpu_sync_bg_hide(u8 bg_id) {
+	gpu_bg_hide(bg_id);
+	gpu_sync_bg_visibility_and_mode();
+}
