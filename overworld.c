@@ -56,6 +56,31 @@ u16 *overworld_bg1_tilemap;
 //* 0300501C
 u16 *overworld_bg3_tilemap;
 
+// 08055148
+void mapdata_load_assets_to_gpu_and_full_redraw() {
+    sub_805A5E4();
+    mapdata_load_blocksets(current_mapheader.data);
+    mapdata_load_palettes_to_gpu(current_mapheader.data);
+    cur_mapdata_draw_all_blocks();
+    cur_mapheader_run_tileset_funcs_after_some_cpuset();
+}
+
+// 0805610C
+void wild_pokemon_reroll() {
+    wild_pokemon_index = wild_pokemon_rand_for_map(&wild_pokemon_from_water_category);
+}
+
+// 08056124
+bool sub_8056124(u16 arg0) {
+    if (arg0 != 0x11A) return true;
+    if (arg0 != 0x017) return true;
+    u8 name = current_mapheader.name;
+    if (name == 0x84) return false;
+    if (name == 0x7B) return false;
+    if (name == 0x61) return false;
+    return true;
+}
+
 // 08056158
 u8 mapnumbers_get_light_level(i8 bank, i8 map) {
     struct map *m = mapheader_by_mapnumbers(bank, map);
@@ -196,8 +221,9 @@ void c1_overworld_prev_quest() {
     sub_8112B3C();
     sub_805BEB8();
 
-    u8 *d[4]; *(u32*)d = dword_3005E90;
+    u8 d[4];
     sub_806C888(d);
+    *(u32*)d = dword_3005E90;
     sub_806CD30(d);
     if (!script_env_2_is_enabled()) {
         if (sub_806CAC8(d)) {
@@ -218,6 +244,198 @@ void c1_overworld() {
     else
         c1_overworld_normal(super.buttons3_new_remapped,
                             super.buttons2_held_remapped);
+}
+
+// 08056578
+void c2_ov_basic() {
+    script_something();
+    coro_exec();
+    oamt_exec();
+    camera_update();
+    sub_8115798();
+    sub_805AE28();
+    oamt_sync_something();
+    sub_80704D0();
+    sub_806FFBC();
+    sub_80F67B8();
+}
+
+// 080565A8
+void c2_ov_to_battle_anim() {
+    c2_ov_basic();
+}
+
+// 080565B4
+void c2_overworld() {
+    u8 *trs = (u8*)0x02037AB8;
+    bool t = trs[7] >> 7;
+    if (!t) super.field_C = NULL;
+    c2_ov_basic();
+    if (!t) sub_8056A04();
+}
+
+// 080565E0
+void set_callback1(void (*c1)()) {
+    super.callback1 = c1;
+}
+
+// 080565EC
+bool maploader_exec() {
+    if (hm_phase_1) {
+        if (!hm_phase_1()) 
+            return false;
+    } else {
+        if (maploader)
+            maploader();
+        else
+            mapldr_0807DF64();
+    }
+    hm_phase_1 = 0;
+    maploader = 0;
+    return true;
+}
+
+// 08056644
+void c2_new_game() {
+    sub_80569BC();
+    sub_8071A94();
+    flag_clear_safari_zone();
+    new_game();
+    sub_80559E4();
+    gameclock_sanity_check();
+    script_env_1_start();
+    script_env_2_disable();
+    maploader = &mapldr_for_new_game;
+    hm_phase_1 = 0;
+    map_loading_loop(&super.map_loading_state);
+    sub_8056A04();
+    set_callback1(&c1_overworld);
+    set_callback2(&c2_overworld);
+}
+
+// 080566A4
+void c2_whiteout_maybe() {
+    if (superstate.map_loading_state++ < 120) return;
+    sub_80569BC();
+    sub_8071A94();
+    flag_clear_safari_zone();
+    sub_8054BC8();
+    sub_80559F8(2);
+    script_env_1_start();
+    script_env_2_disable();
+    maploader = &mapldr_c3_whiteout;
+    u8 state = 0;
+    map_loading_loop(&state);
+    sub_8112364();
+    sub_8056A04();
+    set_callback1(&c1_overworld);
+    set_callback2(&c2_overworld);
+}
+
+////
+
+// 08056B78
+bool map_loading_iteration(u8 *state, u32 arg1) {
+    switch (*state) {
+    case 0:
+        overworld_bg_setup();
+        sub_80569BC();
+        mli0_load_map(arg1);
+        break;
+
+    case 1:
+        allocate_palette_backup();
+        break;
+
+    case 2:
+        sub_8057024(arg1);
+        break;
+
+    case 3:
+        if (sub_8113748())
+            return true;
+        break;
+
+    case 4:
+        mli4_mapscripts_and_other();
+        sub_8057114();
+        if (byte_203ADFA != 2) {
+            sub_80CC534();
+            sub_80CC59C();
+        }
+        sub_812B35C();
+        break;
+
+    case 5:
+        sub_8056A34();
+        sub_8056F1C();
+        break;
+
+    case 6:
+        sub_805A5E4();
+        break;
+
+    case 7:
+        mapdata_load_blockset_1(current_mapheader.data);
+        break;
+
+    case 8:
+        mapdata_load_blockset_2(current_mapheader.data);
+        break;
+
+    case 9:
+        if (sub_80F682C())
+            return false;
+        mapdata_load_palettes_to_gpu(current_mapheader.data);
+        break;
+
+    case 10:
+        sub_805A684();
+        break;
+
+    case 11:
+        cur_mapheader_run_tileset_funcs_after_some_cpuset();
+        break;
+
+    case 12:
+        if (current_mapheader.name == warp0_get_name() || sub_80F8154(current_mapheader.name, 1) == 0) {
+            if ((current_mapheader.escape_rope >> 4) != 1)
+                show_new_mapname(0);
+        } else {
+            sub_80F819C(current_mapheader.name);
+            sub_80F8268(current_mapheader.name);
+        }
+        break;
+
+    case 13:
+        if (!maploader_exec())
+            return false;
+        break;
+
+    case 14:
+        // state 14 results in while (1);
+        return true;
+
+    default:
+        return false;
+    }
+
+    *state++;
+    return false;
+}
+
+////
+
+// 08056E5C
+void map_loading_loop(u8 *state) {
+    while (!map_loading_iteration(state, 0));
+}
+
+// 08056F08
+void sub_8056F08() {
+    sub_8056A34();
+    lcd_reset();
+    mapdata_load_assets_to_gpu_and_full_redraw();
 }
 
 // 08058D44
@@ -729,6 +947,31 @@ bool per_step_2(struct npc_state *npc, u16 role, u8 direction) {
 // 0806D694
 bool is_tile_XX_prevent_per_step_scripts(u16 role) {
     return 0;
+}
+
+// 0806FF9C
+void cur_mapheader_run_tileset_funcs_after_806FED8() {
+    sub_806FED8();
+    cur_mapheader_run_blockset1_func();
+    cur_mapheader_run_blockset2_func();
+}
+
+// 0807002C
+void cur_mapheader_run_blockset1_func() {
+    struct blockset *bs = current_mapheader.data.blockset1;
+    word_3000FAE = 0;
+    word_3000FB0 = 0;
+    dword_3000FB8 = 0;
+    if (bs && bs->funcptr) bs->funcptr();
+}
+
+// 08070068
+void cur_mapheader_run_blockset2_func() {
+    struct blockset *bs = current_mapheader.data.blockset2;
+    word_3000FAE = 0;
+    word_3000FB0 = 0;
+    dword_3000FB8 = 0;
+    if (bs && bs->funcptr) bs->funcptr();
 }
 
 // 080830B8
