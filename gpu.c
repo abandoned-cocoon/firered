@@ -1,8 +1,8 @@
 struct bg_config {
 	uint active     : 1;
-	uint unknown0   : 1;
+	uint _          : 1;
 	uint screensize : 2;
-	uint unknown2   : 2;
+	uint priority   : 2;
 	uint mosaic     : 1;
 	uint wraparound : 1;
 
@@ -76,7 +76,7 @@ u8 gpu_bg_config_get_field(u8 bg_id, u8 field) {
 		case 3:  return bg->screenbase;
 		case 4:  return bg->screensize;
 		case 5:  return bg->fullcolor;
-		case 6:  return bg->unknown2;
+		case 6:  return bg->priority;
 		case 7:  return bg->mosaic;
 		case 8:  return bg->wraparound;
 		default: return 0xFF;
