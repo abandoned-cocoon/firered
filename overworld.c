@@ -288,7 +288,7 @@ bool maploader_exec() {
         if (maploader)
             maploader();
         else
-            mapldr_0807DF64();
+            mapldr_default();
     }
     hm_phase_1 = 0;
     maploader = 0;
@@ -968,10 +968,34 @@ void cur_mapheader_run_blockset1_func() {
 // 08070068
 void cur_mapheader_run_blockset2_func() {
     struct blockset *bs = current_mapheader.data.blockset2;
-    word_3000FAE = 0;
-    word_3000FB0 = 0;
-    dword_3000FB8 = 0;
+    word_3000FB2 = 0;
+    word_3000FB4 = 0;
+    dword_3000FBC = 0;
     if (bs && bs->funcptr) bs->funcptr();
+}
+
+// 0807DB58
+void pal_fill_for_maplights() {
+    u8 warp0_light    = warp_get_light_level();
+    u8 sav1_map_light = sav1_map_get_light_level();
+    u8 ft = fade_type_for_given_maplight_pair(warp0_light, sav1_map_light);
+    if (ft == 0) {
+        palette_bg_faded_fill_black();
+        sub_807A818(0, 0);
+        palette_bg_faded_fill_black();
+    } else if (ft == 1) {
+        palette_bg_faded_fill_white();
+        sub_807A818(2, 0);
+        palette_bg_faded_fill_white();
+    }
+}
+
+// 0807DF64
+void mapldr_default() {
+    map_music_something();
+    render_prev_quest_text_if_appropriate();
+    pal_fade_depending_on_room_and_tile(0);
+    script_env_2_enable();
 }
 
 // 080830B8
