@@ -180,7 +180,7 @@ void overworld_free_resources() {
 
 // 08056420
 void flag_clear_safari_zone() {
-    flag_clear(FLAG_PLAYER_IN_SAFARI_ZONE)
+    flag_clear(FLAG_PLAYER_IN_SAFARI_ZONE);
 }
 
 // 0805642C

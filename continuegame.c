@@ -6,6 +6,17 @@ u8 prev_quest_mode; // 0: normal
 					// 2: flashback
 					// 3: fade flashback to normal
 
+// 08056938
+void c2_8056938() {
+	sub_80569BC();
+	sub_8071A94();
+	flag_clear_safari_zone();
+	cur_mapheader_from_sav1();
+	load_sav1_rom_npc_scripts();
+	sub_8068A5C();
+	// TODO
+}
+
 // 081109CC
 void prev_quest_mode_set(u8 mode) {
 	prev_quest_mode = mode;
@@ -21,7 +32,7 @@ bool questlog_active_at_cursor() {
 
 // 08110F14
 void game_continue(u8 coro_id) {
-	set_x0203B048_to_0();
+	quest_logger_filter_disable();
 	prev_quest_display_number = 0;
 
 	for (uint i=0; i<4; i++)

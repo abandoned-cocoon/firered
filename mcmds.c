@@ -82,6 +82,22 @@ void mcmd63_continue_with_move() {
     move_exec_cursor = move_scripts[move_data[move_to_execute].move_script_id];
 }
 
+// 080267F0
+void mcmd6E_state0_side_becomes_attacker() {
+    battle_side_of_attacker_hl = battle_get_side_with_given_state(0);
+    move_exec_cursor++;
+}
+
+// 080268B8 
+void mcmd72_flee() {
+    if (battle_flee()) {
+        u32 target = (move_exec_cursor[1]<< 0) + (move_exec_cursor[3]<< 8)
+                   + (move_exec_cursor[4]<<16) + (move_exec_cursor[5]<<24);
+        move_exec_cursor = target;
+    } else
+        move_exec_cursor += 5;
+}
+
 uint8 get_battle_side_of(uint8 whom) {
     switch (whom) {
     case 0: return battle_side_of_defender_hl;
