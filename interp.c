@@ -87,13 +87,13 @@ u8 script_read_byte(struct script_env *s) {
 // 080698F8
 u16 script_read_half(struct script_env *s) {
     // unaligned read
-    return (*s->ptr_script++) + (*s->ptr_script++)<<8;
+    return (*s->ptr_script++) + ((*s->ptr_script++)<<8);
 }
 
 // 08069910
 u32 script_read_word(struct script_env *s) {
     // unaligned read
-    return (*s->ptr_script++) + (*s->ptr_script++)<<8 + (*s->ptr_script++)<<16 + (*s->ptr_script++)<<24;
+    return (*s->ptr_script++) + ((*s->ptr_script++)<<8) + ((*s->ptr_script++)<<16) + ((*s->ptr_script++)<<24);
 }
 
 // 08069940
