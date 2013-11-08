@@ -628,7 +628,7 @@ void cur_mapdata_draw_block_internal(struct mapdata *data, u16 screenpos, s16 x,
 }
 
 // 0805A9B4
-void overworld_draw_block(u32 ttype, u16 *blockdef, u16 screenpos) {
+void overworld_draw_block(u32 ttype, u16 *blockdef, u16 pos) {
     u16 *side_a, *side_b, *side_c;
     u16 empty;
 
@@ -729,7 +729,7 @@ static inline u16 helper1(s16 x, s16 y) {
     u32 x2 = (hsize<<3)+x-7 % hsize;
     u32 y2 = (vsize<<3)+y-7 % vsize;
 
-    return grid[x + y*hsize] & 0xC00;
+    return grid[x + y*hsize]; // & 0xC00;
 }
 
 static inline u16 helper2(s16 x, s16 y) {
@@ -777,6 +777,7 @@ void sub_8069A54() {
 void input_process(u8 *d, u16 keypad_new, u16 keypad_held) {
     u8 role = cur_mapdata_block_role_at_player_pos();
     bool override = is_tile_that_overrides_player_control(role);
+    bool now = prev_quest_mode < 2;
 
     if (!script_env_2_context_is_normal() && keypad_override_through_script_env_2_enabled())
         script_env_2_apply_keypad_override(d, &keypad_new, &keypad_held);
@@ -785,14 +786,14 @@ void input_process(u8 *d, u16 keypad_new, u16 keypad_held) {
         if (sub_80BD674() != 4) {
             if ((keypad_new & KEYPAD_START)) d[0] |= 0x04;
 
-            if ((byte_203ADFA-2) >= 2) {
+            if (now) {
                 if ((keypad_new & KEYPAD_SELECT)) d[0] |= 0x08;
                 if ((keypad_new & KEYPAD_A))      d[0] |= 0x01;
                 if ((keypad_new & KEYPAD_B))      d[0] |= 0x80;
                 if ((keypad_new & KEYPAD_R))      d[1] |= 0x01;
             }
         }
-        if ((byte_203ADFA-2) >= 2)
+        if (now)
             if (keypad_held & KEYPAD_ANYDIR) d[0] |= 0x30;
     }
     if (!override) {
@@ -801,7 +802,7 @@ void input_process(u8 *d, u16 keypad_new, u16 keypad_held) {
         if (running1 == 2)
             d[0] |= 0x02;
     }
-    if ((byte_203ADFA-2) >= 2) {
+    if (now) {
              if (keypad_held & KEYPAD_UP)    d[2] = 2;
         else if (keypad_held & KEYPAD_DOWN)  d[2] = 1;
         else if (keypad_held & KEYPAD_LEFT)  d[2] = 3;

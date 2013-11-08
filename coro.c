@@ -18,12 +18,12 @@
 typedef u8 coro_id;
 
 struct coro_t {
-  void (*funcptr)(coro_id);
-  u8 in_use;
-  u8 prev;
-  u8 next;
-  u8 priority;
-  u16 args[16];
+	void (*funcptr)(coro_id);
+	u8 in_use;
+	coro_id prev;
+	coro_id next;
+	u8 priority;
+	u16 args[16];
 };
 
 struct coro_t coro[16];
@@ -37,6 +37,7 @@ coro_id coro_add(void (*funcptr)(coro_id), u8 priority) {
 		coro_insert_sorted(c);
 		memset(&coro[c].args, 0, sizeof(coro[c].args));
 		coro[c].in_use = 1;
+		return c;
 	}
 	return 0;
 }
