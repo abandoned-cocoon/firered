@@ -188,6 +188,15 @@ void npc_coord_step(struct npc_state *n, u16 x, u16 y) {
     n->to.y = y;
 }
 
+// 0805F8FC
+bool npc_does_height_match(struct npc_state *npc, u8 height) {
+    u8 nh = npc->height & 0xF;
+    if (nh == 0) return true;
+    if (height == 0) return true;
+    if (nh == height) return true;
+    return false;
+}
+
 #define AN(name) bool an_##name(struct npc_state *npc, struct oamt *oamt)
 typedef bool (*anptr)(struct npc_state *npc, struct oamt *oamt);
 
