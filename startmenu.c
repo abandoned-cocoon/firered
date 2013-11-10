@@ -17,8 +17,88 @@ struct startmenuentry sm_entries[] = {
     { "#1",      &sm_trainer_2 }
 };
 
+// 083A7394
 const char* sm_descr[] = {
-};s
+    "A device that records POKeMON secrets upon meeting or catching them.",
+    "Check and organize POKeMON that are traveling with you in your party.",
+    "Equipped with pockets for storing items you bought, received, or found.",
+    "Check your money and other game data.",
+    "Save your game with a complete record of your progress to take a break.",
+    "Adjust various game settings such as text speed, game rules, etc.",
+    "Close this MENU window.",
+    "Retire from the SAFARI GAME and return to the registration counter.",
+    "Check your money and other game data."
+};
+
+// 020370F0
+void *start_menu_active_contex;
+// 020370F4
+u8 start_menu_cursor;
+// 020370F5
+u8 start_menu_item_indices_cursor;
+// 020370F6
+u8 start_menu_item_indices[9];
+
+// 0806ED54
+void start_menu_compose() {
+    start_menu_item_indices_cursor = 0;
+    if (is_c1_x8057884())
+        start_menu_compose_for_unknown();
+    else if (in_trade_center())
+        start_menu_compose_for_link_room();
+    else if (flag_check_is_in_safari_zone())
+        start_menu_compose_for_safari();
+    else
+        start_menu_compose_normal();
+}
+
+// 0806ED94
+void start_menu_append_item(u8 item_index) {
+    append_byte(start_menu_item_indices,
+               &start_menu_item_indices_cursor,
+                item_index);
+}
+
+// 0806EDB0
+void start_menu_compose_normal() {
+    if (flag_check(FLAG_HAVE_POKEDEX))
+        start_menu_append_item(0);
+    if (flag_check(FLAG_HAVE_POKEMON))
+        start_menu_append_item(1);
+    start_menu_append_item(2);
+    start_menu_append_item(3);
+    start_menu_append_item(4);
+    start_menu_append_item(5);
+    start_menu_append_item(6);
+}
+
+// 0806EE04
+void start_menu_compose_for_safari() {
+    start_menu_append_item(7);
+    start_menu_append_item(1);
+    start_menu_append_item(2);
+    start_menu_append_item(3);
+    start_menu_append_item(5);
+    start_menu_append_item(6);
+}
+
+// 0806EE34
+void start_menu_compose_for_unknown() {
+    start_menu_append_item(1);
+    start_menu_append_item(2);
+    start_menu_append_item(8);
+    start_menu_append_item(5);
+    start_menu_append_item(6);
+}
+
+// 0806EE58
+void start_menu_compose_for_link_room() {
+    start_menu_append_item(1);
+    start_menu_append_item(2);
+    start_menu_append_item(3);
+    start_menu_append_item(5);
+    start_menu_append_item(6);
+}
 
 // 0806F280
 bool start_menu_handle_input() {
@@ -59,4 +139,9 @@ no_descr_update:
     sub_80F7998();
     sub_806FEA0();
     return 1;
+}
+
+// 0806FEC8
+void append_byte(u8 *buffer, u32 *cursor, u8 elem) {
+    buffer[(*cursor)++] = elem;
 }
