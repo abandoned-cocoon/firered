@@ -44,6 +44,37 @@ void gpu_reset_bg_configs() {
 	((u32*)&gpu_bg_config)[3] = 0;
 }
 
+// 080011E4
+u8 gpu_bg_config_get_field(u8 bg_id, u8 field) {
+	struct bg_config *bg = gpu_bg_config + bg_id;
+	if (bg_id >= 4 || bg->active == 0) return 0xFF;
+	switch (field) {
+		case 1:  return bg->active;
+		case 2:  return bg->charbase;
+		case 3:  return bg->screenbase;
+		case 4:  return bg->screensize;
+		case 5:  return bg->fullcolor;
+		case 6:  return bg->priority;
+		case 7:  return bg->mosaic;
+		case 8:  return bg->wraparound;
+		default: return 0xFF;
+	}
+}
+
+// 08001298
+s8 gpu_copy_to_vram_by_bgid(u8 bg_id, u16 *src, size_t size, u16 offset, u8 mode) {
+	struct bg_config *conf = &gpu_bg_config[bg_id];
+	if (bg_id >= 4 || !conf->active) return;
+	if (mode == 1) // copy tilemap
+		offset += conf->charbase * 0x4000;
+	else if(mode == 2) // copy tileset
+		offset += conf->screenbase * 0x800;
+	else
+		return -1;
+	u16 *dst = 0x06000000 + offset;
+	return dma3_add_to_copy_queue(src, dst, size, /*16 bit DMA*/0);
+}
+
 // 08001320
 void gpu_bg_show(u8 bg_id) {
 	struct bg_config *conf = &gpu_bg_config[bg_id];
@@ -66,23 +97,6 @@ void gpu_bg_hide(u8 bg_id) {
 	bg_visibility_and_mode &= ~(1<<(8+bg_id));
 }
 
-// 080011E4
-u8 gpu_bg_config_get_field(u8 bg_id, u8 field) {
-	struct bg_config *bg = gpu_bg_config + bg_id;
-	if (bg_id >= 4 || bg->active == 0) return 0xFF;
-	switch (field) {
-		case 1:  return bg->active;
-		case 2:  return bg->charbase;
-		case 3:  return bg->screenbase;
-		case 4:  return bg->screensize;
-		case 5:  return bg->fullcolor;
-		case 6:  return bg->priority;
-		case 7:  return bg->mosaic;
-		case 8:  return bg->wraparound;
-		default: return 0xFF;
-	}
-}
-
 // 080013D0
 void gpu_sync_bg_visibility_and_mode() {
 	u16 dispcnt = lcd_io_get(0);
@@ -94,6 +108,14 @@ void gpu_text_mode_and_hide_bgs() {
 	u16 dispcnt = lcd_io_get(0);
 	lcd_io_set(dispcnt & 0xF0F8);
 }
+
+// 080017D0
+void gpu_copy_to_tileset(u8 bg_id, u16 *src, size_t size, size_t offset) {
+	// TODO
+	bool isFullcolor = gpu_bg_config_get_field(5);
+	gpu_copy_to_vram_by_bgid(bg_id, src, size, offset+???, /*copy tileset*/1);
+}
+
 // 080019BC
 void gpu_sync_bg_show(u8 bg_id) {
 	gpu_bg_show(bg_id);
