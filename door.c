@@ -63,15 +63,15 @@ void door_patch_tilemap(struct door_t *door, u32 x, u32 y, u8 *palindices) {
 			tileid += 4, data += 4;
 		case false:
 			door_build_blockdef(blockdef, tileid, palindices);
-			overworld_draw_blolindicesck_type1_on_map_coord(x, y, blockdef);
+			overworld_draw_block_type1_on_map_coord(x, y, blockdef);
 	}
 }
 
 // 0805AFE8
 void door_build_blockdef(u16 *blockdef, u16 tileid, u8 *palindices) {
 	// BUG WARNING
-	// this function assumes that 'palindices' points to a eight byte region
-	// in 'door_patch_tilemap' it's called with (palindices+4), so this
+	// This function assumes that 'palindices' points to an eight byte region.
+	// In 'door_patch_tilemap' it's called with (palindices+4), so this
 	// function reads four bytes beyond the end of the array.
 	for (int i=0; i<4; i++)
 		blockdef[i] = (palindices[i]<<12) | (tileid + i);
@@ -83,4 +83,28 @@ void door_build_blockdef(u16 *blockdef, u16 tileid, u8 *palindices) {
 struct door_frame_t *door_frame_last(struct door_frame_t *frames) {
 	while ((frames++)->field_0);
 	return frame-1;
+}
+
+// 0805B1B8
+coro_id coro_overworld_door_add_for_opening_door_at(struct door_t *doors, s16 x, s16 y) {
+	u16 blockid = cur_mapdata_get_blockid_at(x, y);
+	struct door_t *door = door_find(doors, blockid);
+	struct door_frame_t *frames;
+	if (!door) return -1;
+	frames = door->twotiled
+	       ? door_frames_open_twotiled;
+	       : door_frames_open_singletile;
+	return coro_overworld_door_add_if_inactive(door, frames x, y);
+}
+
+// 0805B210
+coro_id coro_overworld_door_add_for_closing_door_at(struct door_t *doors, s16 x, s16 y) {
+	u16 blockid = cur_mapdata_get_blockid_at(x, y);
+	struct door_t *door = door_find(doors, blockid);
+	struct door_frame_t *frames;
+	if (!door) return -1;
+	frames = door->twotiled
+	       ? door_frames_close_twotiled;
+	       : door_frames_close_singletile;
+	return coro_overworld_door_add_if_inactive(door, frames x, y);
 }
