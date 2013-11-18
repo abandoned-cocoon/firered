@@ -44,6 +44,21 @@ void gpu_reset_bg_configs() {
 	((u32*)&gpu_bg_config)[3] = 0;
 }
 
+// 080010B8
+void gpu_bg_config_set_fields(u8 bg_id, u8 i1, u8 i2, u8 i3, u8 i4, u8 i5, u8 i6, u8 i7) {
+	struct bg_config *bg = gpu_bg_config + bg_id;
+	if (bg_id >= 4) return;
+	if (i1 != 0xFF) bg->charbase = i1;
+	if (i2 != 0xFF) bg->screenbase = i2;
+	if (i3 != 0xFF) bg->screensize = i3;
+	if (i4 != 0xFF) bg->fullcolor = i4;
+	if (i5 != 0xFF) bg->priority = i5;
+	if (i6 != 0xFF) bg->mosaic = i6;
+	if (i7 != 0xFF) bg->wraparound = i7;
+	bg->active = 1;
+	bg->padding = 0;
+}
+
 // 080011E4
 u8 gpu_bg_config_get_field(u8 bg_id, u8 field) {
 	struct bg_config *bg = gpu_bg_config + bg_id;
@@ -126,4 +141,38 @@ void gpu_sync_bg_show(u8 bg_id) {
 void gpu_sync_bg_hide(u8 bg_id) {
 	gpu_bg_hide(bg_id);
 	gpu_sync_bg_visibility_and_mode();
+}
+
+// 080019E4
+void gpu_bg_config_set_field(u8 bg_id, u8 field, u8 value) {
+	// real implementation
+	switch (field) {
+		case 1: gpu_bg_config_set_fields(bg_id, value, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF); break;
+		case 2: gpu_bg_config_set_fields(bg_id, 0xFF, value, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF); break;
+		case 3: gpu_bg_config_set_fields(bg_id, 0xFF, 0xFF, value, 0xFF, 0xFF, 0xFF, 0xFF); break;
+		case 4: gpu_bg_config_set_fields(bg_id, 0xFF, 0xFF, 0xFF, value, 0xFF, 0xFF, 0xFF); break;
+		case 5: gpu_bg_config_set_fields(bg_id, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, value, 0xFF); break;
+		case 6: gpu_bg_config_set_fields(bg_id, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, value); break;
+		case 7: gpu_bg_config_set_fields(bg_id, 0xFF, 0xFF, 0xFF, 0xFF, value, 0xFF, 0xFF); break;
+		default: return;
+	}
+}
+
+// 080019E4
+void gpu_bg_config_set_field(u8 bg_id, u8 field, u8 value) {
+	// effective implementation
+	struct bg_config *bg = gpu_bg_config + bg_id;
+	if (bg_id >= 4) return 0xFF;
+	switch (field) {
+		case 1:  bg->charbase   = value; break;
+		case 2:  bg->screenbase = value; break;
+		case 3:  bg->screensize = value; break;
+		case 4:  bg->fullcolor  = value; break;
+		case 5:  bg->mosaic     = value; break;
+		case 6:  bg->wraparound = value; break;
+		case 5:  bg->priority   = value; break;
+		default: return;
+	}
+	bg->active = 1;
+	bg->padding = 0;
 }
