@@ -156,9 +156,9 @@ void overworld_bg_setup_1() {
 void overworld_bg_setup_2() {
     sub_8001618(0);
     overworld_bg_vram_setup(0, unk_826D320, 4);
-    overworld_80019E4(1, 5, 1);
-    overworld_80019E4(2, 5, 1);
-    overworld_80019E4(3, 5, 1);
+    gpu_bg_config_set_field(1, 5, 1); // mosaic activate (??)
+    gpu_bg_config_set_field(2, 5, 1); // mosaic activate (??)
+    gpu_bg_config_set_field(3, 5, 1); // mosaic activate (??)
     overworld_bg1_tilemap = malloc_and_clear(0x800);
     overworld_bg2_tilemap = malloc_and_clear(0x800);
     overworld_bg3_tilemap = malloc_and_clear(0x800);

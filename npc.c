@@ -71,6 +71,15 @@ void sub_80083C0(struct oamt *oamt, u8 f) {
     oamt.field_2C |= q;
 }
 
+// 0805B4D4
+void player_step_by_keypad(u8 running2, u16 R1, u16 R2) {
+    // reverse engineered by min <3
+    if (walkrun_state.bitfield & 6)
+        dp04_initiate_movement(running2, R1);
+    else
+        dp04_continue_movement(running2, R2);
+}
+
 // 0805BCEC
 void sub_805BCEC(u16 x, u16 y, u8 direction) {
     u8 npc_id;
