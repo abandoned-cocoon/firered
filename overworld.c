@@ -209,7 +209,7 @@ void c1_overworld_normal(u16 keypad_new, u16 keypad_held) {
     if (!script_env_2_is_enabled()) {
         if (sub_806CAC8(d)) {
             script_env_2_enable();
-            coro_show_mapname_clamp_arg0_low_6();
+            task_show_mapname_clamp_arg0_low_6();
         } else
             player_step(walkrun.running2, keypad_new, keypad_held);
     }
@@ -228,7 +228,7 @@ void c1_overworld_prev_quest() {
     if (!script_env_2_is_enabled()) {
         if (sub_806CAC8(d)) {
             script_env_2_enable();
-            coro_show_mapname_clamp_arg0_low_6();
+            task_show_mapname_clamp_arg0_low_6();
         } else
             call_203AE8C();
     } else if (sub_8111CD0())
@@ -249,7 +249,7 @@ void c1_overworld() {
 // 08056578
 void c2_ov_basic() {
     script_something();
-    coro_exec();
+    task_exec();
     oamt_exec();
     camera_update();
     sub_8115798();
@@ -896,8 +896,8 @@ void sub_806CD30(u8 *d) {
         script_env_2_start_and_stuff(scr_special_15A);
         script_env_2_enable();
 
-        if (!coro_is_running(&coro_0806CDF8))
-            coro_add(&coro_0806CDF8, 0x8);
+        if (!task_is_running(&task_0806CDF8))
+            task_add(&task_0806CDF8, 0x8);
 
     } else {
 

@@ -3,7 +3,7 @@ u8 *ma_cursor;
 // 02037ED8
 u8 *ma_return_addr;
 // 02037EE2
-u8 ma_active_coros;
+u8 ma_active_tasks;
 
 // 02037F02
 u16 ma_argument_buffer[4];
@@ -35,17 +35,17 @@ void ma02_instanciate_template() {
 
 	template_instanciate(template, t1, t2, iv);
 
-	ma_active_coros++;
+	ma_active_tasks++;
 }
 
-void ma03_launch_coro() {
+void ma03_launch_task() {
 	u8 skip       = ma_read_byte(&ma_cursor);
 	void *funcptr = ma_read_word(&ma_cursor);
 	u8 prio       = ma_read_byte(&ma_cursor);
 	maXX_transfer_arguments();
 
-	u8 cid = coro_add(funcptr, prio);
+	u8 cid = task_add(funcptr, prio);
 	funcptr(cid);
 
-	ma_active_coros++;
+	ma_active_tasks++;
 }

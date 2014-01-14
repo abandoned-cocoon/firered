@@ -70,7 +70,7 @@ void itemid_get_pocket_number(itemid i) {
 // 0809AA8C itemid_get_x28
 
 // 08108CFC
-void coro_WIN0V_open_close_above(coro_id c) {
+void task_WIN0V_open_close_above(task_id c) {
 	typedef struct {
 		u16 visible_lines;
 		u16 direction;
@@ -81,5 +81,5 @@ void coro_WIN0V_open_close_above(coro_id c) {
 
 	if ((priv->direction ==  16 && priv->visible_lines == 160)
 	 || (priv->direction == -16 && priv->visible_lines == 0))
-		coro_del(c);
+		task_del(c);
 }

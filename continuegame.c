@@ -31,7 +31,7 @@ bool questlog_active_at_cursor() {
 }
 
 // 08110F14
-void game_continue(u8 coro_id) {
+void game_continue(u8 task_id) {
 	quest_logger_filter_disable();
 	prev_quest_display_number = 0;
 
@@ -45,7 +45,7 @@ void game_continue(u8 coro_id) {
 	} else
 		set_callback2(&c2_8056938);
 
-	coro_del(coro_id);
+	task_del(task_id);
 }
 
 // 08110F90
