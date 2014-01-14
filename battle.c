@@ -169,3 +169,38 @@ u8 *battle_load_arguments(struct battle_config_entry *bce, u8 *cursor) {
 		bce++:
 	}
 }
+
+// 083E7CD4
+void (*battle_intro_task_by_env[])() = {
+	task_battle_intro_080BC47C,
+	task_battle_intro_080BC47C,
+	task_battle_intro_080BC6C8,
+	task_battle_intro_080BC6C8,
+	task_battle_intro_080BC6C8,
+	task_battle_intro_080BC47C,
+	task_battle_intro_080BC47C,
+	task_battle_intro_080BC47C,
+	task_battle_intro_080BC9D4,
+	task_battle_intro_080BC9D4
+};
+
+// 080BC3A0
+void battle_intro_launch(u8 environment_id) {
+	void (*funcptr)(u8);
+	if (battle_type_flags & BATTLE_WIRELESS)
+		funcptr = task_battle_intro_wireless;
+	else if ((battle_type_flags & 0x1000) && (byte_081E9F10 == 2)) {
+		environment_id = 3;
+		funcptr = task_battle_intro_080BC6C8;
+	} else {
+		funcptr = battle_intro_task_by_env[environment_id];
+	}
+	u8 tid = task_add(funcptr, 0);
+	tasks[tid].priv[0] = 0;
+	tasks[tid].priv[1] = environment_id;
+	tasks[tid].priv[2] = 0;
+	tasks[tid].priv[3] = 0;
+	tasks[tid].priv[4] = 0;
+	tasks[tid].priv[5] = 0;
+	tasks[tid].priv[6] = 0;
+}

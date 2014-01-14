@@ -444,6 +444,14 @@ void bt1_29_blink_for_damage() {
 	}
 }
 
+// 08033444
+void bt1_2E_battle_intro() {
+	u8 environment_id = b_buffer_A[b_battle_side][1];
+	battle_intro_launch(environment_id);
+	word_02023F4C |= 1;
+	bt1_done();
+}
+
 // bx1: 080307B4
 // bx2: 080361FC
 // bx3: 080E8948

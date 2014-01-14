@@ -23,7 +23,7 @@ struct task_t {
 	task_id prev;
 	task_id next;
 	u8 priority;
-	u16 args[16];
+	u16 priv[16];
 };
 
 struct task_t task[16];

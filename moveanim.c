@@ -49,3 +49,21 @@ void ma03_launch_task() {
 
 	ma_active_tasks++;
 }
+
+// 080742A4
+void ma2B_make_side_invisible() {
+	u8 skip   = ma_read_byte(&ma_cursor);
+	u8 target = ma_read_byte(&ma_cursor);
+	u8 oid = obj_id_for_side_relative_to_move(target);
+	if (oid != 0xFF)
+		objects[oid].bitfield2 |= OBJ_BIT2_INVISIBLE;
+}
+
+// 080742E0
+void ma2C_make_side_visible() {
+	u8 skip   = ma_read_byte(&ma_cursor);
+	u8 target = ma_read_byte(&ma_cursor);
+	u8 oid = obj_id_for_side_relative_to_move(target);
+	if (oid != 0xFF)
+		objects[oid].bitfield2 &= ~OBJ_BIT2_INVISIBLE;
+}
