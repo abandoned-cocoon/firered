@@ -176,3 +176,5 @@ void gpu_bg_config_set_field(u8 bg_id, u8 field, u8 value) {
 	bg->active = 1;
 	bg->padding = 0;
 }
+
+// 08007434 gpu_find_free_tiles_probably
