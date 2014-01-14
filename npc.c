@@ -106,7 +106,7 @@ void sub_805BCEC(u16 x, u16 y, u8 direction) {
     return 1;
 }
 
-struct coro_args_0805CD0C {
+struct task_args_0805CD0C {
     enum mode_0805CD0C {
         ZERO = 0,
         ONE = 1,
@@ -118,18 +118,18 @@ struct coro_args_0805CD0C {
 
 // 0805CCD0
 void sub_805CCD0(u8 npc_id, u8 direction) {
-    u8 cid = coro_add(&coro_805CD0C, 0xFF);
-    struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &coro[cid].args;
+    u8 cid = task_add(&task_805CD0C, 0xFF);
+    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &task[cid].args;
     args.npc_id = npc_id;
     args.direction = direction;
-    coro_805CD0C(&coro[cid]);
+    task_805CD0C(&task[cid]);
 }
 
 // 0805CD0C
-void coro_805CD0C(u8 cid) {
+void task_805CD0C(u8 cid) {
     struct npc_state *player_npc, *other_npc;
-    struct coro_t *c = &coro[cid];
-    struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &c->args;
+    struct task_t *c = &task[cid];
+    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &c->args;
     do {
         player_npc = npc_states[walkrun.npc_id];
          other_npc = npc_states[  args->npc_id];
@@ -137,8 +137,8 @@ void coro_805CD0C(u8 cid) {
 }
 
 // 0805CD64
-bool sub_805CD64_mode_0(struct coro_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
-    struct coro_args_0805CD0C *args = (struct coro_args_0805CD0C *) &c->args;
+bool sub_805CD64_mode_0(struct task_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &c->args;
 
     script_env_2_enable();
     walkrun.lock = 1;
@@ -147,14 +147,14 @@ bool sub_805CD64_mode_0(struct coro_t* c, struct npc_state* player_npc, struct n
 }
 
 // 0805CD84
-bool sub_805CD84_mode_1(struct coro_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+bool sub_805CD84_mode_1(struct task_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
     // TODO
     args->mode++; // from 1 to 2
     return 0;
 }
 
 // 0805CE20
-bool sub_805CE20_mode_2(struct coro_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+bool sub_805CE20_mode_2(struct task_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
     if (npc_get_bit7_or_const_x10_when_inactive(player_npc) == 0) return 0;
     if (npc_get_bit7_or_const_x10_when_inactive(other_npc) == 0) return 0;
     npc_destruct_when_bit7_is_set(player_npc);
@@ -165,14 +165,14 @@ bool sub_805CE20_mode_2(struct coro_t* c, struct npc_state* player_npc, struct n
 
     walkrun.lock = 0;
     script_env_2_disable();
-    u8 cid = coro_find_id_by_funcptr(&coro_805CD0C);
-    coro_del(cid);
+    u8 cid = task_find_id_by_funcptr(&task_805CD0C);
+    task_del(cid);
 
     return 0;
 }
 
 // 0835B8A0
-bool (off_835B8A0[])(struct coro_t*, struct npc_state*, struct npc_state*) = {
+bool (off_835B8A0[])(struct task_t*, struct npc_state*, struct npc_state*) = {
     &sub_805CD64_mode_0,
     &sub_805CD84_mode_1,
     &sub_805CE20_mode_2

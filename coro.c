@@ -1,5 +1,5 @@
 /* Usage of CORO_PRIV:
-	void coro_FOOBAR(coro_id c) {
+	void task_FOOBAR(task_id c) {
 		typedef struct {
 			u32 privdata1;
 			u8  privdata2;
@@ -11,108 +11,108 @@
 		...
 	}
 */
-#define CORO_PRIV priv_t; priv_t *priv = (priv_t*) &coro[c]->priv
+#define CORO_PRIV priv_t; priv_t *priv = (priv_t*) &task[c]->priv
 
 #define NUM_COROS 16
 
-typedef u8 coro_id;
+typedef u8 task_id;
 
-struct coro_t {
-	void (*funcptr)(coro_id);
+struct task_t {
+	void (*funcptr)(task_id);
 	u8 in_use;
-	coro_id prev;
-	coro_id next;
+	task_id prev;
+	task_id next;
 	u8 priority;
 	u16 args[16];
 };
 
-struct coro_t coro[16];
+struct task_t task[16];
 
 // 0807741C
-coro_id coro_add(void (*funcptr)(coro_id), u8 priority) {
-	for (coro_id c=0; c<NUM_COROS; c++) {
-		if (coro[c]->in_use) continue;
-		coro[c].funcptr = funcptr;
-		coro[c].priority = priority;
-		coro_insert_sorted(c);
-		memset(&coro[c].args, 0, sizeof(coro[c].args));
-		coro[c].in_use = 1;
+task_id task_add(void (*funcptr)(task_id), u8 priority) {
+	for (task_id c=0; c<NUM_COROS; c++) {
+		if (task[c]->in_use) continue;
+		task[c].funcptr = funcptr;
+		task[c].priority = priority;
+		task_insert_sorted(c);
+		memset(&task[c].args, 0, sizeof(task[c].args));
+		task[c].in_use = 1;
 		return c;
 	}
 	return 0;
 }
 
 // 08077470
-void coro_insert_sorted(coro_id ins) {
-	coro_id c = coro_get_first();
+void task_insert_sorted(task_id ins) {
+	task_id c = task_get_first();
 	if (c == NUM_COROS) {
-		coro[ins].prev = 0xFE;
-		coro[ins].next = 0xFF;
+		task[ins].prev = 0xFE;
+		task[ins].next = 0xFF;
 		return;
 	}
 
-	for (; coro[c].priority < coro[ins].priority; c = coro[c].next)
-		if (coro[c].next == 0xFF) {
-			coro[c].next = ins;
-			coro[ins].prev = c;
-			coro[ins].next = 0xFF;
+	for (; task[c].priority < task[ins].priority; c = task[c].next)
+		if (task[c].next == 0xFF) {
+			task[c].next = ins;
+			task[ins].prev = c;
+			task[ins].next = 0xFF;
 			return;
 		}
 
-	coro_id prev = coro[c].prev;
-	coro_id next = c;
-	coro[ins].prev = prev;
-	coro[ins].next = next;
-	if (prev != 0xFE) coro[prev].next = ins;
-	if (next != 0xFF) coro[next].prev = ins;
+	task_id prev = task[c].prev;
+	task_id next = c;
+	task[ins].prev = prev;
+	task[ins].next = next;
+	if (prev != 0xFE) task[prev].next = ins;
+	if (next != 0xFF) task[next].prev = ins;
 }
 
 // 08077508
-void coro_del(coro_id c) {
-	if (coro[c].in_use == false) return;
-	coro[c].in_use = false;
-	coro_id prev = coro[c].prev;
-	coro_id next = coro[c].next;
-	if (prev != 0xFE) coro[prev].next = next;
-	if (next != 0xFF) coro[next].prev = prev;
+void task_del(task_id c) {
+	if (task[c].in_use == false) return;
+	task[c].in_use = false;
+	task_id prev = task[c].prev;
+	task_id next = task[c].next;
+	if (prev != 0xFE) task[prev].next = next;
+	if (next != 0xFF) task[next].prev = prev;
 }
 
 // 08077578
-void coro_exec() {
-	coro_id c = coro_get_first();
+void task_exec() {
+	task_id c = task_get_first();
 	if (c == NUM_COROS) return;
 	while (c != 0xFF) {
-		coro[c].funcptr(c);
-		c = coro[c].next;
+		task[c].funcptr(c);
+		c = task[c].next;
 	}
 }
 
 // 080775A8
-coro_id coro_get_first() {
-	for (coro_id c=0; c<NUM_COROS; c++)
-		if (coro[c].in_use && coro[c].prev == 0xFE) break;
+task_id task_get_first() {
+	for (task_id c=0; c<NUM_COROS; c++)
+		if (task[c].in_use && task[c].prev == 0xFE) break;
 	return c;
 }
 
 // 080775E4
-void coro_null(coro_id c) {
+void task_null(task_id c) {
 	// nothing
 }
 
 // two functions missing here
 
 // 08077650
-bool coro_is_running(void (*funcptr)(coro_id)) {
-	for (coro_id c=0; c<NUM_COROS; c++)
-		if (coro[c]->in_use && coro[c]->funcptr == funcptr)
+bool task_is_running(void (*funcptr)(task_id)) {
+	for (task_id c=0; c<NUM_COROS; c++)
+		if (task[c]->in_use && task[c]->funcptr == funcptr)
 			return true;
 	return false;
 }
 	
 // 08077688
-coro_id coro_find_id_by_funcptr(void (*funcptr)(coro_id)) {
-	for (coro_id c=0; c<NUM_COROS; c++)
-		if (coro[c]->in_use && coro[c]->funcptr == funcptr)
+task_id task_find_id_by_funcptr(void (*funcptr)(task_id)) {
+	for (task_id c=0; c<NUM_COROS; c++)
+		if (task[c]->in_use && task[c]->funcptr == funcptr)
 			return c;
 	return 0xFF;
 }

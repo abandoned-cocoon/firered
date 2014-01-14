@@ -86,7 +86,7 @@ struct door_frame_t *door_frame_last(struct door_frame_t *frames) {
 }
 
 // 0805B1B8
-coro_id coro_overworld_door_add_for_opening_door_at(struct door_t *doors, s16 x, s16 y) {
+task_id task_overworld_door_add_for_opening_door_at(struct door_t *doors, s16 x, s16 y) {
 	u16 blockid = cur_mapdata_get_blockid_at(x, y);
 	struct door_t *door = door_find(doors, blockid);
 	struct door_frame_t *frames;
@@ -94,11 +94,11 @@ coro_id coro_overworld_door_add_for_opening_door_at(struct door_t *doors, s16 x,
 	frames = door->twotiled
 	       ? door_frames_open_twotiled;
 	       : door_frames_open_singletile;
-	return coro_overworld_door_add_if_inactive(door, frames x, y);
+	return task_overworld_door_add_if_inactive(door, frames x, y);
 }
 
 // 0805B210
-coro_id coro_overworld_door_add_for_closing_door_at(struct door_t *doors, s16 x, s16 y) {
+task_id task_overworld_door_add_for_closing_door_at(struct door_t *doors, s16 x, s16 y) {
 	u16 blockid = cur_mapdata_get_blockid_at(x, y);
 	struct door_t *door = door_find(doors, blockid);
 	struct door_frame_t *frames;
@@ -106,5 +106,5 @@ coro_id coro_overworld_door_add_for_closing_door_at(struct door_t *doors, s16 x,
 	frames = door->twotiled
 	       ? door_frames_close_twotiled;
 	       : door_frames_close_singletile;
-	return coro_overworld_door_add_if_inactive(door, frames x, y);
+	return task_overworld_door_add_if_inactive(door, frames x, y);
 }

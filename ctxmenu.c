@@ -1,4 +1,4 @@
-typedef void (*cvptr)(coro_id);
+typedef void (*cvptr)(task_id);
 
 struct ctxmenuentry {
     char *label;
@@ -11,27 +11,27 @@ bool sub_08070588() {
 }
 
 // 0811FA78
-void sub_0811FA78(coro_id c) {
+void sub_0811FA78(task_id c) {
     sub_08070588(~1, ~2, 0, 0x10, 0);
-    coro[c].func = coro_0811FAB4;
+    task[c].func = task_0811FAB4;
 }
 
 // 08122D4C
-void ctxmenu_summary(coro_id c) {
+void ctxmenu_summary(task_id c) {
     sound_play(5);
     ptr_brmo2->field_4 = sub_08122D78;
     sub_0811FA78(c);
 }
 
 // 08122D4C
-void ctxmenu_store(coro_id c) {
+void ctxmenu_store(task_id c) {
     sound_play(5);
     var_8004 = (i16)(i8)brm->pokesel1;
     sub_0811FA78(c);
 }
 
 // 081240F4
-void ctxmenu_shift_sendout(coro_id c) {
+void ctxmenu_shift_sendout(task_id c) {
     sound_play(5);
     sub_08121CE4(ptr_brmo2->field_C);
     if (sub_08127AC0() == 1)
@@ -39,7 +39,7 @@ void ctxmenu_shift_sendout(coro_id c) {
     else {
         sub_08121CE4(ptr_brmo2->field_D);
         sub_081202F8(displayed_string, 1);
-        coro[c].func = coro_081203B8;
+        task[c].func = task_081203B8;
     }
 }
 
