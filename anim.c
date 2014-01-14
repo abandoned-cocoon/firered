@@ -40,12 +40,12 @@ coords8 negative_half_oam_size[] = {
 };
 
 // 080073DC
-void oam_delete(struct oamt *o) {
-	memcpy(o, oam_empty, sizeof(struct oamt));
+void oam_delete(struct obj *o) {
+	memcpy(o, oam_empty, sizeof(struct obj));
 }
 
 // 080073F0
-void oam_center(struct oamt *o, u8 shape, u8 size, u32 oamflags) {
+void oam_center(struct obj *o, u8 shape, u8 size, u32 oamflags) {
 	coords8 *c = &negative_half_oam_size[shape*4+size];
 	if(oamflags & DOUBLESIZE) {
 		o->pos_neg_center.x = c->x*2;
@@ -66,7 +66,7 @@ void copy_queue_add_oamframe(u16 idx, u16 oam_attr2, struct gfxentry_t *gfx_tabl
  }
 
 // 0800786C
-void anim_player_2(struct oamt *o) {
+void anim_player_2(struct obj *o) {
 	o->anim_frame = 0; // ??
 	o->bitfield &= ~0x10;
 	o->field_2D = 0;
@@ -79,7 +79,7 @@ void anim_player_2(struct oamt *o) {
 }
 
 // 0800795C
-void anim_player_1(struct oamt *o) {
+void anim_player_1(struct obj *o) {
 	u8 adc = o->anim_delay_countdown;
 	if (adc & 0x3F == 0) {
 		if (adc & 0x40 == 0) {
@@ -92,13 +92,13 @@ void anim_player_1(struct oamt *o) {
 		oam_anim_delay_progress(o);
 		struct animframe_t *frame = &OAM_FRAME(o);
 		if (o->oam.attr0 & 0x100 == 0) { // no rotate/scale
-			oamt_set_horizonal_and_vertical_flip(o, frame->hflip, frame->vflip);
+			obj_set_horizonal_and_vertical_flip(o, frame->hflip, frame->vflip);
 		}
 	}
 }
 
 // 080079FC
-void animcmd_03_normal_frame(struct oamt *o) {
+void animcmd_03_normal_frame(struct obj *o) {
 	struct animframe_t *frame = &OAM_FRAME(o);
 	u32 data 	= frame->data;
 	u8 duration = frame->duration;
@@ -108,7 +108,7 @@ void animcmd_03_normal_frame(struct oamt *o) {
 	o->anim_delay_countdown |= 0x3F & duration;
 
 	if (o->oam.attr0 & 0x100 == 0) { // no rotate/scale
-		oamt_set_horizonal_and_vertical_flip(o, frame->hflip, frame->vflip);
+		obj_set_horizonal_and_vertical_flip(o, frame->hflip, frame->vflip);
 	}
 	if (o->bitfield & 0x40) {
 		// set oam-start-tile to data + data_offset
@@ -121,13 +121,13 @@ void animcmd_03_normal_frame(struct oamt *o) {
 }
 
 // 08007AA8
-void animcmd_02_stop(struct oamt *o) {
+void animcmd_02_stop(struct obj *o) {
 	o->anim_frame--;
 	o->bitfield |= 0x10;
 }
 
 // 08231D28
-void (*animcmds[])(struct oamt *) = {
+void (*animcmds[])(struct obj *) = {
 	&animcmd_00_unknown,     // FFFD -3
 	&animcmd_01_loop_point,  // FFFE -2
 	&animcmd_02_stop,        // FFFF -1
