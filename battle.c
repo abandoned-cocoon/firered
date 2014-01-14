@@ -105,6 +105,7 @@ struct battle_config_entry tb_format_6_8[] = {
 	{&battle_next_scr_command, END}
 };
 
+// 08080228
 char *actual_battle(char *cursor) {
 	battle_init();
 	u8 battle_type = cursor[0];
@@ -153,6 +154,7 @@ void battle_80801F0() {
 	scripting_npc = npc_id_by_local_id(sav1->location.bank, sav1->location.map);
 }
 
+// 08080168
 u8 *battle_load_arguments(struct battle_config_entry *bce, u8 *cursor) {
 	while (1) {
 		switch (bce->target_type) {
