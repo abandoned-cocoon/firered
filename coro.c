@@ -1,19 +1,19 @@
-/* Usage of CORO_PRIV:
+/* Usage of TASK_PRIV:
 	void task_FOOBAR(task_id c) {
 		typedef struct {
 			u32 privdata1;
 			u8  privdata2;
 			u16 privdata3[4];
 			void *privdata4;
-		} CORO_PRIV;
+		} TASK_PRIV;
 		...
 		foobar(priv->privdata4);
 		...
 	}
 */
-#define CORO_PRIV priv_t; priv_t *priv = (priv_t*) &task[c]->priv
+#define TASK_PRIV priv_t; priv_t *priv = (priv_t*) &task[c]->priv
 
-#define NUM_COROS 16
+#define NUM_TASKS 16
 
 typedef u8 task_id;
 
@@ -30,7 +30,7 @@ struct task_t task[16];
 
 // 0807741C
 task_id task_add(void (*funcptr)(task_id), u8 priority) {
-	for (task_id c=0; c<NUM_COROS; c++) {
+	for (task_id c=0; c<NUM_TASKS; c++) {
 		if (task[c]->in_use) continue;
 		task[c].funcptr = funcptr;
 		task[c].priority = priority;
@@ -45,7 +45,7 @@ task_id task_add(void (*funcptr)(task_id), u8 priority) {
 // 08077470
 void task_insert_sorted(task_id ins) {
 	task_id c = task_get_first();
-	if (c == NUM_COROS) {
+	if (c == NUM_TASKS) {
 		task[ins].prev = 0xFE;
 		task[ins].next = 0xFF;
 		return;
@@ -80,7 +80,7 @@ void task_del(task_id c) {
 // 08077578
 void task_exec() {
 	task_id c = task_get_first();
-	if (c == NUM_COROS) return;
+	if (c == NUM_TASKS) return;
 	while (c != 0xFF) {
 		task[c].funcptr(c);
 		c = task[c].next;
@@ -89,7 +89,7 @@ void task_exec() {
 
 // 080775A8
 task_id task_get_first() {
-	for (task_id c=0; c<NUM_COROS; c++)
+	for (task_id c=0; c<NUM_TASKS; c++)
 		if (task[c].in_use && task[c].prev == 0xFE) break;
 	return c;
 }
@@ -103,7 +103,7 @@ void task_null(task_id c) {
 
 // 08077650
 bool task_is_running(void (*funcptr)(task_id)) {
-	for (task_id c=0; c<NUM_COROS; c++)
+	for (task_id c=0; c<NUM_TASKS; c++)
 		if (task[c]->in_use && task[c]->funcptr == funcptr)
 			return true;
 	return false;
@@ -111,7 +111,7 @@ bool task_is_running(void (*funcptr)(task_id)) {
 	
 // 08077688
 task_id task_find_id_by_funcptr(void (*funcptr)(task_id)) {
-	for (task_id c=0; c<NUM_COROS; c++)
+	for (task_id c=0; c<NUM_TASKS; c++)
 		if (task[c]->in_use && task[c]->funcptr == funcptr)
 			return c;
 	return 0xFF;
