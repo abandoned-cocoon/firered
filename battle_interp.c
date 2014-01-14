@@ -433,7 +433,7 @@ u8 b_oamid[NUM_BATTLE_SIDES];
 
 void bt1_29_blink_for_damage() {
 	u8 oamid = b_oamid[b_active_side];
-	struct oamt *o = &objects[oamid];
+	struct obj *o = &objects[oamid];
 	if (o->bitfield2 & 0x7) {
 		bx_busy = true;
 		o->priv3 = 0;
@@ -453,7 +453,7 @@ void bt1_29_blink_for_damage() {
 
 void bx1_blink_for_damage() {
 	u8 oamid = b_oamid[b_active_side];
-	struct oamt *o = &objects[oamid];
+	struct obj *o = &objects[oamid];
 	u8 t = o->priv3;  // time that passed
 	if (t >= 0x20) {  // for 20 frames
 		if (t%4 == 0) // every fourth frame

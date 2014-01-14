@@ -250,11 +250,11 @@ void c1_overworld() {
 void c2_ov_basic() {
     script_something();
     task_exec();
-    oamt_exec();
+    obj_exec();
     camera_update();
     sub_8115798();
     sub_805AE28();
-    oamt_sync_something();
+    obj_sync_something();
     sub_80704D0();
     sub_806FFBC();
     sub_80F67B8();

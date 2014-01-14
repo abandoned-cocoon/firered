@@ -60,15 +60,15 @@ struct npc_type {
 };
 
 // 080083C0
-void sub_80083C0(struct oamt *oamt, u8 f) {
-    oamt.anim_frame = f-1;
-    u8 q = oamt.field_2C & 0x40;
-    oamt.field_2C &= ~0x41;
-    oamt.bitfield &= ~0x17;
-    anim_player_1(oamt);
-    if (oamt.field_2C & 0xC0) {
+void sub_80083C0(struct obj *obj, u8 f) {
+    obj.anim_frame = f-1;
+    u8 q = obj.field_2C & 0x40;
+    obj.field_2C &= ~0x41;
+    obj.bitfield &= ~0x17;
+    anim_player_1(obj);
+    if (obj.field_2C & 0xC0) {
     }
-    oamt.field_2C |= q;
+    obj.field_2C |= q;
 }
 
 // 0805B4D4
@@ -206,11 +206,11 @@ bool npc_does_height_match(struct npc_state *npc, u8 height) {
     return false;
 }
 
-#define AN(name) bool an_##name(struct npc_state *npc, struct oamt *oamt)
-typedef bool (*anptr)(struct npc_state *npc, struct oamt *oamt);
+#define AN(name) bool an_##name(struct npc_state *npc, struct obj *obj)
+typedef bool (*anptr)(struct npc_state *npc, struct obj *obj);
 
 AN(xxx0) {                        return true; } // 08067930
-AN(xxx1) { oamt.field_2C |= 0x40; return true; } // 08067934
+AN(xxx1) { obj.field_2C |= 0x40; return true; } // 08067934
 
 AN(look1_dn) { an_look_any(1); return true; } // 08064638
 AN(look1_up) { an_look_any(2); return true; } // 08064648
@@ -237,15 +237,15 @@ anptr an_walk_up[] = { an_walk_up_1, an_walk_up_2, an_xxx1 }; // 083A68D4
 anptr an_walk_lf[] = { an_walk_lf_1, an_walk_lf_2, an_xxx1 }; // 083A68E0
 anptr an_walk_rt[] = { an_walk_rt_1, an_walk_rt_2, an_xxx1 }; // 083A68EC
 
-AN(run_dn_1) { an_run_any(npc, oamt, 1, 1); return an_run_dn_2(npc, oamt); } // 080652CC
-AN(run_up_1) { an_run_any(npc, oamt, 2, 1); return an_run_up_2(npc, oamt); } // 080652EC
-AN(run_lf_1) { an_run_any(npc, oamt, 3, 1); return an_run_lf_2(npc, oamt); } // 080652FC
-AN(run_rt_1) { an_run_any(npc, oamt, 4, 1); return an_run_rt_2(npc, oamt); } // 0806530C
+AN(run_dn_1) { an_run_any(npc, obj, 1, 1); return an_run_dn_2(npc, obj); } // 080652CC
+AN(run_up_1) { an_run_any(npc, obj, 2, 1); return an_run_up_2(npc, obj); } // 080652EC
+AN(run_lf_1) { an_run_any(npc, obj, 3, 1); return an_run_lf_2(npc, obj); } // 080652FC
+AN(run_rt_1) { an_run_any(npc, obj, 4, 1); return an_run_rt_2(npc, obj); } // 0806530C
 
-AN(run_dn_2) { return npc_ministep_and_modify_priv1(npc, oamt) && (oamt->private4 = 2, true); } // 080652EC
-AN(run_up_2) { return npc_ministep_and_modify_priv1(npc, oamt) && (oamt->private4 = 2, true); } // 0806530C
-AN(run_lf_2) { return npc_ministep_and_modify_priv1(npc, oamt) && (oamt->private4 = 2, true); } // 0806532C
-AN(run_rt_2) { return npc_ministep_and_modify_priv1(npc, oamt) && (oamt->private4 = 2, true); } // 0806534C
+AN(run_dn_2) { return npc_ministep_and_modify_priv1(npc, obj) && (obj->private4 = 2, true); } // 080652EC
+AN(run_up_2) { return npc_ministep_and_modify_priv1(npc, obj) && (obj->private4 = 2, true); } // 0806530C
+AN(run_lf_2) { return npc_ministep_and_modify_priv1(npc, obj) && (obj->private4 = 2, true); } // 0806532C
+AN(run_rt_2) { return npc_ministep_and_modify_priv1(npc, obj) && (obj->private4 = 2, true); } // 0806534C
 
 anptr an_run_dn[] = { an_run_dn_1, an_run_dn_2, an_xxx1 }; // 083A69D0
 anptr an_run_up[] = { an_run_up_1, an_run_up_2, an_xxx1 }; // 083A69DC
@@ -320,20 +320,20 @@ void player_get_pos_to(u16 x, u16 y) {
 
 // 08064788
 bool npc_ministep_and_modify_priv1(struct npc_states *npc, struct oam_t *oam) {
-    if (!oamt_npc_ministep(oam))
+    if (!obj_npc_ministep(oam))
         // stepping continues
         return false;
     // step done, npc is on it's target position
     npc->from.x = npc->to.x;
     npc->from.y = npc->to.y;
     npc->bitfield |= 0x8; // flag for 'on grid' maybe?
-    oamt->private1 |= 0x40;
+    obj->private1 |= 0x40;
     return true;
 }
 
 // 080653CC
 bool npc_ministep(struct npc_states *npc, struct oam_t *oam) {
-    if (!oamt_npc_ministep(oam))
+    if (!obj_npc_ministep(oam))
         // stepping continues
         return false;
     // step done, npc is on it's target position
@@ -387,7 +387,7 @@ void step8(struct oam_t *oam, u8 d) {
 }
 
 // 08068B40
-void oamt_npc_ministep_reset(struct oam_t *oam, u16 speed, u16 phase) {
+void obj_npc_ministep_reset(struct oam_t *oam, u16 speed, u16 phase) {
     oam->private5 = 0;
     oam->private6 = speed;
     oam->private7 = phase;
@@ -432,7 +432,7 @@ u16 stepspeed_seq_length[] = {
 };
 
 // 08068B54
-bool oamt_npc_ministep(struct oam_t *oam) {
+bool obj_npc_ministep(struct oam_t *oam) {
     u8   z =  oam->private5;
     u16  s =  oam->private6;
     u16 *i = &oam->private7;
@@ -444,7 +444,7 @@ bool oamt_npc_ministep(struct oam_t *oam) {
 }
 
 // 08068BBC
-void oamt_npc_ministep_set_p5(struct oam_t *oam, u16 _) {
+void obj_npc_ministep_set_p5(struct oam_t *oam, u16 _) {
     oam->private5 = _;
     oam->private6 = 0;
     oam->private7 = 0;
@@ -536,15 +536,15 @@ struct rom_npc *rom_npc_by_nr_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
 }
 
 // 08063554
-void sub_8063554(struct npc_state *npc, struct oamt *oamt, u8 anim_number) {
+void sub_8063554(struct npc_state *npc, struct obj *obj, u8 anim_number) {
     if (npc.field_1 & 0x8) return;
-    oamt.anim_number = anim_number;
-    u8 *tp = animtable_get_tp(oamt.anim_table);
+    obj.anim_number = anim_number;
+    u8 *tp = animtable_get_tp(obj.anim_table);
     if (tp) {
-             if (oamt.anim_frame == tp[4]) oamt.anim_frame = tp[7];
-        else if (oamt.anim_frame == tp[5]) oamt.anim_frame = tp[6];
+             if (obj.anim_frame == tp[4]) obj.anim_frame = tp[7];
+        else if (obj.anim_frame == tp[5]) obj.anim_frame = tp[6];
     }
-    sub_80083C0(oamt, oamt.anim_frame); // decrements anim_frame
+    sub_80083C0(obj, obj.anim_frame); // decrements anim_frame
 }
 
 // 0806CEA0
