@@ -666,6 +666,29 @@ void overworld_draw_block(u32 ttype, u16 *blockdef, u16 pos) {
     side_c[pos+33] = empty;
 }
 
+// 0805B3E0
+void player_step(u8 running2, u16 keypad_new, u16 keypad_held) {
+    struct npc_state *avatar = npc_states[walkrun.npc_id];
+
+    sub_0805CC40(avatar);
+
+    if (walkrun.lock)
+        return;
+    if (player_lock_for_tile_x54_x55_x56_x57()) // always 1 when (walkrun.bitfield & 0x40)
+        return;
+    if (sub_0805B45C(avatar, running2))
+        return;
+
+    npc_clear_strange_bits(avatar);
+    bike_related();
+
+    if (player_override_call()) // always 1 when (walkrun.bitfield & 0x20)
+        return;
+
+    player_step_by_keypad(running2, keypad_new, keypad_held);
+    walkrun_clear_x20_when_running_fast();
+}
+
 // 08069AE4
 void script_env_12_start_and_stuff(u8 *scr) {
 
