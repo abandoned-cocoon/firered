@@ -76,13 +76,16 @@ u8 gpu_bg_config_get_field(u8 bg_id, u8 field) {
 	}
 }
 
+#define GPU_COPY_TILESET 1
+#define GPU_COPY_TILEMAP 2
+
 // 08001298
 s8 gpu_copy_to_vram_by_bgid(u8 bg_id, u16 *src, size_t size, u16 offset, u8 mode) {
 	struct bg_config *conf = &gpu_bg_config[bg_id];
 	if (bg_id >= 4 || !conf->active) return;
-	if (mode == 1) // copy tilemap
+	if (mode == GPU_COPY_TILESET)
 		offset += conf->charbase * 0x4000;
-	else if(mode == 2) // copy tileset
+	else if(mode == GPU_COPY_TILEMAP)
 		offset += conf->screenbase * 0x800;
 	else
 		return -1;
@@ -125,10 +128,20 @@ void gpu_text_mode_and_hide_bgs() {
 }
 
 // 080017D0
-void gpu_copy_to_tileset(u8 bg_id, u16 *src, size_t size, size_t offset) {
+s16 gpu_copy_to_tileset(u8 bg_id, u16 *src, size_t size, size_t offset) {
 	// TODO
 	bool isFullcolor = gpu_bg_config_get_field(5);
-	gpu_copy_to_vram_by_bgid(bg_id, src, size, offset+???, /*copy tileset*/1);
+	u16 q_offset = offset+???;
+	s8 dma_id = gpu_copy_to_vram_by_bgid(bg_id, src, size, q_offset, GPU_COPY_TILESET);
+	if (dma_id == -1)
+		return -1;
+
+	dmas_busy_with_gpu_copy_bitfield[dma_id>>5] |= 1 << (dma_id & 0x1F);
+
+	if (dword_03003D8C == 1)
+		gpu_tile_allocation_bg_edit(bg_id, q_offset>>5, size>>5	, GPU_TAE_OCCUPY);
+
+	return dma_id;
 }
 
 // 080019BC
@@ -175,6 +188,15 @@ void gpu_bg_config_set_field(u8 bg_id, u8 field, u8 value) {
 	}
 	bg->active = 1;
 	bg->padding = 0;
+}
+
+#define MOD_SET 0
+#define MOD_ADD 1
+#define MOD_SUB 2
+
+// 08001B90
+void bgid_mod_x_offset(u8 bgid, s32 value, u8 mode) {
+	// TODO
 }
 
 // 08007434 gpu_find_free_tiles_probably
