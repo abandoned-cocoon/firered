@@ -106,3 +106,31 @@ void render_prev_quest_text_if_appropriate() {
 	if (byte_203ADFA == 2)
 		render_previous_quest_text(prev_quest_display_number);
 }
+
+// 08114710
+void prev_quest_write_x10_union_room(u8 *cursor) {
+	cursor[0] = 0x10;
+	cursor[2] = word_0203AF98 & 0xFF;
+	cursor[3] = word_0203AF98 >> 8;
+	return cursor+4;
+}
+
+// 08114724
+void prev_quest_read_x10_union_room(u8 *cursor) {
+	fdecoder(displayed_string, "Mingled with other TRAINERS in the UNION ROOM.");
+	return cursor + 4;
+}
+
+// 08114744
+void prev_quest_write_x11_chat_with_trainers(u8 *cursor) {
+	cursor[0] = 0x11;
+	cursor[2] = word_0203AF98 & 0xFF;
+	cursor[3] = word_0203AF98 >> 8;
+	return cursor+4;
+}
+
+// 08114758
+void prev_quest_read_x10_chat_with_trainers(u8 *cursor) {
+	fdecoder(displayed_string, "Chatted with many TRAINERS.");
+	return cursor + 4;
+}

@@ -62,7 +62,7 @@ u8 template_read(u8 oid, struct proto_t *proto, u16 x, u16 y, u8 arg4) {
 }
 
 // 080071EC
-u8 template_instanciate(struct proto_t *proto, u16 x, u16 y, u8 arg3) {
+u8 template_instanciate_and_run_once(struct proto_t *proto, u16 x, u16 y, u8 arg3) {
 
 	for (u8 i = 0; i<NUM_OBJS; i++) {
 		void *o = &objects[i];
