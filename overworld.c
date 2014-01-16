@@ -358,6 +358,7 @@ bool map_loading_iteration(u8 *state, u32 arg1) {
 
     case 4:
         mli4_mapscripts_and_other();
+            // this is where npc_state[0] is filled for the player
         sub_8057114();
         if (byte_203ADFA != 2) {
             sub_80CC534();
