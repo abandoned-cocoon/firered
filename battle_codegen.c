@@ -10,7 +10,7 @@ void b_prepare_buffer(u8 dst_id, u8 *src, u16 length) {
 		return b_prepare_buffer_wireless(dst_id, src, length);
 
 	if (dst_id >= 2) return;
-	u8 (*dst_buffer)	[0x200] = dst_id ? b_buffer_B : b_buffer_A;
+	u8 (*dst_buffer)[0x200] = dst_id ? b_buffer_B : b_buffer_A;
 	u8 *dst = &dst[b_active_side];
 	memcpy(dst, src, length);
 }

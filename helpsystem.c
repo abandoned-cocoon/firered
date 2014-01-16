@@ -40,6 +40,25 @@ char *help_top_item_labels[6] = {
 	"EXIT"
 };
 
+// CONTEXT 0xE (example)
+
+	// 0845B6BF
+	u8 help_0E_0[] = {
+		2, // What should I be doing?
+		3, // I can't get out of a room.
+		4, // I can't find the person I want.
+		0xFF
+	};
+
+	// 0845B6C3
+	u8 help_0E_3[] = {
+		1, // The HELP System
+		2, // The game
+		3, // Wireless Adapter
+		7, // What are Pokemon
+		0xFF
+	};
+
 // 0845C4B0
 u8 help_top_item_permutation[6] = {
 	3, 0, 1, 2, 4, 5
