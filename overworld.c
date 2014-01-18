@@ -255,9 +255,9 @@ void c2_ov_basic() {
     sub_8115798();
     sub_805AE28();
     obj_sync_something();
-    sub_80704D0();
+    fade_and_return_progress_probably();
     sub_806FFBC();
-    sub_80F67B8();
+    tilemaps_sync();
 }
 
 // 080565A8
