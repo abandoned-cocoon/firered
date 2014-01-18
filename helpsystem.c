@@ -27,8 +27,10 @@ struct help_top_item {
 //  0x19: in double trainer battle
 //  0x1A: in safari battle
 
-// 0203B0EC
-u16 help_system_context;
+
+u16 help_system_context; // 0203B0EC
+u16 help_system_context_backup; // 03005EA0
+u8 help_system_enabled; // 03005ECC
 
 // 0845B080
 char *help_top_item_labels[6] = {
@@ -103,6 +105,33 @@ u8 help_top_item_visibility[36][6] = {
 	{0, 1, 0, 0, 0, 1}, // 0x34
 	{0, 0, 0, 0, 0, 0}, // 0x35
 };
+
+// 0812B220
+void help_context_by_var_8004__sp17D() {
+	help_system_context = var_8004;
+}
+
+// 0812B234
+void help_system_context_backup__sp17E() {
+	help_system_context_backup = help_system_context;
+}
+
+// 0812B248
+void help_system_context_restore__sp17F() {
+	help_system_context = help_system_context_backup;
+}
+
+// 0812B478
+void help_system_disable__sp198() {
+	help_system_enabled = true;
+}
+
+// 0812B484
+void help_system_enable_unless_flashback__sp199() {
+	if (prev_quest_mode >= 2 && prev_quest_mode < 4)
+		return;
+	help_system_enabled = true;
+}
 
 // 0812B520
 void sub_0812B520(u16 *arg, struct help_top_item *items) {
