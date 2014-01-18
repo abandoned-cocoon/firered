@@ -1,3 +1,7 @@
+// 03000FC8
+u8 oe_active_list[32];
+
+
 // 08083444
 u32 oe_exec(u8 num) {
 	u32 retval;
@@ -140,20 +144,33 @@ void sub_08083754(...) {
 
 // 080837AC
 void oe_active_list_clear() {
-	// TODO
+	for (u32 i=0; i<32; i++)
+		oe_active_list[i] = 0xFF;
 }
 
 // 080837D0
 void oe_active_list_add(u8 num) {
-	// TODO
+	for (u32 i=0; i<32; i++)
+		if (oe_active_list[i] == 0xFF) {
+			oe_active_list[i] = num;
+			return;
+		}
+
 }
 
 // 080837FC
 void oe_active_list_remove(u8 num) {
-	// TODO
+	for (u32 i=0; i<32; i++)
+		if (oe_active_list[i] == num) {
+			oe_active_list[i] = 0xFF;
+			return;
+		}
 }
 
 // 0808382C
 bool oe_active_list_contains(u8 num) {
-	// TODO
+	for (u32 i=0; i<32; i++)
+		if (oe_active_list[i] == num)
+			return true;
+	return false;
 }
