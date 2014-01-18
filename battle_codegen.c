@@ -15,7 +15,7 @@ void b_prepare_buffer(u8 dst_id, u8 *src, u16 length) {
 	memcpy(dst, src, length);
 }
 
-// 0800DFA4
+// 0800DFA4 (getattr)
 void bt_00_emit(u8 target, u8 a, u8 b) {
 	b_codegen_buffer[0] = 0x00;
 	b_codegen_buffer[1] = a;
@@ -24,7 +24,7 @@ void bt_00_emit(u8 target, u8 a, u8 b) {
 	b_prepare_buffer(target, b_codegen_buffer, 4);
 }
 
-// 0800DFC8
+// 0800DFC8 (setattr)
 void bt_01_emit(u8 target, u8 a, u8 b) {
 	b_codegen_buffer[0] = 0x01;
 	b_codegen_buffer[1] = a;
@@ -247,7 +247,7 @@ void bt_17_emit(u8 target) {
 	b_prepare_buffer(target, b_codegen_buffer, 4);
 }
 
-// 0800E5EC
+// 0800E5EC (healthbar update)
 void bt_18_emit(u8 target, u8 a) {
 	b_codegen_buffer[0] = 0x18;
 	b_codegen_buffer[1] = 0;
@@ -256,7 +256,166 @@ void bt_18_emit(u8 target, u8 a) {
 	b_prepare_buffer(target, b_codegen_buffer, 4);
 }
 
+// 0800E624
+void bt_19_emit(u8 target, u8 a, u16 bb) {
+	b_codegen_buffer[0] = 0x19;
+	b_codegen_buffer[1] = a;
+	b_codegen_buffer[2] = b;
+	b_codegen_buffer[3] = b >> 8;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+// 0800E658
+void bt_1A_emit(u8 target, u32 a, u32 b) {
+	b_codegen_buffer[0] = 0x1A;
+	b_codegen_buffer[1] = a;
+	b_codegen_buffer[2] = a >> 8;
+	b_codegen_buffer[3] = a >> 16;
+	b_codegen_buffer[4] = a >> 24;
+	b_codegen_buffer[5] = b;
+	b_codegen_buffer[6] = b >> 8;
+	b_codegen_buffer[7] = b >> 16;
+	b_codegen_buffer[8] = b >> 24;
+	b_prepare_buffer(target, b_codegen_buffer, 9);
+}
+
+// 0800E6AC
+void bt_1B_emit(u8 target, u32 a, u8 b) {
+	b_codegen_buffer[0] = 0x1A;
+	b_codegen_buffer[1] = a;
+	b_codegen_buffer[2] = a >> 8;
+	b_codegen_buffer[3] = a >> 16;
+	b_codegen_buffer[4] = a >> 24;
+	b_codegen_buffer[5] = b;
+	b_prepare_buffer(target, b_codegen_buffer, 6);
+}
+
+// 0800E6E8
+void bt_1C_emit(u8 target, u8 a) {
+	b_codegen_buffer[0] = 0x1C;
+	b_codegen_buffer[1] = a;
+	b_prepare_buffer(target, b_codegen_buffer, 2);
+}
+
+// 0800E708 (the code can be emmited but isn't implemented by any of the seven tables)
+
 // // //
+
+// 0800E904
+void bt_25_emit(u8 target) {
+	b_codegen_buffer[0] = 0x25;
+	b_codegen_buffer[1] = 0x25;
+	b_codegen_buffer[2] = 0x25;
+	b_codegen_buffer[3] = 0x25;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+// 0800E944
+void bt_27_emit(u8 target) {
+	b_codegen_buffer[0] = 0x27;
+	b_codegen_buffer[1] = 0x27;
+	b_codegen_buffer[2] = 0x27;
+	b_codegen_buffer[3] = 0x27;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+// // //
+
+// 0800E964
+void bt_28_emit(u8 target) {
+	b_codegen_buffer[0] = 0x28;
+	b_codegen_buffer[1] = 0x28;
+	b_codegen_buffer[2] = 0x28;
+	b_codegen_buffer[3] = 0x28;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+// 0800E984
+void bt_29_emit(u8 target) {
+	b_codegen_buffer[0] = 0x29;
+	b_codegen_buffer[1] = 0x29;
+	b_codegen_buffer[2] = 0x29;
+	b_codegen_buffer[3] = 0x29;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+
+// 0800E9A4
+void bt_2A_emit(u8 target) {
+	b_codegen_buffer[0] = 0x2A;
+	b_codegen_buffer[1] = 0x2A;
+	b_codegen_buffer[2] = 0x2A;
+	b_codegen_buffer[3] = 0x2A;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+// // //
+
+// 0800EA1C
+void bt_2D_emit(u8 target) {
+	b_codegen_buffer[0] = 0x2D;
+	b_codegen_buffer[1] = 0x2D;
+	b_codegen_buffer[2] = 0x2D;
+	b_codegen_buffer[3] = 0x2D;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+// 0800EA3C
+void bt_2E_emit(u8 target, u8 environment_index) {
+	b_codegen_buffer[0] = 0x2E;
+	b_codegen_buffer[1] = environment_index;
+	b_prepare_buffer(target, b_codegen_buffer, 2);
+}
+
+// 0800EA5C
+void bt_2F_emit(u8 target) {
+	b_codegen_buffer[0] = 0x2F;
+	b_codegen_buffer[1] = 0x2F;
+	b_codegen_buffer[2] = 0x2F;
+	b_codegen_buffer[3] = 0x2F;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+// 0800EA7C
+void bt_30_emit(u8 target, ...) {
+	// TODO
+}
+
+// 0800EAC4
+void bt_31_emit(u8 target) {
+	b_codegen_buffer[0] = 0x31;
+	b_codegen_buffer[1] = 0x31;
+	b_codegen_buffer[2] = 0x31;
+	b_codegen_buffer[3] = 0x31;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+// 0800EAE4
+void bt_32_emit(u8 target) {
+	b_codegen_buffer[0] = 0x32;
+	b_codegen_buffer[1] = 0x32;
+	b_codegen_buffer[2] = 0x32;
+	b_codegen_buffer[3] = 0x32;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+// 0800EB04
+void bt_33_emit(u8 target, u8 a) {
+	b_codegen_buffer[0] = 0x33;
+	b_codegen_buffer[1] = a;
+	b_codegen_buffer[2] = 0x33;
+	b_codegen_buffer[3] = 0x33;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
+
+// 0800EB28 (move animation)
+void bt_34_emit(u8 target, u8 a, u16 bb) {
+	b_codegen_buffer[0] = 0x34;
+	b_codegen_buffer[1] = a;
+	b_codegen_buffer[2] = b;
+	b_codegen_buffer[3] = b >> 8;
+	b_prepare_buffer(target, b_codegen_buffer, 4);
+}
 
 // 0800EB54
 void bt_35_emit(u8 target, u8 a) {

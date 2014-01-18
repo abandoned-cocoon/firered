@@ -1,3 +1,9 @@
+struct blob_t {
+	u8 *data;
+	u16 size;
+	u16 padding;
+};
+
 struct bg_config {
 	uint active     : 1;
 	uint _          : 1;
