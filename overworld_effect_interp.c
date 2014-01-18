@@ -174,3 +174,15 @@ bool oe_active_list_contains(u8 num) {
 			return true;
 	return false;
 }
+
+// 083CBE30
+bool (*oe_cmds)(u8 **, u32 *) = {
+	&oec00_load_gfx,
+	&oec01_load_pal,
+	&oec02_load_pal,
+	&oec03_call_asm,
+	&oec04_end,
+	&oec05_combined_00_01_03,
+	&oec06_combined_00_03,
+	&oec07_combined_01_03
+};

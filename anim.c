@@ -19,7 +19,7 @@ struct animframe_t {
 typedef struct animframe_t *anim_t;
 typedef struct anim_t *animtable_t;
 
-#define OAM_FRAME(o) o->anim_table[o->anim_number][o->anim_frame]
+#define OBJ_FRAME(o) o->anim_table[o->anim_number][o->anim_frame]
 
 // 08231C85
 coords8 negative_half_oam_size[] = {
@@ -40,12 +40,12 @@ coords8 negative_half_oam_size[] = {
 };
 
 // 080073DC
-void oam_delete(struct obj *o) {
-	memcpy(o, oam_empty, sizeof(struct obj));
+void obj_delete(struct obj *o) {
+	memcpy(o, obj_empty, sizeof(struct obj));
 }
 
 // 080073F0
-void oam_center(struct obj *o, u8 shape, u8 size, u32 oamflags) {
+void obj_center(struct obj *o, u8 shape, u8 size, u32 oamflags) {
 	coords8 *c = &negative_half_oam_size[shape*4+size];
 	if(oamflags & DOUBLESIZE) {
 		o->pos_neg_center.x = c->x*2;
@@ -71,7 +71,7 @@ void anim_player_2(struct obj *o) {
 	o->bitfield &= ~0x10;
 	o->field_2D = 0;
 	// todo
-	struct animframe_t *frame = &OAM_FRAME(o);
+	struct animframe_t *frame = &OBJ_FRAME(o);
 	if (frame->data == -1) // END
 		return;
 
@@ -84,13 +84,13 @@ void anim_player_1(struct obj *o) {
 	if (adc & 0x3F == 0) {
 		if (adc & 0x40 == 0) {
 			o->anim_frame++;
-			i16 data = OAM_FRAME(o).data;
+			i16 data = OBJ_FRAME(o).data;
 			u16 cmd = (data < 0) ? data+3 : 3;
 			animcmds[cmd](o);
 		}
 	} else {
 		oam_anim_delay_progress(o);
-		struct animframe_t *frame = &OAM_FRAME(o);
+		struct animframe_t *frame = &OBJ_FRAME(o);
 		if (o->oam.attr0 & 0x100 == 0) { // no rotate/scale
 			obj_set_horizonal_and_vertical_flip(o, frame->hflip, frame->vflip);
 		}
@@ -99,7 +99,7 @@ void anim_player_1(struct obj *o) {
 
 // 080079FC
 void animcmd_03_normal_frame(struct obj *o) {
-	struct animframe_t *frame = &OAM_FRAME(o);
+	struct animframe_t *frame = &OBJ_FRAME(o);
 	u32 data 	= frame->data;
 	u8 duration = frame->duration;
 
