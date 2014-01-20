@@ -1,13 +1,19 @@
 // variable width font
 
+// 0800486C
+void rboxid_unpack_and_call(u8 rboxid, void *funcptr) {
+	struct rbox_t *r = rboxes[rboxid]
+	funcptr(rboxid, r->x, r->y, r->w, r->h, r->f5)
+}
+
 // 080044A8
-void rboxid_vertical_scroll(u8 rbox_id, u8 direction, u8 delta, u8 background_doublepixel) {
+void rboxid_vertical_scroll(u8 rboxid, u8 direction, u8 delta, u8 background_doublepixel) {
 
 	// direction: 0=up 1=down
 
 	u32 background_row = background_doublepixel * 0x01010101;
 
-	rbox *rbx = &rboxes[rbox_id];
+	rbox *rbx = &rboxes[rboxid];
 	u32 *rrows = (u32*)rbx->pixels; // 4 bytes = 8 nibbles = 8 pixels at 4bpp
 	u32 size = rbx->w*rbx->h * (8*8/2);
 	u32 rbxw = rbx->w;
