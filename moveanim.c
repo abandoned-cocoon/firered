@@ -22,16 +22,16 @@ void ma02_instanciate_template() {
 	maXX_transfer_arguments();
 
 	u8 battle_side = (ctrl & 0x80)
-		? battle_side_of_attacker_ll
-		: battle_side_of_defender_ll;
+		? b_attacker_side_ll
+		: b_defender_side_ll;
 
 	ctrl &= ~80;
 
 	s8 iv = ((ctrl >= 0x40) ? (ctrl-0x40) : (-ctrl)) + sub_0807685C(battle_side);
 	if (iv >= 3) iv = 3;
 
-	u8 t1 = sub_08074480(battle_side_of_defender_ll, 2);
-	u8 t2 = sub_08074480(battle_side_of_defender_ll, 3);
+	u8 t1 = sub_08074480(b_defender_side_ll, 2);
+	u8 t2 = sub_08074480(b_defender_side_ll, 3);
 
 	template_instanciate(template, t1, t2, iv);
 

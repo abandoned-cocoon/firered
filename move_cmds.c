@@ -52,7 +52,7 @@ void mcmd00_0801D760() {
         return;
     }
 
-    struct battle_data *batk = battle_data_4x[battle_side_of_attacker_hl];
+    struct battle_data *batk = battle_data_4x[b_attacker_side_hl];
 
     uint16 b_28 = batk->field_28;
 
@@ -65,7 +65,7 @@ void mcmd00_0801D760() {
     if (sub_080192D4())
         return;
 
-    if (sub_08019F18(2, battle_side_of_defender_hl, 0, 0, 0))
+    if (sub_08019F18(2, b_defender_side_hl, 0, 0, 0))
         return;
 
     if (batk->field_24[byte_02023D48] == 0 &&
@@ -95,18 +95,34 @@ void mcmd00_0801D760() {
 
     dword_02023DD0 |= 0x02000000;
 
-    if ((int5)x_02023E8C[battle_side_of_defender_hl] < 0 &&
+    if ((int5)x_02023E8C[b_defender_side_hl] < 0 &&
         move_data[move_to_execute].flags & MOVE_AFFECTED_BY_MAGIC_COAT) {
-        sub_08016EC8(battle_side_of_attacker_hl,
-                     battle_side_of_defender_hl,
+        sub_08016EC8(b_attacker_side_hl,
+                     b_defender_side_hl,
                      0x115); // 277
-        x_02023E8C[battle_side_of_defender_hl] &= ~0x11;
+        x_02023E8C[b_defender_side_hl] &= ~0x11;
         sub_08017544();
         move_exec_cursor = &movescr_081D8FAA;
         return;
     }
 
     // TO BE CONTINUED
+}
+
+// 0801FA7C
+void mcmd0D_critical_print_message() {
+    // wait for low-level system to be idle
+    if (b_buffers_awaiting_execution_bitfield)
+        return;
+
+    if (b_attack_is_critical != 2)
+        return;
+
+    if (b_attack_effectivity & (B_AE_FAILED | B_AE_NOT_AFFECTED | B_AE_MISSED))
+        return;
+
+    b_std_message(/*A critical hit*/0xD9, b_attacker_side_hl);
+    b_message_shown_maybe = 1;
 }
 
 // 08022650
@@ -142,7 +158,7 @@ void mcmd29_compare_jump_8() {
 }
 
 void mcmd60_08025B74() {
-    if (battle_side_get_owner(battle_side_of_attacker_hl) == 0)
+    if (battle_side_get_owner(b_attacker_side_hl) == 0)
         sub_08054E90(move_exec_cursor[1]);
     move_exec_cursor += 2;
 }
@@ -163,7 +179,7 @@ void mcmd63_continue_with_move() {
 
 // 080267F0
 void mcmd6E_state0_side_becomes_attacker() {
-    battle_side_of_attacker_hl = battle_get_side_with_given_state(0);
+    b_attacker_side_hl = battle_get_side_with_given_state(0);
     move_exec_cursor++;
 }
 
@@ -179,11 +195,11 @@ void mcmd72_flee() {
 
 uint8 get_battle_side_of(uint8 whom) {
     switch (whom) {
-    case 0: return battle_side_of_defender_hl;
-    case 1: return battle_side_of_attacker_hl;
-    case 2: return byte_02023D6E;
+    case 0: return b_defender_side_hl;
+    case 1: return b_attacker_side_hl;
+    case 2: return b_defender_partner_side_hl;
     case 3:
-    case 5: return byte_02023D6D;
+    case 5: return b_defender_partner_side_hl;
     case 10: return byte_02023FC4[0x17];
     case 11: return sub_080751E8(0);
     case 12: return sub_080751E8(1);
