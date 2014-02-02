@@ -3,7 +3,7 @@
 // 0800486C
 void rboxid_unpack_and_call(u8 rboxid, void *funcptr) {
 	struct rbox_t *r = rboxes[rboxid]
-	funcptr(rboxid, r->x, r->y, r->w, r->h, r->f5)
+	funcptr(r->bg_id, r->x, r->y, r->w, r->h, r->f5)
 }
 
 // 080044A8

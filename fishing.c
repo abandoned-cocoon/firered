@@ -36,7 +36,17 @@ bool fishing2(struct task_t *t) {
 
 // 0805D430
 bool fishing3(struct task_t *t) {
-	// TODO
+	box_border_curve_load_tiles_and_pal();
+	u16 *priv = t->priv;
+	priv[0]++;
+	priv[1] = 0;
+	priv[2] = 0;
+	priv[3] = (rand() % 10) + 1;
+	if (priv[12] == 0)
+		priv[3] += 3;
+	if (priv[3] > 10)
+		priv[3] = 10;
+	return true;
 }
 
 // 0805D47C
