@@ -520,7 +520,7 @@ struct npc_type *npc_get_type(u8 type_id) {
 
 // 0805FC5C
 u16 trainerid_by_local_id_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
-    struct rom_npc *rnpc = rom_npc_by_nr_and_map(local_id, mapnr, mapgroup);
+    struct rom_npc *rnpc = (rom_npc_by_nr_and_map(local_id, mapnr, mapgroup));
     return rnpc->trainerid;
 }
 

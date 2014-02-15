@@ -92,13 +92,13 @@ void sub_08083598() {
 // 08083614
 void oec01_load_pal_impl(u8 **cursor) {
 	struct blob_t *bl = oe_read_word(cursor);
-	u16 unk1 = gpu_pal_allocate_maybe(bl->size);
+	u16 pal_tag = gpu_pal_tags_index_of(bl->size);
 	load_palette_1(bl->data);
-	if (unk1 == 0xFF) {
-		u16 unk2 = gpu_pal_allocate_maybe(bl->size);
+	if (pal_tag == 0xFF) {
+		u16 pal_tag = gpu_pal_tags_index_of(bl->size);
 		sub_08083598(unk2);
 	}
-	u16 unk3 = gpu_pal_allocate_maybe(bl->size);
+	u16 unk3 = gpu_pal_tags_index_of(bl->size);
 	sub_0807AA8C(unk3);
 	cursor += 4;
 }
@@ -106,10 +106,10 @@ void oec01_load_pal_impl(u8 **cursor) {
 // 0808365C
 void oec02_load_pal_impl(u8 **cursor) {
 	struct blob_t *bl = oe_read_word(cursor);
-	u16 unk1 = gpu_pal_allocate_maybe(bl->size);
+	u16 unk1 = gpu_pal_tags_index_of(bl->size);
 	load_palette_1(bl->data);
 	if (unk1 == 0xFF) {
-		u16 unk2 = gpu_pal_allocate_maybe(bl->size);
+		u16 unk2 = gpu_pal_tags_index_of(bl->size);
 		sub_08083598(unk2);
 	}
 	cursor += 4;
