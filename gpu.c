@@ -205,8 +205,6 @@ void bgid_mod_x_offset(u8 bgid, s32 value, u8 mode) {
 	// TODO
 }
 
-// 08007434 gpu_find_free_tiles_probably
-
 // 080F6790
 void gpu_tilemaps_sync_none() {
 	bgmaps_that_need_syncing[0] = false;
