@@ -187,11 +187,26 @@ u8 *battle_load_arguments(struct battle_config_entry *bce, u8 *cursor) {
 	}
 }
 
+// 08080424
+bool trainer_flag_check(u16 trainer_id) {
+	return flag_check(trainer_id+0x500);
+}
+
+// 0808043C
+void trainer_flag_set(u16 trainer_id) {
+	flag_set(trainer_id+0x500);
+}
+
+// 08080450
+void trainer_flag_clear(u16 trainer_id) {
+	flag_clear(trainer_id+0x500);
+}
+
 // 08080464
 void trainer_battle_start() {
 	battle_type_flags = BATTLE_TRAINER;
 
-	if (trainerbattle_get_type() == 9)
+	if (trainerbattle_get_type == 9)
 		if (trainerbattle_get_unknown() & 0x3)
 			battle_type_flags |= BATTLE_OAK_COMMENTS;
 
@@ -200,6 +215,27 @@ void trainer_battle_start() {
 	script_env_2_context_set_ctx_paused();
 }
 
+// 080804AC
+void c2_exit_battle_switch() {
+
+	if (trainerbattle_battle_type == 9) {
+		if ((var_800D = battle_exit_is_player_defeat(battle_exit_type))) {
+			if (battle_unknown & 1 == 0) { // this is not a mock battle
+				sp000_heal_pokemon();
+			} else {
+				set_callback2(&c2_whiteout);
+				return;
+			}
+		}
+	} else if (trainerbattle_flag_id == 0x400) {
+		set_callback2(&c2_exit_to_overworld_1_continue_scripts_restart_music);
+		return;
+	}
+
+	set_callback2(&c2_exit_to_overworld_1_continue_scripts_restart_music);
+	sp18F_trainerflag_opponent_set();
+	prev_quest_transcriber();
+}
 
 // 081C555B
 u8 scr_default_after_battle_script[] = {
