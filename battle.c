@@ -1,3 +1,23 @@
+// 0807F690
+void task_add_01_battle_start(u8 priv1, u16 music_id) {
+	u8 tid = task_add(&task01_battle_start, 0x01);
+	tasks[tid].priv[1] = priv1;
+	current_map_music_set__default_for_battle(music_id);
+}
+
+// 0807F868
+void task_add_01_battle_start_with_music_and_stats() {
+	task_add_01_battle_start(song_id_for_battle_alt(), 0);
+	sav12_xor_increment(7);
+	sav12_xor_increment(9);
+}
+
+/* see npc_cmds.c
+	bool s5C_trainer_battle_configure_and_start(struct script_env *);
+	bool s5D_trainer_battle_start(struct script_env *);
+	bool s5E_jump_to_script_scheduled_after_battle(struct script_env *);
+*/
+
 struct {
 	void *target;
 	enum {
@@ -11,10 +31,6 @@ struct {
 	} target_type
 } battle_config_entry;
 
-void s5C_trainerbattle(struct script_state *s) {
-	s->cursor = actual_battle(s->cursor);
-}
-
 // 083C6900
 struct battle_config_entry tb_format_5_other[] = {
 	{&battle_type,             LOAD_8},
@@ -27,7 +43,7 @@ struct battle_config_entry tb_format_5_other[] = {
 	{&battle_message_need_two, ZERO_32},
 	{&battle_message_4,        ZERO_32},
 
-	{&battle_next_scr_command, END}
+	{&battle_after_script,     END}
 };
 
 // 083C6948
@@ -42,7 +58,7 @@ struct battle_config_entry tb_format_1_2[] = {
 	{&battle_message_need_two, ZERO_32},
 	{&battle_message_4,        LOAD_32},
 
-	{&battle_next_scr_command, END}
+	{&battle_after_script,     END}
 };
 
 // 083C6990
@@ -57,7 +73,7 @@ struct battle_config_entry tb_format_4_7[] = {
 	{&battle_message_need_two, LOAD_32},
 	{&battle_message_4,        ZERO_32},
 
-	{&battle_next_scr_command, END}
+	{&battle_after_script,     END}
 };
 
 // 083C69D8
@@ -72,7 +88,7 @@ struct battle_config_entry tb_format_3[] = {
 	{&battle_message_need_two, ZERO_32},
 	{&battle_message_4,        ZERO_32},
 
-	{&battle_next_scr_command, END}
+	{&battle_after_script,     END}
 };
 
 // 083C6A20
@@ -87,7 +103,7 @@ struct battle_config_entry tb_format_9[] = {
 	{&battle_message_need_two, ZERO_32},
 	{&battle_message_4,        ZERO_32},
 
-	{&battle_next_scr_command, END}
+	{&battle_after_script,     END}
 };
 
 // 083C6A68
@@ -102,11 +118,11 @@ struct battle_config_entry tb_format_6_8[] = {
 	{&battle_message_need_two, LOAD_32},
 	{&battle_message_4,        LOAD_32},
 
-	{&battle_next_scr_command, END}
+	{&battle_after_script,     END}
 };
 
 // 08080228
-char *actual_battle(char *cursor) {
+char *battle_configure_by_script(char *cursor) {
 	battle_init();
 	u8 battle_type = cursor[0];
 	struct battle_config_entry *bce[] = {
@@ -168,6 +184,32 @@ u8 *battle_load_arguments(struct battle_config_entry *bce, u8 *cursor) {
 		}
 		bce++:
 	}
+}
+
+// 08080464
+void trainer_battle_start() {
+	battle_type_flags = BATTLE_TRAINER;
+
+	if (trainerbattle_get_type() == 9)
+		if (trainerbattle_get_unknown() & 0x3)
+			battle_type_flags |= BATTLE_OAK_COMMENTS;
+
+	super.callback2backup = &c2_exit_battle_switch;
+	task_add_01_battle_start_with_music_and_stats();
+	script_env_2_context_set_ctx_paused();
+}
+
+
+// 081C555B
+u8 scr_default_after_battle_script[] = {
+	// var0 = 0x081C558D
+	// callstd 3
+};
+
+// 080805E8
+u8 *battle_get_continuation_script() {
+	u8 *scr = battle_next_script;
+	return scr ? scr : scr_default_after_battle_script;
 }
 
 // 083E7CD4
