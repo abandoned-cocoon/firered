@@ -30,7 +30,7 @@ void mainloop() {
 			           | KEYPAD_START
 			           | KEYPAD_SELECT;
 			if (super.buttons_held & pattern == pattern) {
-				// something about link connection
+				// something about resetting the game
 				sub_081E09D4();
 				sub_081E08F8();
 				sub_080008D8();
@@ -82,4 +82,11 @@ void load_keys() {
 			super.buttons_held_remapped |= BUTTON_A;
 	}
 	// TODO
+}
+
+// 08000890
+void wait_for_superbit_eg_vmatch() {
+	volatile u16 *bits = &super.bits_to_wait_for;
+	*bits &= ~1;
+	while (*bits & 1 == 0);
 }
