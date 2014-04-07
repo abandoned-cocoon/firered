@@ -95,7 +95,8 @@ struct battle_config_entry tb_format_3[] = {
 struct battle_config_entry tb_format_9[] = {
 	{&battle_type,             LOAD_8},
 	{&battle_trainer_flag,     LOAD_16},
-	{&battle_arg2,             LOAD_16},
+	{&battle_unknown,          LOAD_16}, // this is read by trainer_battle_start
+	                                     // to add oak's comments (unknown&3) != 0
 
 	{&battle_message_intro,    ZERO_32},
 	{&battle_message_defeat,   LOAD_32},
