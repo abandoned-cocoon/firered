@@ -57,3 +57,29 @@ void mainloop() {
 		wait_for_superbit_eg_vmatch(); // wait for next frame
 	}
 }
+
+// 080005E8
+void load_keys() {
+	u16 _held = (KEYINPUT ^ 0x3FF);
+	u16 _new = _held & ~super.buttons_held;
+
+	super.buttons_new               = _new;
+	super.buttons_new_remapped      = _new;
+	super.buttons_new_and_keyrepeat = _new;
+
+	if (_held == 0 || _held != super.buttons_held_remapped) {
+		super.keypad_countdown = keypad_initial_countdown;
+	} else if (--super.keypad_countdown == 0) {
+		super.buttons_new_and_keyrepeat = _held;
+		super.keypad_countdown = keypad_followup_countdown;
+	}
+
+	if (sav2->options_button_style == L_IS_A) {
+		if (super.buttons_new_remapped & BUTTON_L)
+			super.buttons_new_remapped |= BUTTON_A;
+
+		if (super.buttons_held_remapped & BUTTON_L)
+			super.buttons_held_remapped |= BUTTON_A;
+	}
+	// TODO
+}
