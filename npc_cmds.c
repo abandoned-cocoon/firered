@@ -441,6 +441,29 @@ bool s49_add_item_pc(struct script_env *s) {
 
 // Many commands missing
 
+// see battle.c
+
+// 0806C2C4
+bool s5C_trainer_battle_configure_and_start(struct script_env *s) {
+    // this command jumps to a different script which contains 5D and 5E
+    s->ptr_script = battle_configure_by_script(s->ptr_script);
+    return false;
+}
+
+// 0806C2D8
+bool s5D_trainer_battle_start(struct script_env *s) {
+    trainer_battle_start();
+    return true;
+}
+
+// 0806C2E4
+bool s5E_jump_to_script_scheduled_after_battle(struct script_env *s) {
+    s->ptr_script = battle_get_continuation_script();
+    return false;
+}
+
+// Many commands missing
+
 // 083A7294
 char **fcode_buffers[] = {
     fcode_buffer2,
