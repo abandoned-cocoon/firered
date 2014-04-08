@@ -39,32 +39,6 @@ coords8 negative_half_oam_size[] = {
 	{-16, -32}
 };
 
-// 080073DC
-void obj_delete(struct obj *o) {
-	memcpy(o, obj_empty, sizeof(struct obj));
-}
-
-// 080073F0
-void obj_center(struct obj *o, u8 shape, u8 size, u32 oamflags) {
-	coords8 *c = &negative_half_oam_size[shape*4+size];
-	if(oamflags & DOUBLESIZE) {
-		o->pos_neg_center.x = c->x*2;
-		o->pos_neg_center.y = c->y*2;
-	} else {
-		o->pos_neg_center.x = c->x;
-		o->pos_neg_center.y = c->y;
-	}
-}
-
-// 0800766C
-void copy_queue_add_oamframe(u16 idx, u16 oam_attr2, struct gfxentry_t *gfx_table) {
-	u8 i = copy_queue_cursor;
-	if (i >= 0x40) return;
-	copy_queue[i].src = gfx_table[idx]->data;
-	copy_queue[i].dst = 0x06010000 + (oam_attr2<<5);
-	copy_queue[i].len = gfx_table[idx]->size;
- }
-
 // 0800786C
 void anim_player_2(struct obj *o) {
 	o->anim_frame = 0; // ??
