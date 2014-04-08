@@ -1,8 +1,8 @@
 #define NUM_OBJS 0x40
 
 struct proto_t {
-	u16 field_0;
-	u16 pal_num_maybe;
+	u16 tile_tag;
+	u16 pal_tag;
 	gpu_sprite *sprite; // a.k.a. OAM
 	struct animtable_t *anim_table_1;
 	struct gfxentry_t  *gfx_table;
