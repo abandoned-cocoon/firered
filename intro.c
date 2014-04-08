@@ -121,3 +121,130 @@ void task03_intro_sys(u8 tid) {
 
 // 080EDAD8
 // TBC
+
+// 080EDAF0
+// sub_080EDAF0 (intro 9 sub)
+
+// 080EDB70
+// sub_080EDB70 (intro 9 sub)
+
+// 080EDBAC
+// sub_080EDBAC (intro 9 sub)
+
+// 080EDBE8
+void intro_end(struct intro *in) {
+	if (in->field4 == 0) {
+		sub_08070424(0, 0, 0x400);
+		in->field4 = 1;
+	} else if (in->field4 == 1) {
+		if (sub_080F682C() == 0) {
+			task_del(in->tid);
+			free(in);
+			sub_08000B94(2);
+			hblank_handler_set(0);
+			set_callback2(&c2_intro_2);
+		}
+	}
+}
+
+// 080EDC40
+// spawn_intro_star (intro 3 sub)
+
+// 080EDD28
+// sub_080EDD28 (for star)
+
+// 080EDDF0
+// sub_080EDDF0 (intro 3 sub)
+
+// 080EDE04
+// task01_intro_star_out
+
+// 080EDED8
+// sub_080EDED8 (intro 4 sub)
+
+// 080EDEEC
+// task02_080EDEEC (launched by 080EDED8)
+
+// 080EDF68
+// sub_080EDF68 (intro 5 sub)
+
+// 080EDF94
+// sub_080EDF94 (intro 9 sub)
+
+// 080EDFD8
+// sub_080EDFD8 (intro 4 sub)
+
+// 080EE024
+// task04_080EE024 (launched by 080EDFD8)
+
+// 080EE160
+// sub_080EE160 (task04_080EE024 sub)
+
+// 080EE1C4
+// objc_080EE1C4 (sub_080EE160 instanciated object callback)
+
+// 080EE200
+// sub_080EE200 (intro 8)
+
+// 080EE29C
+// objc_star
+
+// 080EE350
+// objc_sparks_1
+
+// 080EE40C
+// objc_080EE40C (used by task01_intro_star_out)
+
+// 080EE4DC
+// objc_sparks_2
+
+// 080EE4F8
+// sub_080EE4F8 (intro 8 sub)
+
+// 080EE528
+// sub_080EE528 (intro 8 sub)
+
+// 080EE580
+// objc_probably_080EE580 (for sub_080EE528)
+
+// 080EE5C8
+// sub_080EE5C8 (intro 8 sub)
+
+// 080EE5E4
+// sub_080EE5E4 (intro 9 sub)
+
+// 080EE610
+// objc_probably_080EE610 (for sub_080EE5E4)
+
+// 080EE6A4
+// sub_080EE6A4 (intro 9 sub)
+
+// 080EE704
+// objc_probably_080EE704 (for sub_080EE6A4)
+
+// 080EE850
+// sub_080EE850 (intro 9 sub)
+
+// 080EE864
+// sub_080EE864 (objc_probably_080EE704 sub)
+
+// 080EE8E4
+// objc_080EE8E4 (for sub_080EE864)
+
+// 080EE970
+// sub_080EE970 (intro 9 sub)
+
+// 080EE9D4
+// objc_080EE9D4 (for sub_080EE970)
+
+// 080EEA94
+// sub_080EEA94 (intro 9 sub)
+
+// 080EEB08
+// objc_080EEB08 (for sub_080EEA94)
+
+// 080EEBE4
+// sub_080EEBE4 (intro 6 sub)
+
+// 080EEC0C
+// END
