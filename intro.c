@@ -205,7 +205,23 @@ void intro_end(struct intro *in) {
 // sub_080EE528 (intro 8 sub)
 
 // 080EE580
-// objc_probably_080EE580 (for sub_080EE528)
+void objc_080EE580(obj_t *o) { // for sub_080EE528
+
+	// move with linear speed
+	// but from frame 40 on decrease the speed to 1
+	// stop when having reached priv5
+
+	if (o->priv6++ >= 40 && o->priv3 > 1)
+			o->priv3--;
+	o->priv2 += o->priv3;
+
+	o->pos1.x = o->priv2 / 16;
+
+	if (o->pos1.x >= o->priv5) {
+		o->pos1.x = o->priv5;
+		o->callback = &objc_nothing;
+	}
+}
 
 // 080EE5C8
 // sub_080EE5C8 (intro 8 sub)
@@ -214,19 +230,19 @@ void intro_end(struct intro *in) {
 // sub_080EE5E4 (intro 9 sub)
 
 // 080EE610
-// objc_probably_080EE610 (for sub_080EE5E4)
+// objc_080EE610 (for sub_080EE5E4)
 
 // 080EE6A4
 // sub_080EE6A4 (intro 9 sub)
 
 // 080EE704
-// objc_probably_080EE704 (for sub_080EE6A4)
+// objc_080EE704 (for sub_080EE6A4)
 
 // 080EE850
 // sub_080EE850 (intro 9 sub)
 
 // 080EE864
-// sub_080EE864 (objc_probably_080EE704 sub)
+// sub_080EE864 (objc_080EE704 sub)
 
 // 080EE8E4
 // objc_080EE8E4 (for sub_080EE864)
@@ -238,7 +254,29 @@ void intro_end(struct intro *in) {
 // objc_080EE9D4 (for sub_080EE970)
 
 // 080EEA94
-// sub_080EEA94 (intro 9 sub)
+void sub_080EEA94(struct intro *in) { // intro 9 sub
+	obj_t *o = in->field18;
+
+	o->priv2 = 0;
+	o->priv3 = 0;
+	o->priv4 = 0;
+	o->priv5 = 0;
+	o->priv6 = 0;
+	o->priv7 = 0;
+
+	o->pos1.x += o->pos2.x;
+	o->pos2.x = 0;
+
+	word_0203AB0C = 0x24;
+	word_0203AB06 = 0x28;
+	word_0203AB04 = 0x03;
+	word_0203AB08 = 0x04;
+
+	o->field_3C = 0x24;
+
+	obj_set_anim_and_bitfield_xxx0_x1xx(o, 2);
+	o->callback = &objc_080EEB08;
+}
 
 // 080EEB08
 // objc_080EEB08 (for sub_080EEA94)
