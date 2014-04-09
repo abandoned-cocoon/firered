@@ -430,14 +430,91 @@ bool s48_get_item_type(struct script_env *s) {
     return false;
 }
 
-/*
 // 0806A754
 bool s49_add_item_pc(struct script_env *s) {
     u16 item = var_load(script_read_half(s));
     u16 qty  = var_load(script_read_half(s));
-    var_800D = add_item_pc(item); //LASTRESULT
+    var_800D = pc_add_item(item, qty); //LASTRESULT
     return false;
-}*/
+}
+
+// 0806A798
+bool s4A_check_item_pc(struct script_env *s) {
+    u16 item = var_load(script_read_half(s));
+    u16 qty  = var_load(script_read_half(s));
+    var_800D = pc_check_item(item); //LASTRESULT
+    return false;
+}
+
+// 0806A7DC
+bool s4B_nop_para_u16(struct script_env *s) {
+    u16 discard = var_load(script_read_half(s));
+    return false;
+}
+
+// 0806A7F0
+bool s4C_nop_para_u16(struct script_env *s) {
+    u16 discard = var_load(script_read_half(s));
+    return false;
+}
+
+// 0806A818
+bool s4D_nop_para_u16(struct script_env *s) {
+    u16 discard = var_load(script_read_half(s));
+    return false;
+}
+
+// 0806A804
+bool s4E_nop_para_u16(struct script_env *s) {
+    u16 discard = var_load(script_read_half(s));
+    return false;
+}
+
+// 0806B200
+bool s4F_execute_movement(struct script_env *s) {
+    u16 local_id = var_load(script_read_half(s));
+    u8* movement = script_read_word(s);
+    execute_movement(local_id, sav1.location.map, sav1.location.bank, movement);
+    script_last_npc_localid = local_id;
+    return false;
+}
+
+// 0806B244
+bool s50_execute_movement_remote(struct script_env *s) {
+    u16 local_id = var_load(script_read_half(s));
+    u8* movement = script_read_word(s);
+    u8 bank = script_read_byte(s);
+    u8 map  = script_read_byte(s);
+    execute_movement(local_id, map, bank, movement);
+    script_last_npc_localid = local_id;
+    return false;
+}
+
+// 0806B2B0
+bool s51_waitmove(struct script_env *s) {
+    u16 local_id = var_load(script_read_half(s));
+    if (local_id) script_last_npc_localid = local_id;
+
+    waitmove_mapbank = sav1.location.bank;
+    waitmove_mapnr   = sav1.location.map;
+
+    script_mode_set_asm_and_goto(&s51a_0806B288);
+
+    return false;
+}
+
+// 0806B304
+bool s52_waitmove_remote(struct script_env *s) {
+    u16 local_id = var_load(script_read_half(s));
+    if (local_id) script_last_npc_localid = local_id;
+
+    waitmove_mapbank = script_read_byte(s);
+    waitmove_mapnr   = script_read_byte(s);
+
+    script_mode_set_asm_and_goto(&s51a_0806B288);
+
+    return false;
+}
 
 // Many commands missing
 
