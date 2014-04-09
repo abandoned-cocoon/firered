@@ -1,10 +1,10 @@
-struct gfxentry_t {
+struct gfxentry {
 	void *data;
 	u16 size;
-	u16 padding;
+	u16 tag;
 };
 
-struct animframe_t {
+struct animframe {
 	u16 data;
 	union {
 		u16 _rd;
@@ -16,8 +16,8 @@ struct animframe_t {
 		};
 	};
 };
-typedef struct animframe_t *anim_t;
-typedef struct anim_t *animtable_t;
+
+typedef struct animframe *animtable;
 
 #define OBJ_FRAME(o) o->anim_table[o->anim_number][o->anim_frame]
 
@@ -45,7 +45,7 @@ void anim_player_2(struct obj *o) {
 	o->bitfield &= ~0x10;
 	o->field_2D = 0;
 	// todo
-	struct animframe_t *frame = &OBJ_FRAME(o);
+	struct animframe *frame = &OBJ_FRAME(o);
 	if (frame->data == -1) // END
 		return;
 
@@ -64,7 +64,7 @@ void anim_player_1(struct obj *o) {
 		}
 	} else {
 		oam_anim_delay_progress(o);
-		struct animframe_t *frame = &OBJ_FRAME(o);
+		struct animframe *frame = &OBJ_FRAME(o);
 		if (o->oam.attr0 & 0x100 == 0) { // no rotate/scale
 			obj_set_horizonal_and_vertical_flip(o, frame->hflip, frame->vflip);
 		}
@@ -73,7 +73,7 @@ void anim_player_1(struct obj *o) {
 
 // 080079FC
 void animcmd_03_normal_frame(struct obj *o) {
-	struct animframe_t *frame = &OBJ_FRAME(o);
+	struct animframe *frame = &OBJ_FRAME(o);
 	u32 data 	= frame->data;
 	u8 duration = frame->duration;
 
