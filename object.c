@@ -15,7 +15,7 @@ struct proto_t {
 	gpu_sprite *sprite; // a.k.a. OAM
 	struct animtable *anim_table;
 	struct gfxentry  *gfx_table;
-	struct affinetable *affine_table;
+	struct rotscaletable *rotscale_table;
 	void *callback;
 };
 
@@ -23,7 +23,7 @@ struct obj_t {
 	gpu_sprite sprite; // a.k.a. OAM
 	struct animtable *anim_table;
 	struct gfxentry  *gfx_table;
-	struct affinetable *affine_table;
+	struct rotscaletable *rotscale_table;
 	struct proto_t *template;
 	void *field_18;
 	void *callback;
