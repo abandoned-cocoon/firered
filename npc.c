@@ -242,10 +242,10 @@ AN(run_up_1) { an_run_any(npc, obj, 2, 1); return an_run_up_2(npc, obj); } // 08
 AN(run_lf_1) { an_run_any(npc, obj, 3, 1); return an_run_lf_2(npc, obj); } // 080652FC
 AN(run_rt_1) { an_run_any(npc, obj, 4, 1); return an_run_rt_2(npc, obj); } // 0806530C
 
-AN(run_dn_2) { return npc_ministep_and_modify_priv1(npc, obj) && (obj->private4 = 2, true); } // 080652EC
-AN(run_up_2) { return npc_ministep_and_modify_priv1(npc, obj) && (obj->private4 = 2, true); } // 0806530C
-AN(run_lf_2) { return npc_ministep_and_modify_priv1(npc, obj) && (obj->private4 = 2, true); } // 0806532C
-AN(run_rt_2) { return npc_ministep_and_modify_priv1(npc, obj) && (obj->private4 = 2, true); } // 0806534C
+AN(run_dn_2) { return npc_obj_ministep_stop_on_arrival(npc, obj) && (obj->priv2 = 2, true); } // 080652EC
+AN(run_up_2) { return npc_obj_ministep_stop_on_arrival(npc, obj) && (obj->priv2 = 2, true); } // 0806530C
+AN(run_lf_2) { return npc_obj_ministep_stop_on_arrival(npc, obj) && (obj->priv2 = 2, true); } // 0806532C
+AN(run_rt_2) { return npc_obj_ministep_stop_on_arrival(npc, obj) && (obj->priv2 = 2, true); } // 0806534C
 
 anptr an_run_dn[] = { an_run_dn_1, an_run_dn_2, an_xxx1 }; // 083A69D0
 anptr an_run_up[] = { an_run_up_1, an_run_up_2, an_xxx1 }; // 083A69DC
@@ -319,15 +319,15 @@ void player_get_pos_to(u16 x, u16 y) {
 }
 
 // 08064788
-bool npc_ministep_and_modify_priv1(struct npc_states *npc, struct oam_t *oam) {
+bool npc_obj_ministep_stop_on_arrival(struct npc_states *npc, struct oam_t *oam) {
     if (!obj_npc_ministep(oam))
         // stepping continues
         return false;
     // step done, npc is on it's target position
     npc->from.x = npc->to.x;
     npc->from.y = npc->to.y;
-    npc->bitfield |= 0x8; // flag for 'on grid' maybe?
-    obj->private1 |= 0x40;
+    npc->bitfield |= NPC_BIT_ONGRID;
+    obj->anim_delay_countdown |= OBJ_ANIM_PAUSE;
     return true;
 }
 
@@ -388,9 +388,9 @@ void step8(struct oam_t *oam, u8 d) {
 
 // 08068B40
 void obj_npc_ministep_reset(struct oam_t *oam, u16 speed, u16 phase) {
-    oam->private5 = 0;
-    oam->private6 = speed;
-    oam->private7 = phase;
+    oam->priv3 = 0;
+    oam->priv4 = speed;
+    oam->priv5 = phase;
 }
 
 // 083A710C
@@ -433,9 +433,9 @@ u16 stepspeed_seq_length[] = {
 
 // 08068B54
 bool obj_npc_ministep(struct oam_t *oam) {
-    u8   z =  oam->private5;
-    u16  s =  oam->private6;
-    u16 *i = &oam->private7;
+    u8   z =  oam->private3;
+    u16  s =  oam->private4;
+    u16 *i = &oam->private5;
     u16  l = stepspeed_seq_length[s];
     if (*i >= l) return false;
     stepspeeds[s][i](oam, z);
@@ -445,9 +445,9 @@ bool obj_npc_ministep(struct oam_t *oam) {
 
 // 08068BBC
 void obj_npc_ministep_set_p5(struct oam_t *oam, u16 _) {
-    oam->private5 = _;
-    oam->private6 = 0;
-    oam->private7 = 0;
+    oam->private3 = _;
+    oam->private4 = 0;
+    oam->private5 = 0;
 }
 
 // 0806CE20

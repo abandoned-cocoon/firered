@@ -209,16 +209,16 @@ void objc_080EE580(obj_t *o) { // for sub_080EE528
 
 	// move with linear speed
 	// but from frame 40 on decrease the speed to 1
-	// stop when having reached priv5
+	// stop when having reached priv3
 
-	if (o->priv6++ >= 40 && o->priv3 > 1)
-			o->priv3--;
-	o->priv2 += o->priv3;
+	if (o->priv4++ >= 40 && o->priv1 > 1)
+			o->priv1--;
+	o->priv0 += o->priv1;
 
-	o->pos1.x = o->priv2 / 16;
+	o->pos1.x = o->priv0 / 16;
 
-	if (o->pos1.x >= o->priv5) {
-		o->pos1.x = o->priv5;
+	if (o->pos1.x >= o->priv3) {
+		o->pos1.x = o->priv3;
 		o->callback = &objc_nothing;
 	}
 }
@@ -257,12 +257,12 @@ void objc_080EE580(obj_t *o) { // for sub_080EE528
 void sub_080EEA94(struct intro *in) { // intro 9 sub
 	obj_t *o = in->field18;
 
+	o->priv0 = 0;
+	o->priv1 = 0;
 	o->priv2 = 0;
 	o->priv3 = 0;
 	o->priv4 = 0;
 	o->priv5 = 0;
-	o->priv6 = 0;
-	o->priv7 = 0;
 
 	o->pos1.x += o->pos2.x;
 	o->pos2.x = 0;

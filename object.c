@@ -2,13 +2,20 @@
 #define NUM_ROTSCALE_OBJS 0x20
 #define NUM_COPY_QUEUE_ENTRIES 0x40
 
+#define OBJ_BIT2_IN_USE    1
+#define OBJ_BIT2_INVISIBLE 4
+#define OBJ_BIT1_HFLIP               1
+#define OBJ_BIT1_VFLIP               2
+#define OBJ_BIT1_SHARES_RESOURCES 0x40
+#define OBJ_ANIM_PAUSED           0x40
+
 struct proto_t {
 	u16 tile_tag;
 	u16 pal_tag;
 	gpu_sprite *sprite; // a.k.a. OAM
-	struct animtable_t *anim_table_1;
-	struct gfxentry_t  *gfx_table;
-	struct animtable_t *anim_table_2;
+	struct animtable *anim_table_1;
+	struct gfxentry  *gfx_table;
+	struct animtable *anim_table_2;
 	void *callback;
 };
 
@@ -25,16 +32,16 @@ struct obj_t {
 	coords8  pos_neg_center;
 	u8 anim_number;
 	u8 anim_frame;
-	u8 anim_delay_countdown; // top two bits used as flags
-	u8 priv_1;
+	u8 anim_delay_countdown; // top two bits used as flags (OBJ_ANIM_PAUSED)
+	u8 anim_unknown_counter;
+	u16 priv0;
+	u16 priv1;
 	u16 priv2;
 	u16 priv3;
 	u16 priv4;
 	u16 priv5;
 	u16 priv6;
 	u16 priv7;
-	u16 priv8;
-	u16 priv9;
 	u8 bitfield2;
 		// 0x1 - in use
 		// 0x4 - invisible
@@ -200,7 +207,7 @@ void obj_delete_and_free_vram(struct obj_t *o) {
 	if (o->bitfield2 & OBJ_BIT2_IN_USE == 0)
 		return;
 
-	if (o->bitfield2 & OBJ_BIT2_SHARES_RESOURCES == 0) {
+	if (o->bitfield & OBJ_BIT1_SHARES_RESOURCES == 0) {
 		// in this case NOW is the time to release
 		// these resources that are owned by the
 		// object (as opposed to 'shared resources')
@@ -238,7 +245,7 @@ void copy_queue_clear() {
 }
 
 // 08007390
-void rotscale_coefficients_reset() {
+void rotscale_reset_all() {
 	struct rotscale default_element = { 0x100, 0, 0, 0x100 };
 
 	for (u8 i = 0; i<NUM_ROTSCALE_OBJS; i++)
@@ -255,6 +262,24 @@ void obj_delete(struct obj_t *o) {
 	memcpy(o, obj_empty, sizeof(struct obj));
 }
 
+// 08231C85
+coords8 negative_half_oam_size[] = {
+	{ -4,  -4},
+	{ -8,  -8},
+	{-16, -16},
+	{-32, -32},
+
+	{ -8,  -4},
+	{-16,  -4},
+	{-16,  -8},
+	{-32, -16},
+
+	{ -4,  -8},
+	{ -4, -16},
+	{ -8, -16},
+	{-16, -32}
+};
+
 // 080073F0
 void obj_center(struct obj_t *o, u8 shape, u8 size, u32 oamflags) {
 	coords8 *c = &negative_half_oam_size[shape*4+size];
@@ -270,7 +295,17 @@ void obj_center(struct obj_t *o, u8 shape, u8 size, u32 oamflags) {
 // 08007434
 // gpu_tile_obj_alloc
 
-// TODO
+// 08007550
+// gpu_tile_allocation_obj_edit
+
+// 080075C0
+// gpu_tile_obj_free_by_range_probably
+
+// 0800760C
+// objc_nullsub
+
+// 08007610
+// copy_queue_process
 
 // 0800766C
 void copy_queue_add_oamframe(u16 idx, u16 oam_attr2, struct gfxentry_t *gfx_table) {
@@ -280,3 +315,27 @@ void copy_queue_add_oamframe(u16 idx, u16 oam_attr2, struct gfxentry_t *gfx_tabl
 	copy_queue[i].dst = 0x06010000 + (oam_attr2<<5);
 	copy_queue[i].len = gfx_table[idx]->size;
 }
+
+// 080076D0
+// copy_queue_add
+
+// 08007720
+// copy_oamt_states_to_R0 (unused)
+
+// 08007748
+// obj_delete_all_bytewise
+
+// 08007770
+// obj_delete_all
+
+// 080077AC
+// obj_free_tiles_by_tag
+
+// 080077C8
+// obj_free_pal_by_tag
+
+// 080077D8
+// obj_free_rotscale_entry
+
+// 08007804
+// obj_delete_and_free_associated_resources
