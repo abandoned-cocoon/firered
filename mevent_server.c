@@ -20,17 +20,27 @@ struct mevent_srv_sub {
 	// size: 0x28
 };
 
+struct mevent_cmd {
+	u32 opcode;
+	u32 flag_or_size;
+	u32 parameter;
+};
+
 struct mevent_srv {
 	u32 field_0;
 	u32 unknown1;
-	u32 field_8;
-	u32 field_C;
-	u32 field_10;
+	u32 mainseqno;
+	u32 cmdindex;
+	struct mevent_cmd *cmdbuffer;
 	void *field_14;
-	void *field_18;
-	void *field_1C;
+	void *dstbuffer_1;
+	void *dstbuffer_2;
 	void *field_20;
-	u32 unknown2[5];
+	u32 arg2_value_1;
+	u32 size_value_1;
+	u32 arg2_value_2;
+	u32 size_value_2;
+	u32 field_34;
 	struct mevent_srv_sub sub;
 };
 

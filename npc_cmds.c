@@ -498,7 +498,7 @@ bool s51_waitmove(struct script_env *s) {
     waitmove_mapbank = sav1.location.bank;
     waitmove_mapnr   = sav1.location.map;
 
-    script_mode_set_asm_and_goto(&s51a_0806B288);
+    script_enter_asm_mode(s, &s51a_0806B288);
 
     return false;
 }
@@ -511,7 +511,7 @@ bool s52_waitmove_remote(struct script_env *s) {
     waitmove_mapbank = script_read_byte(s);
     waitmove_mapnr   = script_read_byte(s);
 
-    script_mode_set_asm_and_goto(&s51a_0806B288);
+    script_enter_asm_mode(s, &s51a_0806B288);
 
     return false;
 }
