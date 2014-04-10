@@ -1,0 +1,3 @@
+08006B5C - 08007824 object system
+08007824 - ?        animation
+080ECA70 - 080EEC0C intro
