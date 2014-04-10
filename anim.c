@@ -21,7 +21,8 @@ struct affine_frame {
 	u16 scale_x_delta;
 	u16 scale_y_delta;
 	u8  rotation_delta;
-	u8  _padding[3];
+	u8  field_5;
+	u16 _padding;
 };
 
 struct affine_state {
@@ -182,8 +183,8 @@ void anim_player_b_1(struct obj *o) {
 	struct affine_frame f;
 
 	u8 rotscale_index = oam_get_rotscale_index_if_applicable(o);
-	sub_08008148(rotscale_index);
-	sub_080082E0(rotscale_index, o, &f);
+	affine_reset(rotscale_index);
+	affine_load_frame(rotscale_index, o, &f);
 	o->bitfield &= ~0x08;
 	o->bitfield &= ~0x20;
 	sub_0800834C(rotscale_index, &f);
@@ -229,11 +230,11 @@ void sub_08008230(u8 rotscale_index, struct affine_frame *r) {
 }
 
 // 080082E0
-void sub_080082E0(u8 rotscale_index, struct obj *o, struct affine_frame *r) {
+void affine_load_frame(u8 rotscale_index, struct obj *o, struct affine_frame *r) {
 	struct affine_state *c = &affine_states[rotscale_index];
 	struct affine_frame *f = &o.affine_table[c->index][c->subindex];
-	r.a = f->a;
-	r.b = f->b;
-	r.c = f->c;
-	r.d = f->d;
+	r->scale_x_delta  = f->scale_x_delta;
+	r->scale_y_delta  = f->scale_y_delta;
+	r->rotation_delta = f->rotation_delta;
+	r->field_5        = f->field_5;
 }
