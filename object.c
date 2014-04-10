@@ -13,17 +13,17 @@ struct proto_t {
 	u16 tile_tag;
 	u16 pal_tag;
 	gpu_sprite *sprite; // a.k.a. OAM
-	struct animtable *anim_table_1;
+	struct animtable *anim_table;
 	struct gfxentry  *gfx_table;
-	struct animtable *anim_table_2;
+	struct affinetable *affine_table;
 	void *callback;
 };
 
 struct obj_t {
 	gpu_sprite sprite; // a.k.a. OAM
-	struct animtable_t *anim_table_1;
-	struct gfxentry_t  *gfx_table;
-	struct animtable_t *anim_table_2;
+	struct animtable *anim_table;
+	struct gfxentry  *gfx_table;
+	struct affinetable *affine_table;
 	struct proto_t *template;
 	void *field_18;
 	void *callback;
