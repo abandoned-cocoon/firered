@@ -17,7 +17,7 @@ struct animframe {
 	};
 };
 
-struct affine_frame {
+struct rotscale_frame {
 	u16 scale_x_delta;
 	u16 scale_y_delta;
 	u8  rotation_delta;
@@ -25,12 +25,12 @@ struct affine_frame {
 	u16 _padding;
 };
 
-struct affine_state {
+struct rotscale_state {
 	u8 index;
 	u8 subindex;
 	u16 _padding1;
-	u16 scale_x_inv;
-	u16 scale_y_inv;
+	u16 scale_x;
+	u16 scale_y;
 	u16 rotation;
 	u16 _padding2;
 };
@@ -176,19 +176,19 @@ void anim_player_b_1(struct obj *o) {
 	if (o->sprite.attr0 & 0x100 == 0) // not rotscaled
 		return;
 
-	animseq *seq = o->affine_table[0];
+	animseq *seq = o->rotscale_table[0];
 	if (seq[0].data == 0x7FFF)
 		return;
 
-	struct affine_frame f;
+	struct rotscale_frame f;
 
-	u8 rotscale_index = oam_get_rotscale_index_if_applicable(o);
-	affine_reset(rotscale_index);
-	affine_load_frame(rotscale_index, o, &f);
+	u8 affidx = oam_get_affidx_if_applicable(o);
+	rotscale_reset(affidx);
+	rotscale_load_frame(affidx, o, &f);
 	o->bitfield &= ~0x08;
 	o->bitfield &= ~0x20;
-	sub_0800834C(rotscale_index, &f);
-	unk_03000C68[rotscale_index].field_2 = &f[6]; // stride: 12
+	sub_0800834C(affidx, &f);
+	unk_03000C68[affidx].field_2 = &f[6]; // stride: 12
 
 	if (o->bitfield & 0x80)
 		obj_update_pos2(o, o->priv6, o->priv7);
@@ -196,22 +196,31 @@ void anim_player_b_1(struct obj *o) {
 
 // 08007D08
 void anim_player_b_0(struct obj *o) {
+	if (o->sprite.attr0 & 0x100 == 0) // not rotscaled
+		return;
 
+	// TODO
 }
 
 // 08007DBC
-void sub_08007DBC() {
-	//
+void sub_08007DBC(u8 affidx, struct obj *o) {
+	if (obj_rotscale_delay_progress(obj, affidx)) // if paused
+		return;
+
+	struct rotscale_frame frame;
+	rotscale_load_frame(affidx, obj, &frame);
+	rotscale_frame_apply_relative_and_sync(affidx, &frame);
 }
 
 // ...
 
 // 080081D8
 void obj_anim_delay_progress(struct obj *o) {
+	// see also: 08008200 obj_rotscale_delay_progress
 	struct {
 		u8 delay : 6;
-		u8 flag0 : 1;
-		u8 flag1 : 1;
+		u8 flag0 : 1; // don't progress in frames
+		u8 flag1 : 1; // don't progress in rotscale stuff
 	} *adc = &o->anim_delay_countdown;
 
 	if (adc->flag0 == 0)
@@ -219,20 +228,20 @@ void obj_anim_delay_progress(struct obj *o) {
 }
 
 // 03000C68
-struct affine_state affine_states[32];
+struct rotscale_state rotscale_states[32];
 
 // 08008230
-void sub_08008230(u8 rotscale_index, struct affine_frame *r) {
-	struct affine_state *c = &affine_states[rotscale_index];
+void sub_08008230(u8 affidx, struct rotscale_frame *r) {
+	struct rotscale_state *c = &rotscale_states[affidx];
 	u16 coeff[4];
-	ObjAffineSet(&spec, coeff, 1, 2);
-	rotscale_set_indirect(rotscale_index, coeff);
+	ObjrotscaleSet(&spec, coeff, 1, 2);
+	affine_set_indirect(affidx, coeff);
 }
 
 // 080082E0
-void affine_load_frame(u8 rotscale_index, struct obj *o, struct affine_frame *r) {
-	struct affine_state *c = &affine_states[rotscale_index];
-	struct affine_frame *f = &o.affine_table[c->index][c->subindex];
+void rotscale_load_frame(u8 affidx, struct obj *o, struct rotscale_frame *r) {
+	struct rotscale_state *c = &rotscale_states[affidx];
+	struct rotscale_frame *f = &o.rotscale_table[c->index][c->subindex];
 	r->scale_x_delta  = f->scale_x_delta;
 	r->scale_y_delta  = f->scale_y_delta;
 	r->rotation_delta = f->rotation_delta;
