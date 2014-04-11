@@ -64,7 +64,21 @@ struct obj_t objects[NUM_OBJS];
 
 // from here on everything up to 08007434 and except for
 // the parts marked with TODO is continuously documented
-	
+
+// 08006B10
+void obj_and_aux_reset_all() {
+	super_sprites_delete_all(0x00, 0x80);
+	obj_delete_all();
+	copy_queue_clear();
+	rotscale_reset_all();
+	gpu_tile_obj_tags_reset();
+	last_super_index = 0x40;
+	gpu_tile_allocation_lower_boundary_obj = 0;
+	gpu_tile_obj_alloc(0); // clears all allocations
+	global_sprite_displace.x = 0;
+	global_sprite_displace.y = 0;
+}
+
 // 08006B5C
 void objc_exec() {
 	for (u8 i = 0; i<NUM_OBJS; i++) {
