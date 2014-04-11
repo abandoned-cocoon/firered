@@ -40,23 +40,31 @@ typedef struct animframe *animseq;
 #define OBJ_FRAME(o) o->anim_table[o->anim_number][o->anim_frame]
 
 // 08231D18
-void (*anim_players_a[])(struct obj *) = {
-	&anim_player_a_0,
-	&anim_player_a_1
+void (*obj_anim_image_funcs[])(struct obj *) = {
+	&obj_anim_image_continue,
+	&obj_anim_image_begin
 };
 
 // 08231D20
-void (*anim_players_b[])(struct obj *) = {
-	&anim_player_b_0,
-	&anim_player_b_1
+void (*obj_anim_rotscale_funcs[])(struct obj *) = {
+	&obj_anim_rotscale_continue,
+	&obj_anim_rotscale_begin
 };
 
 // 08231D28
-void (*animcmds[])(struct obj *) = {
-	&animcmd_00_unknown,     // FFFD -3
-	&animcmd_01_loop_point,  // FFFE -2
-	&animcmd_02_stop,        // FFFF -1
-	&animcmd_03_normal_frame // other
+void (*anim_image_cmds[])(struct obj *) = {
+	&anim_image_0_unknown,     // FFFD -3
+	&anim_image_1_loop_point,  // FFFE -2
+	&anim_image_2_stop,        // FFFF -1
+	&anim_image_3_normal_frame // other
+};
+
+// 08231D38
+void (*anim_rotscale_cmds[])(struct obj *) = {
+	&anim_rotscale_0_unknown,     // FFFD -3
+	&anim_rotscale_1_loop_point,  // FFFE -2
+	&anim_rotscale_2_stop,        // FFFF -1
+	&anim_rotscale_3_normal_frame // other
 };
 
 // 08007824
@@ -71,7 +79,7 @@ void obj_anim_step(struct obj *o) {
 }
 
 // 0800786C
-void anim_player_a_1(struct obj *o) {
+void obj_anim_image_begin(struct obj *o) {
 	o->anim_frame = 0;
 	o->bitfield &= ~0x10;
 	o->anim_unknown_counter = 0;
@@ -80,11 +88,11 @@ void anim_player_a_1(struct obj *o) {
 	if (frame->data == -1) // END
 		return;
 
-	animcmd_03_normal_frame(o);
+	anim_image_3_normal_frame(o);
 }
 
 // 0800795C
-void anim_player_a_0(struct obj *o) {
+void obj_anim_image_continue(struct obj *o) {
 	u8 adc = o->anim_delay_countdown;
 	if (adc & 0x3F == 0) {
 		if (adc & OBJ_ANIM_PAUSED == 0) {
@@ -103,7 +111,7 @@ void anim_player_a_0(struct obj *o) {
 }
 
 // 080079FC
-void animcmd_03_normal_frame(struct obj *o) {
+void anim_image_3_normal_frame(struct obj *o) {
 	struct animframe *frame = &OBJ_FRAME(o);
 	u32 data 	= frame->data;
 	u8 duration = frame->duration;
@@ -126,23 +134,23 @@ void animcmd_03_normal_frame(struct obj *o) {
 }
 
 // 08007AA8
-void animcmd_02_stop(struct obj *o) {
+void anim_image_2_stop(struct obj *o) {
 	o->anim_frame--;
 	o->bitfield |= 0x10;
 }
 
 // 08007AC0
-void animcmd_01_loop_point(struct obj *o) {
+void anim_image_1_loop_point(struct obj *o) {
 	struct animframe *frame;
 
 	frame = &OBJ_FRAME(o);
 	o->anim_frame = frame.duration;
 
-	animcmd_03_normal_frame(o);
+	anim_image_3_normal_frame(o);
 }
 
 // 08007B88
-void animcmd_00_unknown(struct obj *o) {
+void anim_image_0_unknown(struct obj *o) {
 	if (o->anim_unknown_counter)
 		sub_08007BE0(o);
 	else
@@ -152,19 +160,19 @@ void animcmd_00_unknown(struct obj *o) {
 // 08007BA8
 void sub_08007BA8(struct obj *o) {
 	o->anim_unknown_counter = OBJ_FRAME(o).duration;
-	obj_anim_rewind_to_cmd00(o);
-	anim_player_a_0(o);
+	obj_anim_image_rewind_to_cmd00(o);
+	obj_anim_image_continue(o);
 }
 
 // 08007BE0
 void sub_08007BE0(struct obj *o) {
 	o->anim_unknown_counter--;
-	obj_anim_rewind_to_cmd00(o);
-	anim_player_a_0(o);
+	obj_anim_image_rewind_to_cmd00(o);
+	obj_anim_image_continue(o);
 }
 
 // 08007C00
-void obj_anim_rewind_to_cmd00(struct obj *o) {
+void obj_anim_image_rewind_to_cmd00(struct obj *o) {
 	if (o->anim_unknown_counter > 0) {
 		animseq *seq = o->anim_table[o->anim_number];
 		while (seq[--o->anim_frame].data != -3 && o->anim_frame >= 0);
@@ -172,7 +180,7 @@ void obj_anim_rewind_to_cmd00(struct obj *o) {
 }
 
 // 08007C74
-void anim_player_b_1(struct obj *o) {
+void obj_anim_rotscale_begin(struct obj *o) {
 	if (o->sprite.attr0 & 0x100 == 0) // not rotscaled
 		return;
 
@@ -195,7 +203,7 @@ void anim_player_b_1(struct obj *o) {
 }
 
 // 08007D08
-void anim_player_b_0(struct obj *o) {
+void obj_anim_rotscale_continue(struct obj *o) {
 	if (o->sprite.attr0 & 0x100 == 0) // not rotscaled
 		return;
 
@@ -211,6 +219,42 @@ void sub_08007DBC(u8 affidx, struct obj *o) {
 	rotscale_load_frame(affidx, obj, &frame);
 	rotscale_frame_apply_relative_and_sync(affidx, &frame);
 }
+
+// 08007DF0
+void anim_rotscale_0_unknown(u8 affidx, struct obj *o) {
+	if (rotscale_states[affidx].field_3)
+		sub_08007E60(affidx, o);
+	else
+		sub_08007E24(affidx, o);
+}
+
+// 08007E60
+void sub_08007E60(u8 affidx, struct obj *o) {
+	rotscale_states[affidx].field_3--;
+	sub_08007E90(affidx, o); // obj_rotscale_anim_rewind_to_cmd00_maybe
+	obj_anim_rotscale_continue(affidx, o);
+}
+
+// 08007EFC
+void anim_rotscale_1_loop_point(u8 affidx, struct obj *o) {
+//	TODO
+}
+
+// 08007F48
+void anim_rotscale_2_stop(u8 affidx, struct obj *o) {
+//	TODO
+// 	rotscale_frame_apply_relative_and_sync
+}
+
+// 08007F84
+void anim_rotscale_3_normal_frame(u8 affidx, struct obj *o) {
+//	TODO
+//	rotscale_load_frame
+//	sub_0800834C
+//		(rotscale_frame_apply_absolute)
+//		rotscale_frame_apply_relative_and_sync
+}
+
 
 // ...
 
@@ -247,3 +291,4 @@ void rotscale_load_frame(u8 affidx, struct obj *o, struct rotscale_frame *r) {
 	r->rotation_delta = f->rotation_delta;
 	r->field_5        = f->field_5;
 }
+	
