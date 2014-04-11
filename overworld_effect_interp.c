@@ -122,24 +122,36 @@ void oec03_call_asm_impl(u8 **cursor, u32 *retval) {
 }
 
 // 080836B4
-void oe_stop2(...) {
-	// TODO
+void oe_stop2(struct obj *o) {
+	u8  pal  = o->attr2 >> 12;
+	u32 ado = o->anim_data_offset
+	obj_delete_and_free_vram(o);
+	gpu_tile_obj_free_by_ado_when_unused(ado);
+	gpu_pal_free_by_index_when_unused(pal);
 }
 
 // 080836D8
-void oe_stop(struct obj_t *o, u8 num) {
+void oe_stop(struct obj *o, u8 num) {
 	oe_stop2(o);
 	oe_active_list_remove(num);
 }
 
 // 080836F0
-void sub_080836F0(...) {
+void gpu_tile_obj_free_by_ado_when_unused_maybe(...) {
 	// TODO
 }
 
 // 08083754
-void sub_08083754(...) {
-	// TODO
+void gpu_pal_free_by_index_when_unused(u8 pal) {
+	u16 tag = gpu_pal_tag_by_index(pal);
+	for (u32 i=0; i<NUM_OBJS; i++) {
+		struct obj *o = objects[i];
+		if (o->bitfield2 & OBJ_BIT2_IS_ACTIVE == 0)
+			continue;
+		if ((o->sprite.attr2 >> 12) == pal)
+			return;
+	}
+	gpu_pal_free_by_tag(tag);
 }
 
 // 080837AC
@@ -155,7 +167,6 @@ void oe_active_list_add(u8 num) {
 			oe_active_list[i] = num;
 			return;
 		}
-
 }
 
 // 080837FC

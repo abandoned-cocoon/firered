@@ -1,4 +1,9 @@
-         - 08006B10 text
+08000000 - 08000968 Interrupts and startup
+08000968 - 08001028 DMA and LCD control
+08001028 - 0800292C gpu interface (rename rbox to tileoverlay?)
+0800292C - 08002C1C malloc integration
+08002C1C - 08006B10 text
 08006B10 - 08007824 object
 08007824 - 08008508 object animation
+
 080ECA70 - 080EEC0C intro
