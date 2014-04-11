@@ -41,7 +41,8 @@ typedef struct rotscale_frame *rotscale_seq;
 // 03000C68
 struct rotscale_state rotscale_states[32];
 
-#define OBJ_FRAME(o) o->image_anims[o->anim_number][o->anim_frame]
+#define IMAGE_FRAME(o)       o->image_anims   [o->anim_number][o->anim_frame]
+#define ROTSCALE_FRAME(o, c) o->rotscale_anims[c->index]      [c->subindex]
 
 // 08231D18
 void (*obj_anim_image_funcs[])(struct obj *) = {
@@ -86,7 +87,7 @@ void obj_anim_image_begin(struct obj *o) {
 	o->bitfield &= ~0x10;
 	o->anim_unknown_counter = 0;
 
-	struct image_frame *frame = &OBJ_FRAME(o);
+	struct image_frame *frame = &IMAGE_FRAME(o);
 	if (frame->data == -1) // END
 		return;
 
@@ -99,13 +100,13 @@ void obj_anim_image_continue(struct obj *o) {
 	if (adc & 0x3F == 0) {
 		if (adc & OBJ_ANIM_IMAGE_PAUSED == 0) {
 			o->anim_frame++;
-			i16 data = OBJ_FRAME(o).data;
+			i16 data = IMAGE_FRAME(o).data;
 			u16 cmd = (data < 0) ? data+3 : 3;
 			animcmds[cmd](o);
 		}
 	} else {
 		obj_anim_delay_progress(o);
-		struct image_frame *frame = &OBJ_FRAME(o);
+		struct image_frame *frame = &IMAGE_FRAME(o);
 		if (o->oam.attr0 & 0x100 == 0) { // no rotate/scale
 			obj_set_horizonal_and_vertical_flip(o, frame->hflip, frame->vflip);
 		}
@@ -114,7 +115,7 @@ void obj_anim_image_continue(struct obj *o) {
 
 // 080079FC
 void anim_image_3_normal_frame(struct obj *o) {
-	struct image_frame *frame = &OBJ_FRAME(o);
+	struct image_frame *frame = &IMAGE_FRAME(o);
 	u32 data 	= frame->data;
 	u8 duration = frame->duration;
 
@@ -145,7 +146,7 @@ void anim_image_2_stop(struct obj *o) {
 void anim_image_1_loop_point(struct obj *o) {
 	struct image_frame *frame;
 
-	frame = &OBJ_FRAME(o);
+	frame = &IMAGE_FRAME(o);
 	o->anim_frame = frame.duration;
 
 	anim_image_3_normal_frame(o);
@@ -161,7 +162,7 @@ void anim_image_0_unknown(struct obj *o) {
 
 // 08007BA8
 void sub_08007BA8(struct obj *o) {
-	o->anim_unknown_counter = OBJ_FRAME(o).duration;
+	o->anim_unknown_counter = IMAGE_FRAME(o).duration;
 	obj_anim_image_rewind_to_cmd00(o);
 	obj_anim_image_continue(o);
 }
@@ -257,11 +258,22 @@ void anim_rotscale_3_normal_frame(u8 affidx, struct obj *o) {
 //		rotscale_frame_apply_relative_and_sync
 }
 
-
 // ...
 
+// 08008148
+// rotscale_reset_half
+
+// 08008164
+// rotscale_reset_full_1
+
+// 0800818C
+// rotscale_reset_full_2
+
+// 080081B4
+// rotscale_frame_apply_absolute
+
 // 080081D8
-void obj_anim_delay_progress(struct obj *o) {
+void obj_anim_image_delay_progress(struct obj *o) {
 	// see also: 08008200 obj_rotscale_delay_progress
 	struct {
 		u8 delay : 6;
@@ -273,8 +285,12 @@ void obj_anim_delay_progress(struct obj *o) {
 		adc->delay--;
 }
 
+// 08008200
+// obj_anim_rotscale_delay_progress
+
 // 08008230
-void sub_08008230(u8 affidx, struct rotscale_frame *r) {
+void rotscale_frame_apply_relative_and_sync(u8 affidx, struct rotscale_frame *r) {
+	// TOOD
 	struct rotscale_state *c = &rotscale_states[affidx];
 	u16 coeff[4];
 	ObjrotscaleSet(&spec, coeff, 1, 2);
@@ -290,4 +306,15 @@ void rotscale_load_frame(u8 affidx, struct obj *o, struct rotscale_frame *r) {
 	r->rotation_delta = f->rotation_delta;
 	r->field_5        = f->field_5;
 }
-	
+
+// 0800834C
+void sub_0800834C(struct obj *o, struct rotscale_frame *f) {
+
+	if (f->field_5 > 0) {
+		f->field_5--;
+		rotscale_frame_apply_relative_and_sync(o, f);
+	} else {
+		rotscale_frame_apply_absolute(o, f);
+		rotscale_frame_apply_relative_and_sync(o, (struct rotscale_frame){0, 0, 0, 0, 0});
+	}
+}
