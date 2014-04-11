@@ -147,7 +147,7 @@ void anim_image_1_loop_point(struct obj *o) {
 	struct image_frame *frame;
 
 	frame = &IMAGE_FRAME(o);
-	o->anim_frame = frame.duration;
+	o->anim_frame = frame->duration;
 
 	anim_image_3_normal_frame(o);
 }
@@ -215,7 +215,7 @@ void obj_anim_rotscale_continue(struct obj *o) {
 
 // 08007DBC
 void sub_08007DBC(u8 affidx, struct obj *o) {
-	if (obj_rotscale_delay_progress(obj, affidx)) // if paused
+	if (obj_anim_rotscale_delay_progress(obj, affidx)) // if paused
 		return;
 
 	struct rotscale_frame frame;
@@ -234,13 +234,22 @@ void anim_rotscale_0_unknown(u8 affidx, struct obj *o) {
 // 08007E60
 void sub_08007E60(u8 affidx, struct obj *o) {
 	rotscale_states[affidx].field_3--;
-	sub_08007E90(affidx, o); // obj_rotscale_anim_rewind_to_cmd00_maybe
+	obj_anim_rotscale_rewind_to_cmd00_maybe(affidx, o);obj_anim_image
 	obj_anim_rotscale_continue(affidx, o);
 }
 
+// 08007E90
+// obj_rotscale_anim_rewind_to_cmd00
+
 // 08007EFC
 void anim_rotscale_1_loop_point(u8 affidx, struct obj *o) {
-//	TODO
+	struct rotscale_frame *frame;
+
+	struct rotscale_state *c = &rotscale_states[affidx];
+	frame = &ROTSCALE_FRAME(o, c);
+	c->subindex = frame->scale_y_delta;
+
+	anim_rotscale_3_normal_frame(affidx, o);
 }
 
 // 08007F48
@@ -258,7 +267,23 @@ void anim_rotscale_3_normal_frame(u8 affidx, struct obj *o) {
 //		rotscale_frame_apply_relative_and_sync
 }
 
-// ...
+// 08007FBC
+// affine_set_indirect
+
+// 08007FDC
+// obj_get_affidx_if_applicable
+
+// 08007FFC
+// sub_08007FFC
+
+// 0800800C
+// sub_0800800C
+
+// 08008038
+// obj_update_pos2
+
+// 080080D4
+// obj_set_horizonal_and_vertical_flip
 
 // 08008148
 // rotscale_reset_half
@@ -274,7 +299,7 @@ void anim_rotscale_3_normal_frame(u8 affidx, struct obj *o) {
 
 // 080081D8
 void obj_anim_image_delay_progress(struct obj *o) {
-	// see also: 08008200 obj_rotscale_delay_progress
+	// see also: 08008200 obj_anim_rotscale_delay_progress
 	struct {
 		u8 delay : 6;
 		u8 flag0 : 1; // don't progress in image frames
@@ -290,10 +315,10 @@ void obj_anim_image_delay_progress(struct obj *o) {
 
 // 08008230
 void rotscale_frame_apply_relative_and_sync(u8 affidx, struct rotscale_frame *r) {
-	// TOOD
 	struct rotscale_state *c = &rotscale_states[affidx];
 	u16 coeff[4];
-	ObjrotscaleSet(&spec, coeff, 1, 2);
+	// TOOD
+	ObjAffineSet(&spec, coeff, 1, 2);
 	affine_set_indirect(affidx, coeff);
 }
 
