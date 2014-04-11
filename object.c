@@ -4,26 +4,31 @@
 
 #define OBJ_BIT2_IN_USE    1
 #define OBJ_BIT2_INVISIBLE 4
-#define OBJ_BIT1_HFLIP               1
-#define OBJ_BIT1_VFLIP               2
-#define OBJ_BIT1_SHARES_RESOURCES 0x40
-#define OBJ_ANIM_PAUSED           0x40
+
+#define OBJ_BIT1_HFLIP               0x01
+#define OBJ_BIT1_VFLIP               0x02
+#define OBJ_BIT1_ANIM_IMAGE_BEGIN    0x04 // TODO
+#define OBJ_BIT1_SHARES_RESOURCES    0x40
+#define OBJ_BIT1_ANIM_ROTSCALE_BEGIN 0x80 // TODO
+
+#define OBJ_ANIM_IMAGE_PAUSED     0x40
+#define OBJ_ANIM_ROTSCALE_PAUSED  0x80
 
 struct proto_t {
 	u16 tile_tag;
 	u16 pal_tag;
 	gpu_sprite *sprite; // a.k.a. OAM
-	struct animtable *anim_table;
-	struct gfxentry  *gfx_table;
-	struct rotscaletable *rotscale_table;
+	image_seq    *image_anims;
+	gfxentry     *gfx_table;
+	rotscale_seq *rotscale_anims;
 	void *callback;
 };
 
 struct obj_t {
 	gpu_sprite sprite; // a.k.a. OAM
-	struct animtable *anim_table;
-	struct gfxentry  *gfx_table;
-	struct rotscaletable *rotscale_table;
+	image_seq    *image_anims;
+	gfxentry     *gfx_table;
+	rotscale_seq *rotscale_anims;
 	struct proto_t *template;
 	void *field_18;
 	void *callback;

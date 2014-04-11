@@ -1,10 +1,10 @@
-struct gfxentry {
+typedef struct {
 	void *data;
 	u16 size;
 	u16 tag;
-};
+} gfxentry;
 
-struct animframe {
+struct image_frame {
 	u16 data;
 	union {
 		u16 _rd;
@@ -35,9 +35,13 @@ struct rotscale_state {
 	u16 _padding2;
 };
 
-typedef struct animframe *animseq;
+typedef struct image_frame    *image_seq;
+typedef struct rotscale_frame *rotscale_seq;
 
-#define OBJ_FRAME(o) o->anim_table[o->anim_number][o->anim_frame]
+// 03000C68
+struct rotscale_state rotscale_states[32];
+
+#define OBJ_FRAME(o) o->image_anims[o->anim_number][o->anim_frame]
 
 // 08231D18
 void (*obj_anim_image_funcs[])(struct obj *) = {
@@ -69,13 +73,11 @@ void (*anim_rotscale_cmds[])(struct obj *) = {
 
 // 08007824
 void obj_anim_step(struct obj *o) {
-	bool playertype_a = !!(o->bitfield & OBJ_BIT1_PLAYERTYPE_A);
-	bool playertype_b = !!(o->bitfield & OBJ_BIT1_PLAYERTYPE_B);
+	bool image_begin = !!(o->bitfield & OBJ_BIT1_ANIM_IMAGE_BEGIN);
+	bool rotscale_begin = !!(o->bitfield & OBJ_BIT1_ANIM_ROTSCALE_BEGIN);
 
-	anim_players_a[playertype_a](o);
-
-	if (byte_02021CCC == 0)
-		anim_players_b[playertype_b](o);
+	obj_anim_image_funcs   [image_begin]   (o);  if (byte_02021CCC != 0) return;
+	obj_anim_rotscale_funcs[rotscale_begin](o);
 }
 
 // 0800786C
@@ -84,7 +86,7 @@ void obj_anim_image_begin(struct obj *o) {
 	o->bitfield &= ~0x10;
 	o->anim_unknown_counter = 0;
 
-	struct animframe *frame = &OBJ_FRAME(o);
+	struct image_frame *frame = &OBJ_FRAME(o);
 	if (frame->data == -1) // END
 		return;
 
@@ -95,7 +97,7 @@ void obj_anim_image_begin(struct obj *o) {
 void obj_anim_image_continue(struct obj *o) {
 	u8 adc = o->anim_delay_countdown;
 	if (adc & 0x3F == 0) {
-		if (adc & OBJ_ANIM_PAUSED == 0) {
+		if (adc & OBJ_ANIM_IMAGE_PAUSED == 0) {
 			o->anim_frame++;
 			i16 data = OBJ_FRAME(o).data;
 			u16 cmd = (data < 0) ? data+3 : 3;
@@ -103,7 +105,7 @@ void obj_anim_image_continue(struct obj *o) {
 		}
 	} else {
 		obj_anim_delay_progress(o);
-		struct animframe *frame = &OBJ_FRAME(o);
+		struct image_frame *frame = &OBJ_FRAME(o);
 		if (o->oam.attr0 & 0x100 == 0) { // no rotate/scale
 			obj_set_horizonal_and_vertical_flip(o, frame->hflip, frame->vflip);
 		}
@@ -112,7 +114,7 @@ void obj_anim_image_continue(struct obj *o) {
 
 // 080079FC
 void anim_image_3_normal_frame(struct obj *o) {
-	struct animframe *frame = &OBJ_FRAME(o);
+	struct image_frame *frame = &OBJ_FRAME(o);
 	u32 data 	= frame->data;
 	u8 duration = frame->duration;
 
@@ -141,7 +143,7 @@ void anim_image_2_stop(struct obj *o) {
 
 // 08007AC0
 void anim_image_1_loop_point(struct obj *o) {
-	struct animframe *frame;
+	struct image_frame *frame;
 
 	frame = &OBJ_FRAME(o);
 	o->anim_frame = frame.duration;
@@ -263,16 +265,13 @@ void obj_anim_delay_progress(struct obj *o) {
 	// see also: 08008200 obj_rotscale_delay_progress
 	struct {
 		u8 delay : 6;
-		u8 flag0 : 1; // don't progress in frames
-		u8 flag1 : 1; // don't progress in rotscale stuff
+		u8 flag0 : 1; // don't progress in image frames
+		u8 flag1 : 1; // don't progress in rotscale frames
 	} *adc = &o->anim_delay_countdown;
 
 	if (adc->flag0 == 0)
 		adc->delay--;
 }
-
-// 03000C68
-struct rotscale_state rotscale_states[32];
 
 // 08008230
 void sub_08008230(u8 affidx, struct rotscale_frame *r) {
