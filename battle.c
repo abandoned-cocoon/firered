@@ -28,6 +28,8 @@ struct battle_data {
 		// 0x00000040  -> paralyze
 		// 0x00000080  -> badly poisoned
 	u32  status2;
+		// see http://www.pokecommunity.com/archive/index.php/t-215644.html
+
 		// 0x00000007 -> confusion: 7 turns max, decreases each turn before use. snaps out when 1->0)
 		// 0x00000008 -> flinching
 		// 0x00000070 -> uproar

@@ -5,5 +5,12 @@
 08002C1C - 08006B10 text
 08006B10 - 08007824 object
 08007824 - 08008508 object animation
+08008508 - 080086DC object rotscale
+080086DC - 080088F0 object tile allocation
+080088F0 - 08008A58 palette allocation
+
+0800DFA4 - 0800EBB4 battle codegen
+
+08083444 - 08083858 overworld effects
 
 080ECA70 - 080EEC0C intro

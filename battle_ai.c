@@ -23,11 +23,11 @@ int ai_080391EC() {
 
 	for (u32 i=0; i<6; i++) {
 		struct pokemon *oppoke = pokemon_opponent[i];
-		if (pokemon_getattr(oppoke, req_current_hp) == 0)
+		if (pokemon_getattr(oppoke, req_current_hp) == 0) // dead pokemon can't battle
 			continue;
-		if (pokemon_getattr(oppoke, req_species2) == 0)
+		if (pokemon_getattr(oppoke, req_species2) == 0) // species 0 can't battle
 			continue;
-		if (pokemon_getattr(oppoke, req_species2) == 412) // what kind of pokemon is this!?
+		if (pokemon_getattr(oppoke, req_species2) == 412) // eggs can't battle
 			continue;
 		if (b_pokemon_team_id_by_side[b_active_side] == i)
 			continue;

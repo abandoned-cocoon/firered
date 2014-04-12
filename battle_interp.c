@@ -1,6 +1,3 @@
-u8 b_buffer_A[4][0x200]; // 02022BC4
-u8 b_buffer_B[4][0x200]; // 020233C4
-
 // 0825089C
 void (*bt1_cmds[])() = { /* player */
 	bt1_00_exec_ch2,
@@ -63,7 +60,7 @@ void (*bt1_cmds[])() = { /* player */
 };
 
 // 08250A34
-void (*bt2_cmds[])() = { /* opponent_trainer_probably */ 
+void (*bt2_cmds[])() = { /* opponent trainer */ 
 	bt2_00_exec_ch2,
 	sub_8036D88,
 	sub_8036E10,
@@ -82,7 +79,7 @@ void (*bt2_cmds[])() = { /* opponent_trainer_probably */
 	bt2_0F_move_anim,
 	bt2_10_message,
 	bt2_11_nop,
-	bt2_12_nop,
+	bt2_12_trainer_think,
 	bt2_13_nop,
 	sub_80385B0,
 	sub_8038718,
@@ -428,9 +425,6 @@ void (*bt7_cmds[])() = { /* opponent_wild_probably */
 	bt7_38_nullsub
 };
 
-u8 b_active_side;
-u8 b_oamid[NUM_BATTLE_SIDES];
-
 void bt1_29_blink_for_damage() {
 	u8 oamid = b_oamid[b_active_side];
 	struct obj *o = &objects[oamid];
@@ -446,7 +440,7 @@ void bt1_29_blink_for_damage() {
 
 // 08033444
 void bt1_2E_battle_intro() {
-	u8 environment_id = b_buffer_A[b_battle_side][1];
+	u8 environment_id = b_buffer_A[b_active_side][1];
 	battle_intro_launch(environment_id);
 	word_02023F4C |= 1;
 	bt1_done();
@@ -495,8 +489,8 @@ void bx3_wait() {
 // bx6: 080DD554
 // bx7: 0803A684
 void bx1_exec_buffer_A_ch0() {
-	if ((b_bitfield & (1<<b_battle_side)) == 0) return;
-	u8 cmd = b_buffer_A[b_battle_side][0];
+	if ((b_bitfield & (1<<b_active_side)) == 0) return;
+	u8 cmd = b_buffer_A[b_active_side][0];
 	if (cmd >= 0x38) bx1_done();
 	else             bt1_cmds[cmd]();
 }

@@ -205,7 +205,7 @@ void intro_end(struct intro *in) {
 // sub_080EE528 (intro 8 sub)
 
 // 080EE580
-void objc_080EE580(obj_t *o) { // for sub_080EE528
+void objc_080EE580(struct obj *o) { // for sub_080EE528
 
 	// move with linear speed
 	// but from frame 40 on decrease the speed to 1
@@ -255,7 +255,7 @@ void objc_080EE580(obj_t *o) { // for sub_080EE528
 
 // 080EEA94
 void sub_080EEA94(struct intro *in) { // intro 9 sub
-	obj_t *o = in->field18;
+	struct obj *o = in->field18;
 
 	o->priv0 = 0;
 	o->priv1 = 0;

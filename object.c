@@ -17,7 +17,7 @@
 struct proto_t {
 	u16 tile_tag;
 	u16 pal_tag;
-	gpu_sprite *sprite; // a.k.a. OAM
+	gpu_sprite   *sprite; // a.k.a. OAM
 	image_seq    *image_anims;
 	gfxentry     *gfx_table;
 	rotscale_seq *rotscale_anims;
@@ -25,7 +25,7 @@ struct proto_t {
 };
 
 struct obj_t {
-	gpu_sprite sprite; // a.k.a. OAM
+	gpu_sprite    sprite; // a.k.a. OAM
 	image_seq    *image_anims;
 	gfxentry     *gfx_table;
 	rotscale_seq *rotscale_anims;

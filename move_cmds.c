@@ -27,6 +27,7 @@
 3A: wait_for_dp01_bitfield_to_be_zero
 43: ability_checking_maybe
 45: animation
+54* battle cmd 2B
 55: fanfare
 63: goto_move
 6B: end_battle_80261CC
