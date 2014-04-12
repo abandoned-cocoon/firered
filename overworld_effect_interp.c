@@ -85,7 +85,7 @@ void oec00_load_gfx_impl(u8 **cursor) {
 }
 
 // 08083598
-void sub_08083598() {
+void tint_palette() {
 	// TODO
 }
 

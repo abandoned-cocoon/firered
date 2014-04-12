@@ -59,7 +59,7 @@ void (*obj_anim_rotscale_funcs[])(struct obj *) = {
 // 08231D28
 void (*anim_image_cmds[])(struct obj *) = {
 	&anim_image_0_unknown,     // FFFD -3
-	&anim_image_1_goto,  // FFFE -2
+	&anim_image_1_goto,        // FFFE -2
 	&anim_image_2_stop,        // FFFF -1
 	&anim_image_3_normal_frame // other
 };
@@ -67,7 +67,7 @@ void (*anim_image_cmds[])(struct obj *) = {
 // 08231D38
 void (*anim_rotscale_cmds[])(struct obj *) = {
 	&anim_rotscale_0_unknown,     // FFFD -3
-	&anim_rotscale_1_goto,  // FFFE -2
+	&anim_rotscale_1_goto,        // FFFE -2
 	&anim_rotscale_2_stop,        // FFFF -1
 	&anim_rotscale_3_normal_frame // other
 };
@@ -271,7 +271,7 @@ void anim_rotscale_3_normal_frame(u8 affidx, struct obj *o) {
 // affine_set_indirect
 
 // 08007FDC
-// obj_get_affidx_if_applicable
+// sprite_get_affidx_if_applicable
 
 // 08007FFC
 // sub_08007FFC
