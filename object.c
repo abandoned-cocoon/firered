@@ -222,7 +222,7 @@ u8 template_instanciate_and_run_once(struct proto_t *proto, u16 x, u16 y, u8 arg
 }
 
 // 08007280 
-void obj_delete_and_free_vram(struct obj_t *o) {
+void obj_delete_and_free_tiles(struct obj_t *o) {
 	if (o->bitfield2 & OBJ_BIT2_IN_USE == 0)
 		return;
 
@@ -357,4 +357,9 @@ void copy_queue_add_oamframe(u16 idx, u16 oam_attr2, struct gfxentry_t *gfx_tabl
 // obj_free_rotscale_entry
 
 // 08007804
-// obj_delete_and_free_associated_resources
+void obj_delete_and_free_associated_resources(struct obj_t *o) {
+	obj_free_tiles_by_tag(o);
+	obj_free_pal_by_tag(o);
+	obj_free_rotscale_entry(o);
+	obj_delete_and_free_tiles(o);
+}
