@@ -501,6 +501,14 @@ bool is_block_that_overrides_player_control(u8 role) {
     return 0;
 }
 
+
+// 0805A91C
+void overworld_draw_block_type1_on_map_coord(u32 x, u32 y, u16 *blockdef) {
+    i16 pos = map_pos_to_screenspace(&byte_3000E90, x, y);
+    if (pos >= 0)
+        overworld_draw_block(/*ttype*/1, blockdef, pos);
+}
+
 // 0805A948
 void cur_mapdata_draw_block_internal(struct mapdata *data, u16 screenpos, s16 x, s16 y) {
     u16 *blockdef;
@@ -669,20 +677,4 @@ void cur_mapheader_run_blockset2_func() {
     word_3000FB4 = 0;
     dword_3000FBC = 0;
     if (bs && bs->funcptr) bs->funcptr();
-}
-
-// 0807DB58
-void pal_fill_for_maplights() {
-    u8 warp0_light    = warp_get_light_level();
-    u8 sav1_map_light = sav1_map_get_light_level();
-    u8 ft = fade_type_for_given_maplight_pair(warp0_light, sav1_map_light);
-    if (ft == 0) {
-        palette_bg_faded_fill_black();
-        sub_807A818(0, 0);
-        palette_bg_faded_fill_black();
-    } else if (ft == 1) {
-        palette_bg_faded_fill_white();
-        sub_807A818(2, 0);
-        palette_bg_faded_fill_white();
-    }
 }

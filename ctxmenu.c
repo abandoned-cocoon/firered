@@ -5,11 +5,6 @@ struct ctxmenuentry {
     cvptr action;
 };
 
-// 08070588
-bool sub_08070588() {
-    // TODO
-}
-
 // 0811FA78
 void sub_0811FA78(task_id c) {
     sub_08070588(~1, ~2, 0, 0x10, 0);

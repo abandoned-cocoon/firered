@@ -68,18 +68,3 @@ void itemid_get_pocket_number(itemid i) {
 // 0809AA44 itemid_get_usage
 // 0809AA68 itemid_get_inbattle_function
 // 0809AA8C itemid_get_x28
-
-// 08108CFC
-void task_WIN0V_open_close_above(task_id c) {
-	typedef struct {
-		u16 visible_lines;
-		u16 direction;
-	} TASK_PRIV;
-
-	priv->visible_lines += priv->direction;
-	lcd_io_set_and_sync_asap(WIN0V, min(priv->visible_lines, 160));
-
-	if ((priv->direction ==  16 && priv->visible_lines == 160)
-	 || (priv->direction == -16 && priv->visible_lines == 0))
-		task_del(c);
-}

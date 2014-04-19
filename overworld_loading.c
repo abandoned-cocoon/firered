@@ -114,11 +114,3 @@ void map_loading_loop_1(u8 *state) {
 void map_loading_loop_4(u8 *state) {
     while (!map_loading_iteration(state));
 }
-
-// 0807DF64
-void map_post_load_hook_default() {
-    map_music_something();
-    render_prev_quest_text_if_appropriate();
-    pal_fade_depending_on_room_and_tile(0);
-    script_env_2_enable();
-}

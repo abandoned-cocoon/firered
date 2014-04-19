@@ -58,6 +58,16 @@ void mainloop() {
 	}
 }
 
+// 08000510
+void exec_c1_and_c2() {
+    if (fullscreen_save())
+        return;
+    if (help_system())
+        return;
+    if (super.callback1) super.callback1();
+    if (super.callback2) super.callback2();
+}
+
 // 080005E8
 void load_keys() {
 	u16 _held = (KEYINPUT ^ 0x3FF);

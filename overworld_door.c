@@ -20,13 +20,6 @@ struct door_t door_blocks[] = {
 	/* ... */
 };
 
-// 0805A91C
-void overworld_draw_block_type1_on_map_coord(u32 x, u32 y, u16 *blockdef) {
-	i16 pos = map_pos_to_screenspace(&byte_3000E90, x, y);
-	if (pos >= 0)
-		overworld_draw_block(/*ttype*/1, blockdef, pos);
-}
-
 // 0805AF14
 void door_anim_frame_apply(struct door_t *door, struct door_frame_t *frame, u32 x, u32 y) {
 	u16 offset = frame->byteoffset_in_gfx;
