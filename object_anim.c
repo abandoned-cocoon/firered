@@ -317,7 +317,22 @@ void obj_anim_image_delay_progress(struct obj *o) {
 void rotscale_frame_apply_relative_and_sync(u8 affidx, struct rotscale_frame *r) {
 	struct rotscale_state *c = &rotscale_states[affidx];
 	u16 coeff[4];
-	// TOOD
+
+	c->scale_x  += f->scale_x_delta;
+	c->scale_y  += f->scale_y_delta;
+	c->rotation += f->rotation_delta << 8;
+	c->rotation &= 0xFF00;
+
+	struct {
+		i16 scale_x;
+		i16 scale_y;
+		u16 rotation;
+	} spec = {
+		div_x10000_by(c->scale_x),
+		div_x10000_by(c->scale_y),
+		c->rotation
+	};
+
 	ObjAffineSet(&spec, coeff, 1, 2);
 	affine_set_indirect(affidx, coeff);
 }
