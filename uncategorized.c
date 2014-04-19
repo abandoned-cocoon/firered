@@ -86,16 +86,6 @@ u16 dma3_queue_add_transfer(u32 *loc_a, u32 *loc_b, u16 size, u8 zz) {
     return -1;
 }
 
-// 08000510
-void exec_c1_and_c2() {
-    if (fullscreen_save())
-        return;
-    if (help_system())
-        return;
-    if (super.callback1) super.callback1();
-    if (super.callback2) super.callback2();
-}
-
 // 08000FE8
 u32 sub_8000FE8(u16 r) {
     if (r == -1) {

@@ -390,3 +390,58 @@ bool repel_per_step() {
     script_env_12_start_and_stuff(scr_repel_wore_off);
     return 1;
 }
+
+// 0805CCD0
+void sub_805CCD0(u8 npc_id, u8 direction) {
+    u8 cid = task_add(&taskFF_805CD0C, 0xFF);
+    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &task[cid].args;
+    args.npc_id = npc_id;
+    args.direction = direction;
+    task_805CD0C(&task[cid]);
+}
+
+// 0805CD0C
+void taskFF_805CD0C(u8 cid) {
+    struct npc_state *player_npc, *other_npc;
+    struct task_t *c = &task[cid];
+    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &c->args;
+    do {
+        player_npc = npc_states[walkrun.npc_id];
+         other_npc = npc_states[  args->npc_id];
+    } while(off_835B8A0[args->mode](c, player_npc, other_npc));
+}
+
+// 0805CD64
+bool sub_805CD64_mode_0(struct task_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &c->args;
+
+    script_env_2_enable();
+    walkrun.lock = 1;
+    args->mode++; // from 0 to 1
+    return 0;
+}
+
+// 0805CD84
+bool sub_805CD84_mode_1(struct task_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+    // TODO
+    args->mode++; // from 1 to 2
+    return 0;
+}
+
+// 0805CE20
+bool sub_805CE20_mode_2(struct task_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+    if (npc_get_bit7_or_const_x10_when_inactive(player_npc) == 0) return 0;
+    if (npc_get_bit7_or_const_x10_when_inactive(other_npc) == 0) return 0;
+    npc_destruct_when_bit7_is_set(player_npc);
+    npc_destruct_when_bit7_is_set(other_npc);
+    npc_hide_and_trainer_flag_clear_on_role_x66_at_pos(other_npc);
+    struct coords *o_to = other_npc.to;
+    if_role_x20_run_trigger_at_position_maybe(o_to->x, o_to->y);
+
+    walkrun.lock = 0;
+    script_env_2_disable();
+    u8 cid = task_find_id_by_funcptr(&task_805CD0C);
+    task_del(cid);
+
+    return 0;
+}

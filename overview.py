@@ -13,6 +13,10 @@ for fname in os.listdir():
 
 z.sort()
 
-for entry in z:
-	print("%08x %s" % entry)
+codeonly = True
+
+for addr, line in z:
+	if codeonly and not ((0x08000000 <= addr < 0x0815F9B4) or (0x081DBD34 <= addr < 0x081E9F08)):
+		continue
+	print("%08x %s" % (addr, line))
 
