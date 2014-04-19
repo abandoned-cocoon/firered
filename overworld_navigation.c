@@ -372,25 +372,6 @@ bool is_tile_XX_prevent_per_step_scripts(u16 role) {
     return 0;
 }
 
-// 080830B8
-bool repel_per_step() {
-    if (in_trade_center())
-        return 0;
-    if (byte_203ADFA == 2)
-        return 0;
-
-    u16 remaining_steps = var_load(VAR_REPEL_STEPS);
-    if (remaining_steps == 0)
-        return 0;
-
-    var_set(VAR_REPEL_STEPS, remaining_steps-1)
-    if (remainings_steps > 0)
-        return 0;
-
-    script_env_12_start_and_stuff(scr_repel_wore_off);
-    return 1;
-}
-
 // 0805CCD0
 void sub_805CCD0(u8 npc_id, u8 direction) {
     u8 cid = task_add(&taskFF_805CD0C, 0xFF);
