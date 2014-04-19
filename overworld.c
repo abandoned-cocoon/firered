@@ -646,13 +646,6 @@ void context_npc_set_0() {
     var_8012 = 0xFF; // current text color
 }
 
-// 0806CE74
-u8 cur_mapdata_block_role_at_player_pos() {
-    u16 x, y;
-    player_get_pos_to(&x, &y);
-    return cur_mapdata_block_role_at(x, y);
-}
-
 // 0806FF9C
 void cur_mapheader_run_tileset_funcs_after_806FED8() {
     sub_806FED8();
