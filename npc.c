@@ -76,15 +76,98 @@ bool (off_835B8A0[])(struct task_t*, struct npc_state*, struct npc_state*) = {
     &sub_805CE20_mode_2
 };
 
+// 0805DF60
+u8 npc_id_by_local_id(u8 local_id, u8 mapnr, u8 mapgroup) {
+    if (local_id == 0xFF)
+        return npc_id_by_local_id_ignore_map(local_id);
+    else
+        return npc_id_by_local_id_and_map(local_id, mapnr, mapgroup);
+}
+
+// 0805DF84
+bool npc_id_by_local_id_and_map_ret_success(u8 local_id, u8 mapnr, u8 mapgroup, u8 *result) {
+    return (*result=npc_id_by_local_id(local_id, mapnr, mapgroup)) == MAX_NPCS;
+}
+
+// 0805DFF4
+u8 npc_id_by_local_id_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
+    u8 i=0;
+    while (i<MAX_NPCS) {
+        if (npc_states[i].bits & 1 && \
+            npc_states[i].local_id       == local_id && \
+            npc_states[i].local_mapnr    == local_mapnr && \
+            npc_states[i].local_mapgroup == local_mapgroup) break;
+        i++;
+    }
+    return i;
+}
+
 // 0805E080
 u8 rom_npc_to_npc_state(struct rom_npc *rnpc, u8, u8) {
     // TODO
+}
+
+// 0805E044
+u8 npc_id_by_local_id_ignore_map(u8 local_id) {
+    u8 i=0;
+    while (i<MAX_NPCS) {
+        if (npc_states[i].bits & 1 && \
+            npc_states[i].local_id == local_id) break;
+        i++;
+    }
+    return i;
+}
+
+// 0805E4B4
+void npc_hide(struct npc_state *npc) {
+    npc->bits &= ~2; // clear bit 2
+    sub_0805E510(npc); // TODO
+}
+
+// 0805E4C8
+void hide_sprite(u8 local_id, u8 mapnr, u8 mapgroup) {
+    // TODO: Find better name. Check correctness of this transcription.
+    u8 npc_id;
+    if (!npc_id_by_local_id_and_map_ret_success(local_id, mapnr, mapgroup, &npc_id)) {
+        flag_set(trainerid_by_npc_id(npc_id));
+        npc_hide(&npc_states[npc_id]);
+    }
 }
 
 // 0805E590
 void *npc_spawn_with_provided_template(byte, void*, byte, byte, short, short) {
     // TODO
     return 0;
+}
+
+// 0805E8E8
+void npc_to_template(u8 npc_type_id, void *objcallback, struct proto_t *p, u32 *npc_type_14) {
+    struct npc_type *nt;
+    nt = npc_get_type(npc_type_id);
+
+    p->tiles_tag      = nt->tiles_tag;
+    p->pal_num        = nt->pal_num;
+    p->oam            = nt->oam;
+    p->image_anims    = nt->image_anims;
+    p->gfx_table      = nt->gfx_table;
+    p->rotscale_anims = nt->rotscale_anims;
+
+    if (script_env_2_context_is_eq_x0() || sub_8112CAC() != 1) {
+        p->callback = objcallback;
+    } else {
+        p->callback = &objc_npc_alternative;
+    }
+
+    *npc_type_14 = nt->field_14;
+}
+
+// 0805F2C8
+struct npc_type *npc_get_type(u8 type_id) {
+    if (type_id >= 0xF0)
+        type_id = var_load_x4010_plus(type_id-0xF0);
+    if (type_id >= 152)
+        type_id = 10;
+    return npc_types[type_id];
 }
 
 // 0805F574
@@ -108,6 +191,23 @@ bool npc_does_height_match(struct npc_state *npc, u8 height) {
     if (height == 0) return true;
     if (nh == height) return true;
     return false;
+}
+
+// 0805FC5C
+u16 trainerid_by_local_id_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
+    struct rom_npc *rnpc = (rom_npc_by_nr_and_map(local_id, mapnr, mapgroup));
+    return rnpc->trainerid;
+}
+
+// 0805FC74
+u16 trainerid_by_npc_id(u8 npc_id) {
+    struct npc_state *npc = &npc_states[npc_id];
+    return trainerid_by_local_id_and_map(npc->local_id, npc->local_mapnr, npc->local_mapgroup);
+}
+
+// 0805FD5C
+struct rom_npc *rom_npc_by_nr_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
+    // To be written.
 }
 
 #define AN(name) bool an_##name(struct npc_state *npc, struct obj *obj)
@@ -336,85 +436,6 @@ void obj_npc_ministep_set_p5(struct obj_t *o, u16 _) {
     o->private3 = _;
     o->private4 = 0;
     o->private5 = 0;
-}
-
-// 0805DF60
-u8 npc_id_by_local_id(u8 local_id, u8 mapnr, u8 mapgroup) {
-    if (local_id == 0xFF)
-        return npc_id_by_local_id_ignore_map(local_id);
-    else
-        return npc_id_by_local_id_and_map(local_id, mapnr, mapgroup);
-}
-
-// 0805DF84
-bool npc_id_by_local_id_and_map_ret_success(u8 local_id, u8 mapnr, u8 mapgroup, u8 *result) {
-    return (*result=npc_id_by_local_id(local_id, mapnr, mapgroup)) == MAX_NPCS;
-}
-
-// 0805DFF4
-u8 npc_id_by_local_id_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
-    u8 i=0;
-    while (i<MAX_NPCS) {
-        if (npc_states[i].bits & 1 && \
-            npc_states[i].local_id       == local_id && \
-            npc_states[i].local_mapnr    == local_mapnr && \
-            npc_states[i].local_mapgroup == local_mapgroup) break;
-        i++;
-    }
-    return i;
-}
-
-// 0805E044
-u8 npc_id_by_local_id_ignore_map(u8 local_id) {
-    u8 i=0;
-    while (i<MAX_NPCS) {
-        if (npc_states[i].bits & 1 && \
-            npc_states[i].local_id == local_id) break;
-        i++;
-    }
-    return i;
-}
-
-// 0805E4B4
-void npc_hide(struct npc_state *npc) {
-    npc->bits &= ~2; // clear bit 2
-    sub_0805E510(npc); // TODO
-}
-
-// 0805E4C8
-void hide_sprite(u8 local_id, u8 mapnr, u8 mapgroup) {
-    // TODO: Find better name. Check correctness of this transcription.
-    u8 npc_id;
-    if (!npc_id_by_local_id_and_map_ret_success(local_id, mapnr, mapgroup, &npc_id)) {
-        flag_set(trainerid_by_npc_id(npc_id));
-        npc_hide(&npc_states[npc_id]);
-    }
-}
-
-// 0805F2C8
-struct npc_type *npc_get_type(u8 type_id) {
-    if (type_id >= 0xF0)
-        type_id = var_load_x4010_plus(type_id-0xF0);
-    if (type_id >= 152)
-        type_id = 10;
-    return npc_types[type_id];
-}
-
-// 0805FC5C
-u16 trainerid_by_local_id_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
-    struct rom_npc *rnpc = (rom_npc_by_nr_and_map(local_id, mapnr, mapgroup));
-    return rnpc->trainerid;
-}
-
-// 0805FC74
-u16 trainerid_by_npc_id(u8 npc_id) {
-    struct npc_state *npc = &npc_states[npc_id];
-    return trainerid_by_local_id_and_map(npc->local_id, npc->local_mapnr, npc->local_mapgroup);
-}
-
-// 0805FD5C
-struct rom_npc *rom_npc_by_nr_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
-    // To be written.
 }
 
 // 08063554
