@@ -52,7 +52,7 @@ struct npc_type {
     u8 pal_slot; // stored in lower 4 bits
     u8 field_D;
     u16 _unused;
-    struct oam_t *oam;
+    struct obj_t *obj;
     void *field_14;
     animtable_t *animtable1;
     gfxtable_t  *gfxtable;
@@ -319,8 +319,8 @@ void player_get_pos_to(u16 x, u16 y) {
 }
 
 // 08064788
-bool npc_obj_ministep_stop_on_arrival(struct npc_states *npc, struct oam_t *oam) {
-    if (!obj_npc_ministep(oam))
+bool npc_obj_ministep_stop_on_arrival(struct npc_states *npc, struct obj_t *o) {
+    if (!obj_npc_ministep(o))
         // stepping continues
         return false;
     // step done, npc is on it's target position
@@ -332,8 +332,8 @@ bool npc_obj_ministep_stop_on_arrival(struct npc_states *npc, struct oam_t *oam)
 }
 
 // 080653CC
-bool npc_ministep(struct npc_states *npc, struct oam_t *oam) {
-    if (!obj_npc_ministep(oam))
+bool npc_ministep(struct npc_states *npc, struct obj_t *o) {
+    if (!obj_npc_ministep(o))
         // stepping continues
         return false;
     // step done, npc is on it's target position
@@ -357,40 +357,40 @@ coords directions_i16[] {
 };
 
 // 08068A8C
-void step1(struct oam_t *oam, u8 d) {
-    oam->pos_1.x += directions_i16[d].x;
-    oam->pos_1.y += directions_i16[d].y;
+void step1(struct obj_t *o, u8 d) {
+    o->pos_1.x += directions_i16[d].x;
+    o->pos_1.y += directions_i16[d].y;
 }
 
 // 08068AAC
-void step2(struct oam_t *oam, u8 d) {
-    oam->pos_1.x += directions_i16[d].x * 2;
-    oam->pos_1.y += directions_i16[d].y * 2;
+void step2(struct obj_t *o, u8 d) {
+    o->pos_1.x += directions_i16[d].x * 2;
+    o->pos_1.y += directions_i16[d].y * 2;
 }
 
 // 08068AD0
-void step3(struct oam_t *oam, u8 d) {
-    oam->pos_1.x += directions_i16[d].x * 3;
-    oam->pos_1.y += directions_i16[d].y * 3;
+void step3(struct obj_t *o, u8 d) {
+    o->pos_1.x += directions_i16[d].x * 3;
+    o->pos_1.y += directions_i16[d].y * 3;
 }
 
 // 08068AF8
-void step4(struct oam_t *oam, u8 d) {
-    oam->pos_1.x += directions_i16[d].x * 4;
-    oam->pos_1.y += directions_i16[d].y * 4;
+void step4(struct obj_t *o, u8 d) {
+    o->pos_1.x += directions_i16[d].x * 4;
+    o->pos_1.y += directions_i16[d].y * 4;
 }
 
 // 08068B1C
-void step8(struct oam_t *oam, u8 d) {
-    oam->pos_1.x += directions_i16[d].x * 8;
-    oam->pos_1.y += directions_i16[d].y * 8;
+void step8(struct obj_t *o, u8 d) {
+    o->pos_1.x += directions_i16[d].x * 8;
+    o->pos_1.y += directions_i16[d].y * 8;
 }
 
 // 08068B40
-void obj_npc_ministep_reset(struct oam_t *oam, u16 speed, u16 phase) {
-    oam->priv3 = 0;
-    oam->priv4 = speed;
-    oam->priv5 = phase;
+void obj_npc_ministep_reset(struct obj_t *o, u16 speed, u16 phase) {
+    o->priv3 = 0;
+    o->priv4 = speed;
+    o->priv5 = phase;
 }
 
 // 083A710C
@@ -418,7 +418,7 @@ void (*stepspeed5[])(a, b) = {
 };
 
 // 083A719C
-void (**stepspeeds[])(struct oam_t *, u8) = {
+void (**stepspeeds[])(struct obj_t *, u8) = {
     stepspeed1,
     stepspeed2,
     stepspeed3,
@@ -432,22 +432,22 @@ u16 stepspeed_seq_length[] = {
 };
 
 // 08068B54
-bool obj_npc_ministep(struct oam_t *oam) {
-    u8   z =  oam->private3;
-    u16  s =  oam->private4;
-    u16 *i = &oam->private5;
+bool obj_npc_ministep(struct obj_t *o) {
+    u8   z =  o->private3;
+    u16  s =  o->private4;
+    u16 *i = &o->private5;
     u16  l = stepspeed_seq_length[s];
     if (*i >= l) return false;
-    stepspeeds[s][i](oam, z);
+    stepspeeds[s][i](o, z);
     if (*i++ >= l) return true;
     return false;
 }
 
 // 08068BBC
-void obj_npc_ministep_set_p5(struct oam_t *oam, u16 _) {
-    oam->private3 = _;
-    oam->private4 = 0;
-    oam->private5 = 0;
+void obj_npc_ministep_set_p5(struct obj_t *o, u16 _) {
+    o->private3 = _;
+    o->private4 = 0;
+    o->private5 = 0;
 }
 
 // 0806CE20

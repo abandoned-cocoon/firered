@@ -30,10 +30,10 @@ u8 gpu_pal_alloc_and_load_multiple(struct pal_spec* ps) {
 }
 
 // 080089B8
-u8 gpu_pal_alloc_new() {
+u8 gpu_pal_alloc_new(u16 tag) {
 	u8 index = gpu_pal_tags_index_of(TAG_FREE);
 	if (index != 0xFF)
-		gpu_pal_tags[index] = ps->tag;
+		gpu_pal_tags[index] = tag;
 }
 
 // 080089E8
