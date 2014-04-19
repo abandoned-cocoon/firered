@@ -33,12 +33,6 @@ void sub_805F5E8(u16 tag, u8 pal_slot) {
     }
 }
 
-// 0805F574
-void pal_patch_for_npc_range(u16 *ptx, u8 i, u8 j) {
-    while (i<j)
-        pal_patch_for_npc(*ptx++, i++);
-}
-
 struct transfer {
     void *loc_a;
     void *loc_b;
