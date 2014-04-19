@@ -21,14 +21,15 @@ struct rotscale_frame {
 	u16 scale_x_delta;
 	u16 scale_y_delta;
 	u8  rotation_delta;
-	u8  field_5;
+	u8  duration;
 	u16 _padding;
 };
 
 struct rotscale_state {
 	u8 index;
 	u8 subindex;
-	u16 _padding1;
+	u8 delay_countdown;
+	u8 field_3;
 	u16 scale_x;
 	u16 scale_y;
 	u16 rotation;
@@ -344,14 +345,14 @@ void rotscale_load_frame(u8 affidx, struct obj *o, struct rotscale_frame *r) {
 	r->scale_x_delta  = f->scale_x_delta;
 	r->scale_y_delta  = f->scale_y_delta;
 	r->rotation_delta = f->rotation_delta;
-	r->field_5        = f->field_5;
+	r->duration       = f->duration;
 }
 
 // 0800834C
 void sub_0800834C(struct obj *o, struct rotscale_frame *f) {
 
-	if (f->field_5 > 0) {
-		f->field_5--;
+	if (f->duration > 0) {
+		f->duration--;
 		rotscale_frame_apply_relative_and_sync(o, f);
 	} else {
 		rotscale_frame_apply_absolute(o, f);
