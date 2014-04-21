@@ -46,9 +46,9 @@ const char *itemid_get_description(itemid i) {
 }
 
 // 0809A990
-bool itemid_can_not_be_held(itemid i) {
+bool itemid_is_unique(itemid i) {
 	i = itemid_sanitize(i);
-	return items[i].can_not_be_held;
+	return items[i].is_unique;
 }
 
 // 0809A9B4
