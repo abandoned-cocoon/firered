@@ -64,3 +64,71 @@ u8  b_side_status[4]; // 02023BD6
 struct battle_data b_data[4]; // 02023BE4
 u8 b_oamid[NUM_BATTLE_SIDES]; // 02023D44
 
+// 0800D30C
+void b_setup_bx() {
+	if (battle_type_flags & BATTLE_LINK)
+		b_setup_bx_link();
+	else
+		b_setup_bx_local();
+
+	sub_800D768();
+
+	if (battle_type_flags & BATTLE_DOUBLE_2)
+		for (u32 i=0; i<b_num_active_sides; i++)
+			sub_8127DA8(i, 0);
+
+}
+
+// 0800D364
+void b_setup_bx_local() {
+	if (battle_type_flags & BATTLE_DOUBLE) {
+		bc = &bc_080123C0;
+
+		b_side_status[0] = 0;
+		b_side_status[1] = 1;
+		b_side_status[2] = 2;
+		b_side_status[3] = 3;
+		b_num_active_sides = 4;
+
+		if (battle_type_flags & BATTLE_POKE_DUDE) {
+			bx[0] = &bx_goto_buffer_A_ch0_tbl5;
+			bx[1] = &bx_goto_buffer_A_ch0_tbl5;
+			bx[2] = &bx_goto_buffer_A_ch0_tbl5;
+			bx[3] = &bx_goto_buffer_A_ch0_tbl5;
+		} else {
+			bx[0] = &bx_goto_buffer_A_ch0_tbl1;
+			bx[1] = &bx_goto_buffer_A_ch0_tbl2;
+			bx[1] = &bx_goto_buffer_A_ch0_tbl1;
+			bx[1] = &bx_goto_buffer_A_ch0_tbl2;
+		}
+
+	} else {
+		bc = &bc_080123C0;
+
+		b_side_status[0] = 0;
+		b_side_status[1] = 1;
+		b_num_active_sides = 2;
+
+		if (battle_type_flags & BATTLE_POKE_DUDE) {
+			bx[0] = &bx_goto_buffer_A_ch0_tbl5;
+			bx[1] = &bx_goto_buffer_A_ch0_tbl5;
+		} else if (battle_type_flags & BATTLE_SAFARI) {
+			bx[0] = &bx_goto_buffer_A_ch0_tbl6;
+			bx[1] = &bx_goto_buffer_A_ch0_tbl2;
+		} else if (battle_type_flags & (BATTLE_OAK_COMMENTS|0x200)) {
+			bx[0] = &bx_goto_buffer_A_ch0_tbl3;
+			bx[1] = &bx_goto_buffer_A_ch0_tbl2;
+		} else {
+			bx[0] = &bx_goto_buffer_A_ch0_tbl1;
+			bx[1] = &bx_goto_buffer_A_ch0_tbl2;
+		}
+	}
+}
+
+// 080123E4
+void c1_battle_exec_bc_and_bx() {
+	(*bc)();
+	for (b_active_side = 0; b_active_side < b_num_active_sides; b_active_side++) {
+		(*bx[b_active_side])();
+	}
+}
