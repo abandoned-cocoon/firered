@@ -213,7 +213,7 @@ struct rom_npc *rom_npc_by_nr_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
 #define AN(name) bool an_##name(struct npc_state *npc, struct obj *obj)
 typedef bool (*anptr)(struct npc_state *npc, struct obj *obj);
 
-AN(xxx0) {                        return true; } // 08067930
+AN(xxx0) {                       return true; } // 08067930
 AN(xxx1) { obj.field_2C |= 0x40; return true; } // 08067934
 
 AN(look1_dn) { an_look_any(1); return true; } // 08064638
