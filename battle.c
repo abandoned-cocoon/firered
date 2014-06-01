@@ -91,15 +91,15 @@ void b_setup_bx_local() {
 		b_num_active_sides = 4;
 
 		if (battle_type_flags & BATTLE_POKE_DUDE) {
-			bx[0] = &bx_goto_buffer_A_ch0_tbl5;
-			bx[1] = &bx_goto_buffer_A_ch0_tbl5;
-			bx[2] = &bx_goto_buffer_A_ch0_tbl5;
-			bx[3] = &bx_goto_buffer_A_ch0_tbl5;
+			bx[0] = &bx5_goto_buffer_A_ch0;
+			bx[1] = &bx5_goto_buffer_A_ch0;
+			bx[2] = &bx5_goto_buffer_A_ch0;
+			bx[3] = &bx5_goto_buffer_A_ch0;
 		} else {
-			bx[0] = &bx_goto_buffer_A_ch0_tbl1;
-			bx[1] = &bx_goto_buffer_A_ch0_tbl2;
-			bx[1] = &bx_goto_buffer_A_ch0_tbl1;
-			bx[1] = &bx_goto_buffer_A_ch0_tbl2;
+			bx[0] = &bx1_goto_buffer_A_ch0;
+			bx[1] = &bx2_goto_buffer_A_ch0;
+			bx[1] = &bx1_goto_buffer_A_ch0;
+			bx[1] = &bx2_goto_buffer_A_ch0;
 		}
 
 	} else {
@@ -110,17 +110,17 @@ void b_setup_bx_local() {
 		b_num_active_sides = 2;
 
 		if (battle_type_flags & BATTLE_POKE_DUDE) {
-			bx[0] = &bx_goto_buffer_A_ch0_tbl5;
-			bx[1] = &bx_goto_buffer_A_ch0_tbl5;
+			bx[0] = &bx5_goto_buffer_A_ch0;
+			bx[1] = &bx5_goto_buffer_A_ch0;
 		} else if (battle_type_flags & BATTLE_SAFARI) {
-			bx[0] = &bx_goto_buffer_A_ch0_tbl6;
-			bx[1] = &bx_goto_buffer_A_ch0_tbl2;
+			bx[0] = &bx6_goto_buffer_A_ch0;
+			bx[1] = &bx2_goto_buffer_A_ch0;
 		} else if (battle_type_flags & (BATTLE_OAK_COMMENTS|0x200)) {
-			bx[0] = &bx_goto_buffer_A_ch0_tbl3;
-			bx[1] = &bx_goto_buffer_A_ch0_tbl2;
+			bx[0] = &bx3_goto_buffer_A_ch0;
+			bx[1] = &bx2_goto_buffer_A_ch0;
 		} else {
-			bx[0] = &bx_goto_buffer_A_ch0_tbl1;
-			bx[1] = &bx_goto_buffer_A_ch0_tbl2;
+			bx[0] = &bx1_goto_buffer_A_ch0;
+			bx[1] = &bx2_goto_buffer_A_ch0;
 		}
 	}
 }
