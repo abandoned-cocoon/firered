@@ -35,10 +35,12 @@ struct map {
 typedef u32 block;
 
 struct tileset {
-    void *ptr1;
-    void *ptr2;
-    void *ptr3;
-    void *ptr4;
+    u8     isCompressed;
+    u8     primaryOrSecondary;
+    u16    padding;
+    void  *tiles;
+    void  *palette;
+    u16   *bdef;
     void (*fptr)(void);
     block *blocks;
 }; // 0xC
@@ -515,9 +517,9 @@ void cur_mapdata_draw_block_internal(struct mapdata *data, u16 screenpos, s16 x,
     u16 blockid = cur_mapdata_get_blockid_at(x, y);
     if (blockid >= 0x400) blockid = 0;
     if (blockid < 0x280)
-        blockdef = &data->tileset1.bdef[blockid];
+        blockdef = &data->tileset1->bdef[blockid];
     else
-        blockdef = &data->tileset2.bdef[blockid-0x280];
+        blockdef = &data->tileset2->bdef[blockid-0x280];
     u32 ttype = cur_mapdata_block_get_bgs_at(x, y);
     overworld_draw_block(ttype, blockdef, screenpos);
 }

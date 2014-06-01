@@ -62,3 +62,9 @@ void c2_pre_battle_2_single() {
 
 	}
 }
+
+// 080116F4
+void vblank_cb_battle() {
+	rand();
+	// TODO
+}
