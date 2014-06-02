@@ -354,14 +354,14 @@ u32 block_get_field(block b, u8 f) {
     // 08352EF0
     const u32 mask[8] = {
         0x000001FF, // role (a.k.a. behaviour byte)
-        0x00003E00,
+        0x00003E00, // used for something
         0x0003C000,
         0x00FC0000,
         0x07000000, // is grass/water tile?
-        0x18000000, // 0=bg2/bg1 1=bg3/bg2 2=bg3/bg2
-        0x60000000,
+        0x18000000,
+        0x60000000, // 0=bg2/bg1 1=bg3/bg2 2=bg3/bg2
         0x80000000
-    }
+    };
 
     // 08352F10
     const u8 shift[8] = {
