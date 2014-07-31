@@ -235,7 +235,7 @@ void anim_rotscale_0_unknown(u8 affidx, struct obj *o) {
 // 08007E60
 void sub_08007E60(u8 affidx, struct obj *o) {
 	rotscale_states[affidx].field_3--;
-	obj_anim_rotscale_rewind_to_cmd00_maybe(affidx, o);obj_anim_image
+	obj_anim_rotscale_rewind_to_cmd00_maybe(affidx, o);
 	obj_anim_rotscale_continue(affidx, o);
 }
 
@@ -375,14 +375,12 @@ void obj_anim_image_start_if_different(struct obj *o, u8 anim_number) {
 }
 
 // 080083C0
-void sub_80083C0(struct obj *obj, u8 frame) {
+void obj_anim_image_seek(struct obj *obj, u8 frame) {
 	u8 old_image_pause_flag = obj.anim_delay_countdown & OBJ_ANIM_IMAGE_PAUSED;
 
 	obj.anim_frame = frame-1;
-	obj.anim_delay_countdown &= OBJ_ANIM_ROTSCALE_PAUSED;
-		// OBJ_ANIM_ROTSCALE_PAUSED = old value
-		// OBJ_ANIM_IMAGE_PAUSED    = false
-		// countdown                = zero
+
+	obj.anim_delay_countdown &= ~OBJ_ANIM_ANY_PAUSED;
 
 	obj.bitfield &= ~0x10;
 	obj.bitfield &= ~OBJ_BIT1_ANIM_IMAGE_BEGIN;
@@ -390,9 +388,10 @@ void sub_80083C0(struct obj *obj, u8 frame) {
 
 	u8 countdown = obj.anim_delay_countdown & 0x3F;
 	if (countdown) {
-		obj.anim_delay_countdown &= ~0xC0;
-		obj.anim_delay_countdown |=  0x3F & (countdown++);
+		obj.anim_delay_countdown &= OBJ_ANIM_ANY_PAUSED;
+		obj.anim_delay_countdown |= ++countdown;
 	}
 
+	obj.anim_delay_countdown &= ~OBJ_ANIM_IMAGE_PAUSED;
 	obj.anim_delay_countdown |= old_image_pause_flag;
 }

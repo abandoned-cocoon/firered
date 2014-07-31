@@ -563,6 +563,48 @@ void overworld_draw_block(u32 ttype, u16 *blockdef, u16 pos) {
     side_c[pos+33] = empty;
 }
 
+struct cameradata {
+    void (*hook)(struct cameradata*);
+    void *field04;
+    int a_x;
+    int a_y;
+    int b_x;
+    int b_y;
+};
+
+// 0805ABB0
+void camera_update(struct cameradata *cd) {
+    int dx, dy, ex, ey;
+
+    if (cd->hook) cd->hook(cd);
+
+    dx = 0;
+    dy = 0;
+
+    if (cd->b_x == 0) {
+        if (cd->a_x > 0) dx = 1;
+        if (cd->a_x < 0) dx = -1;
+    }
+
+    if (cd->b_y == 0) {
+        if (cd->a_y > 0) dy = 1;
+        if (cd->a_y < 0) dy = -1;
+    }
+
+    /* ... */
+
+    if (ex || ey) {
+        camera_move_maybe(ex, ey);
+        overworld_rebase(ex, ey);
+        tilemap_move_something(&tilemap_move_something_data, ex*2, ey*2);
+        cur_mapheader_draw_map_slice(&tilemap_move_something_data, ex*2, ey*2);
+    }
+
+    coords8_add(&tilemap_move_something_data.field_0, dx, dy);
+    nu.x -= dx;
+    nu.y -= dy;
+}
+
 // 08069AE4
 void script_env_12_start_and_stuff(u8 *scr) {
 

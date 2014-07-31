@@ -518,6 +518,21 @@ bool s52_waitmove_remote(struct script_env *s) {
 
 // Many commands missing
 
+// 0806B5BC
+bool s5A_face_player(struct script_env *s) {
+    struct npc_state *npc = &npc_states[scripting_npc];
+    if (npc->bits & 1)
+        npc_reciprocate_look(npc, player_get_direction());
+}
+
+// 0806B5F4
+bool s5B_npc_set_direction(struct script_env *s) {
+    u16 local_id = var_load(script_read_half(s));
+    u8 direction = script_read_byte(s);
+    npc_set_direction_by_local_id_and_map(local_id, sav1.location.map, sav1.location.bank, direction);
+    return false;
+}
+
 // see battle.c
 
 // 0806C2C4
