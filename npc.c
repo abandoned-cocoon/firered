@@ -161,6 +161,24 @@ void npc_to_template(u8 npc_type_id, void *objcallback, struct proto_t *p, u32 *
     *npc_type_14 = nt->field_14;
 }
 
+// 0805F218
+void npc_turn(struct npc_state *npc, u8 direction) {
+    npc_set_direction(npc, direction);
+
+    if (npc->field_1 & 0x20)
+        return;
+
+    obj_anim_image_start(o, npc_direction_to_obj_anim_image_number(npc->direction & 4));
+    obj_anim_image_seek(o, 0);
+}
+
+// 0805F268
+void npc_set_direction_by_local_id_and_map(u16 local_id, u8 map, u8 bank, u8 direction) {
+    u8 npc_id;
+    npc_id_by_local_id_and_map_ret_success(local_id, map, bank, &npc_id);
+    npc_turn(&npc_states[npc_id], direction);
+}
+
 // 0805F2C8
 struct npc_type *npc_get_type(u8 type_id) {
     if (type_id >= 0xF0)
@@ -177,11 +195,45 @@ void npc_pal_patch_range(u16 *ptx, u8 i, u8 j) {
 }
 
 // 0805F700
-void npc_coord_step(struct npc_state *n, u16 x, u16 y) {
-    n->from.x = n->to.x;
-    n->from.y = n->to.y;
+void npc_coords_shift(struct npc_state *n, u16 x, u16 y) {
+    n->from = n->to;
     n->to.x = x;
     n->to.y = y;
+}
+
+// 0805F710
+void npc_coords_set(struct npc_state *n, u16 x, u16 y) {
+    n->from.x = x;
+    n->from.y = y;
+    n->to.x = x;
+    n->to.y = y;
+}
+
+// 0805F818
+void npc_coords_shift_still(struct npc_state *npc) {
+    n->from = n->to;
+}
+
+// 0805F82C
+void npcs_rebase() {
+    if (!translate_info.active)
+        return;
+
+    i16 dx = translate_info.delta.x;
+    i16 dy = translate_info.delta.y;
+
+    for (u8 i=0; i<MAX_NPCS; i++) {
+        struct npc_state *npc = npc_states + i;
+        if (!(npc->bits & 1))
+            continue;
+
+        npc->stay_around.x -= dx;
+        npc->stay_around.y -= dy;
+        npc->to.x -= dx;
+        npc->to.y -= dy;
+        npc->from.x -= dx;
+        npc->from.y -= dy;
+    }
 }
 
 // 0805F8FC
@@ -191,6 +243,14 @@ bool npc_does_height_match(struct npc_state *npc, u8 height) {
     if (height == 0) return true;
     if (nh == height) return true;
     return false;
+}
+
+// 0805F218
+void npc_set_direction(struct npc_state *npc, u8 direction) {
+    npc->unknown = npc->direction.low;
+    if (npc->field_1 & 0x02 == 0)
+        npc->direction.low = direction;
+    npc->direction.high = direction;
 }
 
 // 0805FC5C
@@ -208,6 +268,12 @@ u16 trainerid_by_npc_id(u8 npc_id) {
 // 0805FD5C
 struct rom_npc *rom_npc_by_nr_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
     // To be written.
+}
+
+// 080642C8
+u8 npc_reciprocate_look(struct npc_state *npc, u8 direction) {
+    u8 state = d2s_look1(direction_reversed(direction));
+    return npc_set_state_2(npc, state);
 }
 
 #define AN(name) bool an_##name(struct npc_state *npc, struct obj *obj)

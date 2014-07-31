@@ -13,6 +13,7 @@
 
 #define OBJ_ANIM_IMAGE_PAUSED     0x40
 #define OBJ_ANIM_ROTSCALE_PAUSED  0x80
+#define OBJ_ANIM_ANY_PAUSED       0xC0
 
 struct proto_t {
 	u16 tile_tag;
