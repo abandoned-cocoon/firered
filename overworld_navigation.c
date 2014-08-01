@@ -80,6 +80,14 @@ void script_env_2_apply_keypad_override(u8 *ignored, u16 *keypad_new, u16 *keypa
         *keypad_new = *keypad_held = q[i-1];
 }
 
+// 0805CCD0
+void sub_805CCD0(u8 npc_id, u8 direction) {
+    u8 task_id = task_add(taskFF_805CD0C, 0xFF);
+    tasks[task_id].args[1] = npc_id;
+    tasks[task_id].args[2] = direction;
+    taskFF_805CD0C(task_id);
+}
+
 //* 08069A54
 void sub_8069A54() {
     context_npc_set_0();
@@ -374,17 +382,17 @@ bool is_tile_XX_prevent_per_step_scripts(u16 role) {
 
 // 0805CCD0
 void sub_805CCD0(u8 npc_id, u8 direction) {
-    u8 cid = task_add(&taskFF_805CD0C, 0xFF);
-    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &task[cid].args;
+    u8 task_id = task_add(&taskFF_805CD0C, 0xFF);
+    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &task[task_id].args;
     args.npc_id = npc_id;
     args.direction = direction;
-    task_805CD0C(&task[cid]);
+    task_805CD0C(&task[task_id]);
 }
 
 // 0805CD0C
-void taskFF_805CD0C(u8 cid) {
+void taskFF_805CD0C(u8 task_id) {
     struct npc_state *player_npc, *other_npc;
-    struct task_t *c = &task[cid];
+    struct task_t *c = &task[task_id];
     struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &c->args;
     do {
         player_npc = npc_states[walkrun.npc_id];
@@ -421,8 +429,8 @@ bool sub_805CE20_mode_2(struct task_t* c, struct npc_state* player_npc, struct n
 
     walkrun.lock = 0;
     script_env_2_disable();
-    u8 cid = task_find_id_by_funcptr(&task_805CD0C);
-    task_del(cid);
+    u8 task_id = task_find_id_by_funcptr(&task_805CD0C);
+    task_del(task_id);
 
     return 0;
 }
