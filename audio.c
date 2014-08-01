@@ -31,6 +31,7 @@ enum audio {
 	sound_countinous_raining_2 = 0x4C,
 	sound_level_up = 0x58,
 	sound_sunlight = 0xC3,
+	soubd_boulder_bump = 0xCF,
 	sound_yawn_maybe = 0xDC,
 	sound_run_the_terminator = 0xE3,
 	sound_some_air_move_1 = 0xE4,

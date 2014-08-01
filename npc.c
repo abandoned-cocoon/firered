@@ -173,7 +173,7 @@ void npc_turn(struct npc_state *npc, u8 direction) {
 }
 
 // 0805F268
-void npc_set_direction_by_local_id_and_map(u16 local_id, u8 map, u8 bank, u8 direction) {
+void npc_turn_by_local_id_and_map(u16 local_id, u8 map, u8 bank, u8 direction) {
     u8 npc_id;
     npc_id_by_local_id_and_map_ret_success(local_id, map, bank, &npc_id);
     npc_turn(&npc_states[npc_id], direction);
@@ -487,9 +487,9 @@ u16 stepspeed_seq_length[] = {
 
 // 08068B54
 bool obj_npc_ministep(struct obj_t *o) {
-    u8   z =  o->private3;
-    u16  s =  o->private4;
-    u16 *i = &o->private5;
+    u8   z =  o->private3; // direction
+    u16  s =  o->private4; // speed
+    u16 *i = &o->private5; // phase
     u16  l = stepspeed_seq_length[s];
     if (*i >= l) return false;
     stepspeeds[s][i](o, z);
@@ -498,22 +498,27 @@ bool obj_npc_ministep(struct obj_t *o) {
 }
 
 // 08068BBC
-void obj_npc_ministep_set_p5(struct obj_t *o, u16 _) {
-    o->private3 = _;
+void obj_npc_ministep_set_direction(struct obj_t *o, u16 direction) {
+    o->private3 = direction;
     o->private4 = 0;
     o->private5 = 0;
 }
 
+struct npc_image_anim_looping_info {
+    struct image_seq *animtable;
+    struct loopingpoint { u8 trigger; u8 target; } l1, l2;
+};
+
 // 08063554
-void sub_8063554(struct npc_state *npc, struct obj *obj, u8 anim_number) {
+void npc_apply_anim_looping(struct npc_state *npc, struct obj *obj, u8 anim_number) {
     if (npc.field_1 & 0x8) return;
-    obj.anim_number = anim_number;
-    u8 *tp = animtable_get_tp(obj.anim_table);
+    obj->anim_number = anim_number;
+    struct npc_image_anim_looping_info *tp = animtable_get_tp(obj->anim_table);
     if (tp) {
-             if (obj.anim_frame == tp[4]) obj.anim_frame = tp[7];
-        else if (obj.anim_frame == tp[5]) obj.anim_frame = tp[6];
+             if (obj->anim_frame == tp->l1.trigger) obj->anim_frame = tp->l1.trigger;
+        else if (obj->anim_frame == tp->l2.trigger) obj->anim_frame = tp->l2.trigger;
     }
-    sub_80083C0(obj, obj.anim_frame); // decrements anim_frame
+    obj_anim_image_seek(obj, obj->anim_frame);
 }
 
 // 0806DE28
