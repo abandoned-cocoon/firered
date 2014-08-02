@@ -158,6 +158,34 @@ void mcmd29_compare_jump_8() {
         move_exec_cursor += 11;
 }
 
+void mcmd49() {
+    u32 move_id = move_to_execute_B == 0xFFFF ? 0 : move_to_execute_B;
+    /* ... */
+    while (1) {
+        switch (modo) {
+        case 0:
+            struct battle_data *defender = &battle_data[b_defender];
+            if ((defender->status2 & B_S2_ATK_UP_IF_HIT) &&
+                (defender->hp != 0) &&
+                (b_attacker != b_defender) &&
+                (battle_side_get_owner(b_attacker) != battle_side_get_owner(b_defender)) &&
+                (b_attack_effectivity & (B_AE_FAILED | B_AE_NOT_AFFECTED | B_AE_MISSED) == 0) &&
+                (dp16[b_defender].field_8 != 0 ||
+                 dp16[b_defender].field_C != 0) &&
+                (move_data[move_to_execute_A].power != 0) &&
+                (defender->stat_buffs[STAT_ATK] < 12)
+            ) {
+                defender->stat_buffs[STAT_ATK]++;
+                b_stack_push_move_cursor();
+                b_move_cursor = &movescr_after_atk_up_if_hit;
+            }
+            /* ... */
+        }
+        /* ... */
+    }
+    /* ... */
+}
+
 void mcmd60_08025B74() {
     if (battle_side_get_owner(b_attacker_side_hl) == 0)
         sub_08054E90(move_exec_cursor[1]);
