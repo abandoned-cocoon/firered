@@ -12,6 +12,7 @@
 	}
 */
 #define TASK_PRIV priv_t; priv_t *priv = (priv_t*) &task[c]->priv
+#define TASK_PRIV_ASSIGN32(t, i, v) ((t).priv[i] = (v)>>16, (t).priv[i+1] = (v)&0xFFFF)
 
 #define NUM_TASKS 16
 

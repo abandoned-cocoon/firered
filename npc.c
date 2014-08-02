@@ -279,33 +279,47 @@ u8 npc_reciprocate_look(struct npc_state *npc, u8 direction) {
 #define AN(name) bool an_##name(struct npc_state *npc, struct obj *obj)
 typedef bool (*anptr)(struct npc_state *npc, struct obj *obj);
 
-AN(xxx0) {                       return true; } // 08067930
-AN(xxx1) { obj.field_2C |= 0x40; return true; } // 08067934
+AN(loop) {                                                    return true; } // 08067930
+AN(stop) { obj.anim_delay_countdown |= OBJ_ANIM_IMAGE_PAUSED; return true; } // 08067934
+
 
 AN(look1_dn) { an_look_any(1); return true; } // 08064638
 AN(look1_up) { an_look_any(2); return true; } // 08064648
 AN(look1_lf) { an_look_any(3); return true; } // 08064658
 AN(look1_rt) { an_look_any(4); return true; } // 08064668
 
-anptr an_look1_dn[] = { an_look1_dn, an_xxx1 }; // 083A6864
-anptr an_look1_up[] = { an_look1_up, an_xxx1 }; // 083A686C
-anptr an_look1_lf[] = { an_look1_lf, an_xxx1 }; // 083A6874
-anptr an_look1_rt[] = { an_look1_rt, an_xxx1 }; // 083A6874
+anptr an_look1_dn[] = { an_look1_dn, an_stop }; // 083A6864
+anptr an_look1_up[] = { an_look1_up, an_stop }; // 083A686C
+anptr an_look1_lf[] = { an_look1_lf, an_stop }; // 083A6874
+anptr an_look1_rt[] = { an_look1_rt, an_stop }; // 083A6874
+
 
 AN(look2_dn) { /* ... */ } // 080655D4
 AN(look2_up) { /* ... */ }
 AN(look2_lf) { /* ... */ }
 AN(look2_rt) { /* ... */ }
 
-anptr an_look2_dn[] = { an_look2_dn, an_xxx0 }; // 083A6A30
-anptr an_look2_up[] = { an_look2_up, an_xxx0 }; // 083A6A38
-anptr an_look2_lf[] = { an_look2_lf, an_xxx0 }; // 083A6A40
-anptr an_look2_rt[] = { an_look2_rt, an_xxx0 }; // 083A6A48
+anptr an_look2_dn[] = { an_look2_dn, an_loop }; // 083A6A30
+anptr an_look2_up[] = { an_look2_up, an_loop }; // 083A6A38
+anptr an_look2_lf[] = { an_look2_lf, an_loop }; // 083A6A40
+anptr an_look2_rt[] = { an_look2_rt, an_loop }; // 083A6A48
 
-anptr an_walk_dn[] = { an_walk_dn_1, an_walk_dn_2, an_xxx1 }; // 083A68C8
-anptr an_walk_up[] = { an_walk_up_1, an_walk_up_2, an_xxx1 }; // 083A68D4
-anptr an_walk_lf[] = { an_walk_lf_1, an_walk_lf_2, an_xxx1 }; // 083A68E0
-anptr an_walk_rt[] = { an_walk_rt_1, an_walk_rt_2, an_xxx1 }; // 083A68EC
+
+AN(walk_dn_1) { an_walk_any_1(npc, obj, 1); return an_walk_dn_2(npc, obj); }
+AN(walk_up_1) { an_walk_any_1(npc, obj, 2); return an_walk_up_2(npc, obj); }
+AN(walk_lf_1) { an_walk_any_1(npc, obj, 3); return an_walk_lf_2(npc, obj); }
+AN(walk_rt_1) { an_walk_any_1(npc, obj, 4); return an_walk_rt_2(npc, obj); }
+
+AN(walk_dn_2) { return an_walk_any_2(npc, obj) && (obj->priv2 = 1, true); }
+AN(walk_up_2) { return an_walk_any_2(npc, obj) && (obj->priv2 = 2, true); }
+AN(walk_lf_2) { return an_walk_any_2(npc, obj) && (obj->priv2 = 3, true); }
+AN(walk_rt_2) { return an_walk_any_2(npc, obj) && (obj->priv2 = 4, true); }
+
+anptr an_walk_dn[] = { an_walk_dn_1, an_walk_dn_2, an_stop }; // 083A68C8
+anptr an_walk_up[] = { an_walk_up_1, an_walk_up_2, an_stop }; // 083A68D4
+anptr an_walk_lf[] = { an_walk_lf_1, an_walk_lf_2, an_stop }; // 083A68E0
+anptr an_walk_rt[] = { an_walk_rt_1, an_walk_rt_2, an_stop }; // 083A68EC
+
 
 AN(run_dn_1) { an_run_any(npc, obj, 1, 1); return an_run_dn_2(npc, obj); } // 080652CC
 AN(run_up_1) { an_run_any(npc, obj, 2, 1); return an_run_up_2(npc, obj); } // 080652EC
@@ -317,10 +331,10 @@ AN(run_up_2) { return npc_obj_ministep_stop_on_arrival(npc, obj) && (obj->priv2 
 AN(run_lf_2) { return npc_obj_ministep_stop_on_arrival(npc, obj) && (obj->priv2 = 2, true); } // 0806532C
 AN(run_rt_2) { return npc_obj_ministep_stop_on_arrival(npc, obj) && (obj->priv2 = 2, true); } // 0806534C
 
-anptr an_run_dn[] = { an_run_dn_1, an_run_dn_2, an_xxx1 }; // 083A69D0
-anptr an_run_up[] = { an_run_up_1, an_run_up_2, an_xxx1 }; // 083A69DC
-anptr an_run_lf[] = { an_run_lf_1, an_run_lf_2, an_xxx1 }; // 083A69E8
-anptr an_run_rt[] = { an_run_rt_1, an_run_rt_2, an_xxx1 }; // 083A69F4
+anptr an_run_dn[] = { an_run_dn_1, an_run_dn_2, an_stop }; // 083A69D0
+anptr an_run_up[] = { an_run_up_1, an_run_up_2, an_stop }; // 083A69DC
+anptr an_run_lf[] = { an_run_lf_1, an_run_lf_2, an_stop }; // 083A69E8
+anptr an_run_rt[] = { an_run_rt_1, an_run_rt_2, an_stop }; // 083A69F4
 
 #define Q(n) n##_dn, n##_up, n##_lf, n##_rt
 

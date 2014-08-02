@@ -50,7 +50,7 @@ enum pokemon_data_request
 	req_sheen = 0x30,
 	req_ot_gender = 0x31,
 	req_x32 = 0x32,
-	req_status_aliment = 0x37,
+	req_status_ailment = 0x37,
 	req_level = 0x38,
 	req_current_hp = 0x39,
 	req_x3A = 0x3A,
