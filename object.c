@@ -38,7 +38,7 @@ struct obj_t {
 	coords8  pos_neg_center;
 	u8 anim_number;
 	u8 anim_frame;
-	u8 anim_delay_countdown; // top two bits used as flags (OBJ_ANIM_PAUSED)
+	u8 anim_delay_countdown; // top two bits used as flags (OBJ_ANIM_ANY_PAUSED)
 	u8 anim_unknown_counter;
 	u16 priv0;
 	u16 priv1;
