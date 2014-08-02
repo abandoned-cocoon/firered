@@ -130,7 +130,7 @@ void prev_quest_write_x11_chat_with_trainers(u8 *cursor) {
 }
 
 // 08114758
-void prev_quest_read_x10_chat_with_trainers(u8 *cursor) {
+void prev_quest_read_x11_chat_with_trainers(u8 *cursor) {
 	fdecoder(displayed_string, "Chatted with many TRAINERS.");
 	return cursor + 4;
 }

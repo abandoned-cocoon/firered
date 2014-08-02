@@ -57,9 +57,9 @@ bool oei_3A_08097A48() {
 
 // 08097BA8
 void objc_08097BA8(struct obj *obj) {
-	obj->priv[0] = 8;
-	obj->priv[1] = 0;
-	obj->priv[3] = 0;
+	obj->priv0 = 8;
+	obj->priv1 = 0;
+	obj->priv3 = 0;
 	obj->callback = &objc_08097BBC;
 }
 
