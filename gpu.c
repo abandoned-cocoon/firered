@@ -118,13 +118,13 @@ void gpu_bg_hide(u8 bg_id) {
 // 080013D0
 void gpu_sync_bg_visibility_and_mode() {
 	u16 dispcnt = lcd_io_get(0);
-	lcd_io_set((dispcnt & 0xF0F8) | bg_visibility_and_mode);
+	lcd_io_set(0, (dispcnt & 0xF0F8) | bg_visibility_and_mode);
 }
 
 // 080013F4
 void gpu_text_mode_and_hide_bgs() {
 	u16 dispcnt = lcd_io_get(0);
-	lcd_io_set(dispcnt & 0xF0F8);
+	lcd_io_set(0, dispcnt & 0xF0F8);
 }
 
 // 080017D0

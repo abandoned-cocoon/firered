@@ -1,10 +1,10 @@
 // 0805B4D4
-void player_step_by_keypad(u8 running2, u16 R1, u16 R2) {
+void player_step_by_keypad(u8 direction, u16 keypad_new, u16 keypad_held) {
     // reverse engineered by min <3
     if (walkrun_state.bitfield & 6)
-        dp04_initiate_movement(running2, R1);
+        dp04_initiate_movement(direction, keypad_new, keypad_held);
     else
-        dp04_continue_movement(running2, R2);
+        dp04_continue_movement(direction, keypad_held);
 }
 
 // 0805BCEC
@@ -34,7 +34,7 @@ void sub_805BCEC(u16 x, u16 y, u8 direction) {
 }
 
 // 0805B3E0
-void player_step(u8 running2, u16 keypad_new, u16 keypad_held) {
+void player_step(u8 direction, u16 keypad_new, u16 keypad_held) {
     struct npc_state *avatar = npc_states[walkrun.npc_id];
 
     sub_0805CC40(avatar);
@@ -43,7 +43,7 @@ void player_step(u8 running2, u16 keypad_new, u16 keypad_held) {
         return;
     if (player_lock_for_tile_x54_x55_x56_x57()) // always 1 when (walkrun.bitfield & 0x40)
         return;
-    if (sub_0805B45C(avatar, running2))
+    if (sub_0805B45C(avatar, direction))
         return;
 
     npc_clear_strange_bits(avatar);
@@ -52,7 +52,7 @@ void player_step(u8 running2, u16 keypad_new, u16 keypad_held) {
     if (player_override_call()) // always 1 when (walkrun.bitfield & 0x20)
         return;
 
-    player_step_by_keypad(running2, keypad_new, keypad_held);
+    player_step_by_keypad(direction, keypad_new, keypad_held);
     walkrun_clear_x20_when_running_fast();
 }
 
