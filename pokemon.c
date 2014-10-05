@@ -244,3 +244,39 @@ enum poke_nature {
 	NATURE_CAREFUL = 0x17,
 	NATURE_QUIRKY = 0x18,
 };
+
+struct pokemon_boxed {
+	u8  personality;
+	u32 otid;
+	u8  nick[10];
+	u8  font;
+	u8  sanity;
+	u8  otname[7];
+	u8  mark;
+	u16 checksum;
+	u16 field_1E;
+	u8  substruct[48];
+};
+
+struct pokemon {
+	struct pokemon_boxed boxed;
+	u32 ailment;
+	u8  level;
+	u8  field_55;
+	u16 current_hp;
+	u16 total_hp;
+	u16 atk;
+	u16 def;
+	u16 spd;
+	u16 spatk;
+	u16 spdef;
+};
+
+// 02024029
+u8 party_player_count;
+
+// 0202402C
+struct pokemon party_opponent[6];
+
+// 02024284
+struct pokemon party_player[6];

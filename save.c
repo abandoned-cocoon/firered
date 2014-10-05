@@ -1,16 +1,16 @@
 // 0804C1F0
 void save_serialize_pokemon() {
 	struct pokemon *dst = sav1->party_pokemon;
-	struct pokemon *src = party_pokemon;
-	sav1->num_party_pokemon = num_party_pokemon;
+	struct pokemon *src = party_player;
+	sav1->num_party_pokemon = party_player_count;
 	memcpy(dst, src, 6*sizeof(struct pokemon));
 }
 
 // 0804C230
 void save_deserialize_pokemon() {
-	struct pokemon *dst = party_pokemon;
+	struct pokemon *dst = party_player;
 	struct pokemon *src = sav1->party_pokemon;
-	sav1->num_party_pokemon = num_party_pokemon;
+	sav1->num_party_pokemon = party_player_count;
 	memcpy(dst, src, 6*sizeof(struct pokemon));
 }
 
