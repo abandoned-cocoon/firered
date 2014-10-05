@@ -48,18 +48,16 @@ F5: reset_attacker_bd_x4C
 
 void mcmd00_0801D760() {
 
-    if (byte_02023E8A) {
+    if (battle_exit_type > 0) {
         dp01s_mode = 12; // 08016D70
         return;
     }
 
     struct battle_data *batk = battle_data_4x[b_attacker_side_hl];
 
-    uint16 b_28 = batk->field_28;
-
-    if (!b_28 && (dword_02023DD0 & 0x200)==0) {
-        dword_02023DD |= 0x80000;
-        move_exec_cursor = &movescr_081D694E;
+    if (batk->current_hp == 0 && (b_features_bitfield & 0x200)==0) {
+        b_features_bitfield |= 0x80000;
+        b_move_cursor = &movescr_081D694E;
         return;
     }
 
@@ -71,30 +69,30 @@ void mcmd00_0801D760() {
 
     if (batk->field_24[byte_02023D48] == 0 &&
         move_to_execute != 0xA5            && // 165
-        dword_02023DD0 & 0x00800200 == 0   &&
+        b_features_bitfield & 0x00800200 == 0   &&
         batk->field_50 & 0x00001000 == 0) {
 
-        move_exec_cursor = &movescr_081D8EA8;
+        b_move_cursor = &movescr_081D8EA8;
         byte_02023DCC |= 1;
         return;
     }
 
-    dword_02023DD0 &= ~0x00800000;
+    b_features_bitfield &= ~0x00800000;
 
     uint x;
 
-    if (dword_02023DD0 & 0x02000000 == 0 &&
+    if (b_features_bitfield & 0x02000000 == 0 &&
         batk->field_50 & 0x00001000 == 0 &&
         (x = sub_0801D438())) {
 
         if (x == 2)
-            dword_02023DD0 |= 0x02000000;
+            b_features_bitfield |= 0x02000000;
         else
             byte_02023DCC |= 1;
         return;
     }
 
-    dword_02023DD0 |= 0x02000000;
+    b_features_bitfield |= 0x02000000;
 
     if ((int5)x_02023E8C[b_defender_side_hl] < 0 &&
         move_data[move_to_execute].flags & MOVE_AFFECTED_BY_MAGIC_COAT) {
@@ -103,11 +101,27 @@ void mcmd00_0801D760() {
                      0x115); // 277
         x_02023E8C[b_defender_side_hl] &= ~0x11;
         sub_08017544();
-        move_exec_cursor = &movescr_081D8FAA;
+        b_move_cursor = &movescr_081D8FAA;
         return;
     }
 
     // TO BE CONTINUED
+}
+
+// 0801E1D8
+void mcmd02_display_x_used_y_message() {
+    char v0 = b_buffers_awaiting_execution_bitfield;
+
+    if (v0) {
+        if (b_features_bitfield & 0x600 == 0) {
+            // X used Y!
+            b_std_message(4, b_attacker);
+            b_features_bitfield |= 0x400;
+        }
+
+        b_buffers_awaiting_execution_bitfield__copied_after_displaying_x_used_y_message = v0;
+        b_move_cursor++;
+    }
 }
 
 // 0801FA7C
@@ -128,9 +142,9 @@ void mcmd0D_critical_print_message() {
 
 // 08022650
 void mcmd28_goto() {
-    u32 target = (move_exec_cursor[1]<< 0) + (move_exec_cursor[2]<< 8)
-               + (move_exec_cursor[3]<<16) + (move_exec_cursor[4]<<24);
-    move_exec_cursor = target;
+    u32 target = (b_move_cursor[1]<< 0) + (b_move_cursor[2]<< 8)
+               + (b_move_cursor[3]<<16) + (b_move_cursor[4]<<24);
+    b_move_cursor = target;
 }
 
 static bool compare(u8 mode, u32 a, u32 b) {
@@ -146,16 +160,16 @@ static bool compare(u8 mode, u32 a, u32 b) {
 // 08022670
 // [29][mode:1][ptr_a:4][b:1][goto_target:4]
 void mcmd29_compare_jump_8() {
-    u8 mode = move_exec_cursor[1];
-    u8 b    = move_exec_cursor[6];
-    u8 *ptr_a  = (move_exec_cursor[2]<< 0) + (move_exec_cursor[3]<< 8)
-               + (move_exec_cursor[4]<<16) + (move_exec_cursor[5]<<24);
-    u32 target = (move_exec_cursor[7]<< 0) + (move_exec_cursor[ 8]<< 8)
-               + (move_exec_cursor[9]<<16) + (move_exec_cursor[10]<<24);
+    u8 mode = b_move_cursor[1];
+    u8 b    = b_move_cursor[6];
+    u8 *ptr_a  = (b_move_cursor[2]<< 0) + (b_move_cursor[3]<< 8)
+               + (b_move_cursor[4]<<16) + (b_move_cursor[5]<<24);
+    u32 target = (b_move_cursor[7]<< 0) + (b_move_cursor[ 8]<< 8)
+               + (b_move_cursor[9]<<16) + (b_move_cursor[10]<<24);
     if (compare_jump(mode, *ptr_a, b);
-        move_exec_cursor = target;
+        b_move_cursor = target;
     else
-        move_exec_cursor += 11;
+        b_move_cursor += 11;
 }
 
 void mcmd49() {
@@ -188,38 +202,53 @@ void mcmd49() {
 
 void mcmd60_08025B74() {
     if (battle_side_get_owner(b_attacker_side_hl) == 0)
-        sub_08054E90(move_exec_cursor[1]);
-    move_exec_cursor += 2;
+        sub_08054E90(b_move_cursor[1]);
+    b_move_cursor += 2;
 }
 
 void mcmd62_08025C6C() {
-    dp01_battle_side = get_battle_side_of(move_exec_cursor[1]);
+    dp01_battle_side = get_battle_side_of(b_move_cursor[1]);
     dp01_build_cmdbuf_x31_31_31_31(0);
     dp01_bitfield_set_flag_for_side(dp01_battle_side);
-    move_exec_cursor += 2;
+    b_move_cursor += 2;
 }
 
 void mcmd63_continue_with_move() {
     move_to_execute = word_02023D4E;
-    if (move_exec_cursor[1] == 0)
+    if (b_move_cursor[1] == 0)
         word_02023D4C = word_02023D4E;
-    move_exec_cursor = move_scripts[move_data[move_to_execute].move_script_id];
+    b_move_cursor = move_scripts[move_data[move_to_execute].move_script_id];
 }
 
 // 080267F0
 void mcmd6E_state0_side_becomes_attacker() {
     b_attacker_side_hl = battle_get_side_with_given_state(0);
-    move_exec_cursor++;
+    b_move_cursor++;
 }
 
 // 080268B8 
 void mcmd72_flee() {
     if (battle_flee()) {
-        u32 target = (move_exec_cursor[1]<< 0) + (move_exec_cursor[2]<< 8)
-                   + (move_exec_cursor[3]<<16) + (move_exec_cursor[4]<<24);
-        move_exec_cursor = target;
+        u32 target = (b_move_cursor[1]<< 0) + (b_move_cursor[2]<< 8)
+                   + (b_move_cursor[3]<<16) + (b_move_cursor[4]<<24);
+        b_move_cursor = target;
     } else
-        move_exec_cursor += 5;
+        b_move_cursor += 5;
+}
+
+void atkD3_copy_ability() {
+    struct battle_data *attacker = &battle_data[b_attacker];
+    struct battle_data *defender = &battle_data[b_defender];
+
+    if (defender->ability_id != abl_none &&
+        defender->ability_id != abl_wonder_guard )
+    {
+        attacker->ability_id = b_last_copied_ability = defender->ability_id;
+        b_move_cursor += 5;
+    } else {
+        b_move_cursor = (b_move_cursor[1]<< 0) + (b_move_cursor[2]<< 8)
+                      + (b_move_cursor[3]<<16) + (b_move_cursor[4]<<24);
+    }
 }
 
 uint8 get_battle_side_of(uint8 whom) {
