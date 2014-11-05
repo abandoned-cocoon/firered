@@ -124,6 +124,76 @@ void mcmd02_display_x_used_y_message() {
     }
 }
 
+// 0801E22C
+void mcmd03_pp_decrement() {
+
+    int pp_deduction = 1;
+
+    if (b_buffers_awaiting_execution_bitfield)
+        return;
+
+    if ( !(dp16_array[b_attacker].flags_uu1uuuuu__1_magic_coat << 26 >> 31) )
+    {
+        u8 affected = move_data[move_to_execute_A].affected;
+        if ( affected == 0x20 )                   // everyone affected
+        {
+            pp_deduction = ability_something(
+                               as_count_excl_self,
+                               b_attacker,
+                               pressure,
+                               0,
+                               dp16_array[b_attacker].flags_uu1uuuuu__1_magic_coat << 26 >> 31)
+                         + 1;
+        }
+        else
+        {
+            if ( affected > 32 )
+            {
+                if ( affected != 64 )
+                {
+                  LABEL_11:
+                    if ( b_attacker != b_defender )
+                    {
+                        if ( battle_data[b_defender].ability_id == pressure )
+                            pp_deduction = 2;
+                    }
+                    goto LABEL_14;
+                }
+            }
+            else if ( affected != 8 )
+            {
+                goto LABEL_11;
+            }
+            pp_deduction = ability_something(as_count_other_team, b_attacker, pressure, 0, 0) + 1;
+        }
+    }
+  LABEL_14:
+    if ( !(b_features_bitfield & 0xA00) )
+    {
+        if ( battle_data[b_attacker].current_pp[b_moveset_index] )
+        {
+            LOBYTE(protect_structs[b_attacker].field_2) |= 8u;
+            u8 *p_pp = &battle_data[b_attacker].current_pp[b_moveset_index];
+            u8 pp = *p_pp;
+            if ( pp <= pp_deduction )
+                *p_pp = 0;
+            else
+                *p_pp = pp - pp_deduction;
+            if ( !(battle_data[b_attacker].status2; & transformed) )
+            {
+                if ( !((b_disable_data_pbs[b_attacker].flags_mmmmuuuu__m_moves >> 4) & bits[b_moveset_index]) )
+                {
+                    b_active_side = b_attacker;
+                    dp01_build_cmdbuf_x02_a_b_varargs(0, (b_moveset_index + 9) & 0xFF, 0, 1);
+                    dp01_battle_side_mark_buffer_for_execution(b_attacker);
+                }
+            }
+        }
+    }
+    b_features_bitfield &= 0xFFFFF7FFu;
+    ++b_move_cursor;
+}
+
 // 0801FA7C
 void mcmd0D_critical_print_message() {
     // wait for low-level system to be idle
