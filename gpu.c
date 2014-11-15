@@ -198,3 +198,142 @@ void gpu_bg_config_set_field(u8 bg_id, u8 field, u8 value) {
 void bgid_mod_x_offset(u8 bgid, s32 value, u8 mode) {
 	// TODO
 }
+
+// 08002228
+void tilemap_rect_copy_translate(
+	u8 bgid,
+	void *src,
+	u8 dst_x,
+	u8 dst_y,
+	u8 width,
+	u8 height,
+	u8 palindex_global
+) {
+	tilemap_rect_copy_crop_translate_rebase(
+		bgid,
+		src,
+		0,
+		0,
+		width,
+		height,
+		dst_x,
+		dst_y,
+		width,
+		height,
+		palindex_global,
+		0,
+		0);
+}
+
+// 0800226C
+void tilemap_rect_copy_crop_translate_rebase(
+	u8 bgid,
+	void *src,
+
+	u8 src_x, u8 src_y,
+	u8 src_width, u8 src_height,
+
+	u8 dst_x, u8 dst_y,
+	u8 win_width, u8 win_height,
+
+	u8 palindex_global,
+	u16 tileindex_offset_global,
+	u16 palindex_offset_global
+) {
+	if (is_invalid_bg_id(bgid))
+		return;
+
+	if (gpu_something_is_tilemap_outside_of_ram(bgid))
+		return;
+
+	u16 *srcmap16 = (u16*)src;
+	u8  *srcmap8  = (u8*) src;
+
+	u16 *dstmap16 = (u16*)bg_config2[bgid].tilemap;
+	u8  *dstmap8  = (u8*) bg_config2[bgid].tilemap;
+
+	tilemode = bgid_get_tile_mode_attr(bgid);
+
+	if ( tilemode == 0 ) { // text mode (2 bytes per tile)
+		u32 htiles = 32 * bgid_dimensions_textmode(bgid, 1) & 0xFFFF;
+		u32 vtiles = 32 * bgid_dimensions_textmode(bgid, 2) & 0xFFFF;
+		u16 screensize = gpu_bg_config_get_field(bgid, 4);
+
+		for (u32 win_y = 0; win_y < win_height; win_y++) {
+			for (u32 win_x = 0; win_x < win_width; win_x++) {
+
+				u16 src_index = (src_y+win_y) * src_width + (src_x+win_x);
+				u16 dst_index = tilecoord_remap_for_screensize(
+					dst_x+win_x,
+					dst_y+win_y
+					screensize,
+					htiles,
+					vtiles);
+
+				tile_rebase_indices(
+					&srcmap16[src_index],
+					&dstmap16[dst_index],
+					palindex_global,
+					tileindex_offset_global,
+					palindex_offset_global);
+			}
+		}
+
+	} else if ( tilemode == 1 ) { // rotscale mode (1 byte per tile)
+		u16 dst_width = bgid_dimensions_rotscalemode(bgid, 1); // 1 = width
+
+		for (u32 win_y = 0; win_y < win_height; win_y++) {
+			for (u32 win_x = 0; win_x < win_width; win_x++) {
+
+				u16 src_index = (src_y+win_y) * src_width + (src_x+win_y);
+				u16 dst_index = (dst_y+win_y) * dst_width + (dst_x+win_x);
+
+				dstmap8[dst_index] = srcmap8[src_index] + tileindex_offset_global;
+			}
+		}
+	}
+}
+
+// 0800273C
+u8 bgid_dimensions_textmode(u8 bgid, u32 property) {
+	u8 screensize = gpu_bg_config_get_field(bgid, 4);
+	switch (property) {
+		case 0: return (u8[]){1, 2, 2, 4}[screensize];
+		case 1: return (u8[]){1, 2, 1, 2}[screensize];
+		case 2: return (u8[]){1, 1, 2, 2}[screensize];
+		default: return 0;
+	}
+}
+
+// 080027AC
+u8 bgid_dimensions_rotscalemode(u8 bgid, u32 property) {
+	u8 screensize = gpu_bg_config_get_field(bgid, 4);
+	switch (property) {
+		case 0: return (u8[]){ 1,  4, 16,  64}[screensize];
+		case 1: return (u8[]){16, 32, 64, 128}[screensize];
+		case 2: return (u8[]){16, 32, 64, 128}[screensize];
+		default: return 0;
+	}
+}
+
+// 08002804
+u32 tilecoord_remap_for_screensize(u32 x, u32 y, u32 screensize, u32 htiles, u32 vtiles) {
+	x &= htiles-1;
+	y &= vtiles-1;
+
+	switch (screensize) {
+		case 0: // 256 x 256
+		case 2: // 256 x 512
+			break;
+		case 3: // 512 x 512
+			if (y >= 32)
+				y += 32;
+		case 1: // 512 x 256
+			if (x >= 32) {
+				x -= 32;
+				y += 32;
+			}
+			break;
+	}
+	return 32 * y + x;
+}
