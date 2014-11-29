@@ -7,6 +7,13 @@
 #define TAI_FLAG_USE_MOVE_5    4
 #define TAI_FLAG_QUIT          8
 
+struct br18 {
+	u16 movehistory_1[8];
+	u16 movehistory_2[8];
+	u8  abilites_used[2];
+	u8  item_x12[14];
+};
+
 struct trainer_ai {
 	u8  phase;
 	u8  moveset_index;
@@ -22,6 +29,17 @@ struct trainer_ai {
 	u8  field_16;
 	u8  field_17;
 	u8  move_damage_multipliers[4];
+};
+
+struct b_resources_t {
+	br00 *field_0;
+	br04 *field_4;
+	br08 *_8_move_script_stack;
+	br0C *_C_bc_stack;
+	br10 *field_10;
+	trainer_ai *tai_state;
+	br18 *history;
+	br1C *_1C_move_consider_stack;
 };
 
 // 080C6F44
@@ -116,7 +134,7 @@ void b_movehistory_add_defenders_move() {
 
 	v0 = 0;
 	while ( 1 ) {
-		v1 = (char *)b_resources->movehistory + 16 * ((unsigned int)(u8)b_defender >> 1) + 2 * v0;
+		v1 = (char *)b_resources->history + 16 * ((unsigned int)(u8)b_defender >> 1) + 2 * v0;
 		if ( !*(u16 *)v1 )
 			break;
 		++v0;
@@ -135,7 +153,7 @@ int b_movehistory_clear(int a1) {
 	v1 = 8 * ((unsigned int)(a1 << 24) >> 25);
 	v2 = 7;
 	do {
-		b_resources->movehistory->movehistory_1[v1] = 0;
+		b_resources->history->movehistory_1[v1] = 0;
 		++v1;
 		--v2;
 	}
