@@ -1,3 +1,12 @@
+/*
+	00: getattr
+	01: getattr (raw)
+	02: setattr
+	03: setattr (raw)
+
+	1D: response to 00 and 01 (no hanler) 
+*/
+
 // 0825089C
 void (*bt1_cmds[])() = { /* player */
 	bt1_00_exec_ch2,
