@@ -81,7 +81,7 @@ void (*bt2_cmds[])() = { /* opponent trainer */
 	bt2_11_nop,
 	bt2_12_trainer_think,
 	bt2_13_nop,
-	sub_80385B0,
+	bt2_14_trainer_pick_move,
 	sub_8038718,
 	sub_8038744,
 	bt2_17_nop,
