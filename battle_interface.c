@@ -63,8 +63,37 @@ void c2_pre_battle_2_single() {
 	}
 }
 
+// 02022974
+u16 vblank_cb_battle_BG0HOFS;
+u16 vblank_cb_battle_BG0VOFS;
+u16 vblank_cb_battle_BG1HOFS;
+u16 vblank_cb_battle_BG1VOFS;
+u16 vblank_cb_battle_BG2HOFS;
+u16 vblank_cb_battle_BG2VOFS;
+u16 vblank_cb_battle_BG3HOFS;
+u16 vblank_cb_battle_BG3VOFS;
+u16 vblank_cb_battle_WIN0H;
+u16 vblank_cb_battle_WIN0V;
+u16 vblank_cb_battle_WIN1H;
+u16 vblank_cb_battle_WIN1V;
+
 // 080116F4
 void vblank_cb_battle() {
 	rand();
-	// TODO
+    lcd_io_set(16, vblank_cb_battle_BG0HOFS);
+    lcd_io_set(18, vblank_cb_battle_BG0VOFS);
+    lcd_io_set(20, vblank_cb_battle_BG1HOFS);
+    lcd_io_set(22, vblank_cb_battle_BG1VOFS);
+    lcd_io_set(24, vblank_cb_battle_BG2HOFS);
+    lcd_io_set(26, vblank_cb_battle_BG2VOFS);
+    lcd_io_set(28, vblank_cb_battle_BG3HOFS);
+    lcd_io_set(30, vblank_cb_battle_BG3VOFS);
+    lcd_io_set(64, vblank_cb_battle_WIN0H);
+    lcd_io_set(68, vblank_cb_battle_WIN0V);
+    lcd_io_set(66, vblank_cb_battle_WIN1H);
+    lcd_io_set(70, vblank_cb_battle_WIN1V);
+    gpu_sprites_upload();
+    copy_queue_process();
+    gpu_pal_upload();
+    sub_8087F54();
 }

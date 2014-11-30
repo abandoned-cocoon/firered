@@ -49,7 +49,7 @@ F5: reset_attacker_bd_x4C
 void mcmd00_0801D760() {
 
     if (battle_exit_type > 0) {
-        dp01s_mode = 12; // 08016D70
+        bs_mode = 12; // 08016D70
         return;
     }
 
@@ -185,7 +185,7 @@ void mcmd03_pp_decrement() {
                 {
                     b_active_side = b_attacker;
                     dp01_build_cmdbuf_x02_a_b_varargs(0, (b_moveset_index + 9) & 0xFF, 0, 1);
-                    dp01_battle_side_mark_buffer_for_execution(b_attacker);
+                    b_active_side_mark_buffer_for_execution(b_attacker);
                 }
             }
         }
@@ -277,17 +277,17 @@ void mcmd60_08025B74() {
 }
 
 void mcmd62_08025C6C() {
-    dp01_battle_side = get_battle_side_of(b_move_cursor[1]);
+    b_active_side = get_battle_side_of(b_move_cursor[1]);
     dp01_build_cmdbuf_x31_31_31_31(0);
-    dp01_bitfield_set_flag_for_side(dp01_battle_side);
+    dp01_bitfield_set_flag_for_side(b_active_side);
     b_move_cursor += 2;
 }
 
 void mcmd63_continue_with_move() {
-    move_to_execute = word_02023D4E;
+    move_to_execute_A = move_to_execute_C;
     if (b_move_cursor[1] == 0)
-        word_02023D4C = word_02023D4E;
-    b_move_cursor = move_scripts[move_data[move_to_execute].move_script_id];
+        move_to_execute_B = move_to_execute_C;
+    b_move_cursor = move_scripts[move_data[move_to_execute_A].move_script_id];
 }
 
 // 080267F0

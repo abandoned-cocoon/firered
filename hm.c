@@ -1,11 +1,12 @@
 // 08097898
 bool hm_prepare_cut() {
-	byte_2039874 = 0;
 	if (ruin_valley_trigger()) {
-		byte_2039874 = 1;
+		cut_ruin_valley = true;
 		hm_phase_1 = hm_add_c3_launch_phase_2;
 		hm_phase_2 = hm2_ruin_valley;
 		return true;
+	} else {
+		cut_ruin_valley = false;
 	}
 
 	if (npc_before_player_of_type(95)) {
