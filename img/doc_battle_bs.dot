@@ -1,0 +1,96 @@
+digraph {
+    node [shape="record"];
+
+	mainloop [label="{mainloop|{<c1>callback1|<c2>callback2}}"];
+
+	c1_exec_bc_and_bx [label="{c1_exec_bc_and_bx (080155C8)|{<bc>bc|{Player side|{bx[0]|bx[2]}}|{Opponent side|{bx[1]|<bx>bx[3]}}}}"];
+	bc_bs_exec [label="{bc_bs_exec (080155C8)|{<bs>bs[0]|bs[1]|bs[2]|bs[3]}}"]
+
+	subgraph cluster_atk {
+		style=filled;
+		color=lightpink;
+		atk3D_exit;
+		atk52;
+		atk68;
+		atkBA;
+		atk58_sudden_exit;
+		atk72_flee;
+	}
+
+	subgraph cluster_bs {
+		style=filled;
+		color=lightyellow;
+		bs0 [label="{bs[00]}"];
+		bs1 [label="{bs[01]}"];
+		bs2 [label="{bs[02]}"];
+		bs3 [label="{bs[03]}"];
+		bs4 [label="{bs[04]}"];
+		bs5 [label="{bs[05]}"];
+		bs6 [label="{bs[06]}"];
+		bs7 [label="{bs[07]}"];
+		bs8 [label="{bs[08]: exit by flight}"];
+		bs9 [label="{bs[09]}"];
+		bs_move_exec [label="{bs[0A]: move_exec|<atk>b_move_cursor}"]
+		bsB [label="{bs[0B]: exit by move}"];
+		bsC [label="{bs[0C]}"];
+		bsD [label="{bs[0D]}"];
+	}
+
+	bc_move_exec_toplevel [label="{bc_move_exec_toplevel|<atk>b_move_cursor}"]
+	bc_move_exec_returning [label="{bc_move_exec_returning|<atk>b_move_cursor}"]
+	move_cmds [color="pink" label=""];
+
+	mainloop:c1 -> c1_exec_bc_and_bx;
+
+	c1_exec_bc_and_bx:bc -> bc_bs_exec;
+	c1_exec_bc_and_bx:bc -> bc_move_exec_toplevel;
+	c1_exec_bc_and_bx:bc -> bc_move_exec_returning;
+	c1_exec_bc_and_bx:bc -> bc_menu;
+	c1_exec_bc_and_bx:bc -> bc_8013514;
+
+	bc_bs_exec:bs -> bs0;
+	bc_bs_exec:bs -> bs1;
+	bc_bs_exec:bs -> bs2;
+	bc_bs_exec:bs -> bs3;
+	bc_bs_exec:bs -> bs4;
+	bc_bs_exec:bs -> bs5;
+	bc_bs_exec:bs -> bs6;
+	bc_bs_exec:bs -> bs7;
+	bc_bs_exec:bs -> bs8;
+	bc_bs_exec:bs -> bs9;
+	bc_bs_exec:bs -> bsB;
+	bc_bs_exec:bs -> bsC;
+	bc_bs_exec:bs -> bsD;
+	bsB -> bsC [style="dashed"];
+	bs9 -> bsC [style="dotted"];
+	bs9 -> bs_move_exec [style="dashed"];
+	bs7 -> bs_move_exec [style="dashed"];
+	bs6 -> bs_move_exec [style="dashed"];
+	bs5 -> bs_move_exec [style="dashed"];
+	bs4 -> bs_move_exec [style="dashed"];
+	bs3 -> bs_move_exec [style="dashed"];
+	bs2 -> bs_move_exec [style="dashed"];
+	bs1 -> bs_move_exec [style="dashed"];
+	bs0 -> bs_move_exec [style="dashed"];
+	bs0 -> bsC [style="dashed"];
+	bc_bs_exec:bs -> bs_move_exec;
+	bc_menu -> move_cmds [color="pink"];
+	bc_move_exec_toplevel:atk -> move_cmds [color="pink"];
+	bc_move_exec_returning -> move_cmds [color="pink"];
+	bs_move_exec:atk -> move_cmds [color="pink"];
+	move_cmds -> atk3D_exit;
+	move_cmds -> atk52;
+	move_cmds -> atk68;
+	move_cmds -> atkBA;
+	move_cmds -> atk58_sudden_exit;
+	move_cmds -> atk72_flee;
+	atk3D_exit -> bsB [style="dashed"];
+	atk52      -> bsC [style="dashed"];
+	atk68      -> bsC [style="dashed"];
+	atkBA      -> bsB [style="dashed"];
+	atk72_flee -> b_flee;
+	bs3 -> b_flee;
+	b_call_bc_move_exec -> bc_move_exec_returning [style="dashed"];
+	bc_menu -> b_call_bc_move_exec;
+	bc_8013514 -> b_call_bc_move_exec;
+}
