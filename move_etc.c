@@ -243,7 +243,7 @@ int ability_something(
                             battle_side_unknown = battle_side_given;
                             b_push_move_exec(&unk_81D92D3);
                             dp01_build_cmdbuf_x02_a_b_varargs(0, 40, 0, 4);
-                            dp01_battle_side_mark_buffer_for_execution(b_active_side);
+                            b_active_side_mark_buffer_for_execution(b_active_side);
                             return_value = 1;
                             goto def_801A8CE;
                         }
@@ -638,7 +638,7 @@ int ability_something(
             battle_side_unknown = battle_side_given;
             b_active_side = battle_side_given;
             dp01_build_cmdbuf_x02_a_b_varargs(0, 40, 0, 4);
-            dp01_battle_side_mark_buffer_for_execution(b_active_side);
+            b_active_side_mark_buffer_for_execution(b_active_side);
             return return_value;
         case 6u:
             for_each_side {
