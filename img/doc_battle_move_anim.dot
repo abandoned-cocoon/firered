@@ -1,0 +1,89 @@
+digraph {
+	graph [mclimit=40];
+    node [shape="record"];
+
+	mainloop [label="{mainloop|{<c1>callback1|<c2>callback2}}"];
+
+	c2_battle [label="c2_battle"];
+	task_exec [label="{task_exec|{<t>task[0]|...}}"];
+
+	c1_exec_bc_and_bx [label="{c1_exec_bc_and_bx|{<bc>bc|{Player side|{bx[0]|bx[2]}}|{Opponent side|{bx[1]|<bx>bx[3]}}}}"];
+	bc_bs_exec [label="{bc_bs_exec|{<bs>bs[0]|bs[1]|bs[2]|bs[3]}}"];
+	bc_menu;
+
+	subgraph cluster_atk {
+		atk09_battle_anim_play;
+	}
+
+	bc_move_exec_toplevel [label="{bc_move_exec_toplevel|<atk>b_move_cursor}"]
+	bc_move_exec_returning [label="{bc_move_exec_returning|<atk>b_move_cursor}"]
+	bx_move_exec [label="{bx_move_exec|<atk>b_move_cursor}"]
+
+	subgraph cluster_seven_times {
+		style=filled;
+		color=lightblue;
+
+		bx_exec_buffer_A [label="{bx_exec_buffer_A|<bt>b_buffer_A[0]}"]
+
+		bx_battle_menu;
+		bx_move_menu;
+		bx_move_anim [label="{<top>bx_move_anim|<ax>move_anim_current_executor}"];
+
+		bt_battle_menu;
+		bt_move_anim;
+		bt_move_menu;
+	}
+
+	move_anim_waiter [label="{move_anim_waiter|move_anim_countdown--}"];
+	move_anim_execute [label="{move_anim_execute|<ma>move_anim_cursor}"]
+	move_anim_cmds;
+
+	task0A_08034248 [label="{task0A_08034248|<ax>move_anim_current_executor}"];
+
+	mainloop:c1 -> c1_exec_bc_and_bx;
+
+	c1_exec_bc_and_bx:bc -> bc_menu;
+	c1_exec_bc_and_bx:bc -> bc_bs_exec;
+	c1_exec_bc_and_bx:bc -> bc_move_exec_toplevel;
+	c1_exec_bc_and_bx:bc -> bc_move_exec_returning;
+
+	bc_move_exec_toplevel:atk -> atk09_battle_anim_play;
+	bc_move_exec_returning:atk -> atk09_battle_anim_play;
+	bx_move_exec:atk -> atk09_battle_anim_play;
+	atk09_battle_anim_play -> bt_0F_emit;
+	bt_0F_emit -> bt_move_anim [style="dashed"];
+
+	c1_exec_bc_and_bx:bx -> bx_battle_menu;
+	c1_exec_bc_and_bx:bx -> bx_move_menu;
+	c1_exec_bc_and_bx:bx -> bx_move_anim;
+	c1_exec_bc_and_bx:bx -> bx_exec_buffer_A;
+
+	move_anim_waiter -> move_anim_execute [style="dashed" constraint="false"];
+	move_anim_execute -> move_anim_waiter [style="dashed" constraint="false"];
+	bx_move_anim:ax -> move_anim_waiter;
+	bx_move_anim:ax -> move_anim_execute;
+
+	bx_exec_buffer_A -> bt_move_anim;
+
+	bt_move_anim -> bx_move_anim [style="dashed"];
+
+	bx_move_anim:top -> move_anim_launch_fragment;
+	bx_move_anim -> bx_exec_buffer_A [style="dashed"];
+
+	mainloop:c2 -> c2_battle;
+	c2_battle -> task_exec;
+	task_exec:t -> task0A_08034248;
+	task0A_08034248:ax -> move_anim_waiter;
+	task0A_08034248:ax -> move_anim_execute;
+
+	move_anim_execute:ma -> move_anim_cmds;
+
+	bc_menu -> bt_12_emit;
+	bc_menu -> bt_14_emit;
+	bc_menu -> b_call_bc_move_exec;
+	b_call_bc_move_exec -> bc_move_exec_returning [style="dashed"];
+	bt_12_emit -> bt_battle_menu [style="dashed"];
+	bt_battle_menu -> bx_battle_menu [style="dashed"];
+	bt_14_emit -> bt_move_menu [style="dashed"];
+	bt_move_menu -> bx_move_menu [style="dashed"];
+}

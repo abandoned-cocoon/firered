@@ -1,0 +1,86 @@
+digraph {
+	graph [mclimit=40];
+    node [shape="record"];
+
+	mainloop [label="{mainloop|{<c1>callback1|<c2>callback2}}"];
+
+	c2_battle [label="c2_battle"];
+	task_exec [label="{task_exec|{<t>task[0]|...}}"];
+
+	c1_exec_bc_and_bx [color="#a4e839" label="{c1_exec_bc_and_bx|{<bc>bc|{Player side|{bx[0]|bx[2]}}|{Opponent side|{bx[1]|<bx>bx[3]}}}}"];
+	bc_bs_exec [label="{bc_bs_exec|{<bs>bs[0]|bs[1]|bs[2]|bs[3]}}" color="#a4e839" style="filled"]
+	bc_move_exec_returning [color="#a4e839" style="filled" label="bc_move_exec_returning"]
+	bc_menu [color="#a4e839" style="filled"];
+	bc_80123C0 [color="#a4e839" style="filled" label="bc_clear_state (80123C0)"];
+	bc_8012FAC [color="#a4e839" style="filled"];
+	bc_8013020 [color="#a4e839" style="filled" label="bc_load_battlefield (8013020)"];
+	bc_8013070 [color="#a4e839" style="filled"];
+	bc_801333C [color="#a4e839" style="filled"];
+	bc_8013514 [color="#a4e839" style="filled" label="bc_silph_scope (8013514)"];
+	bc_80134DC [color="#a4e839" style="filled" label="bc_battle_begin_message (80134DC)"];
+	bc_8013568 [color="#a4e839" style="filled"];
+	bc_801359C [color="#a4e839" style="filled"];
+	bc_801362C [color="#a4e839" style="filled"];
+	bc_send_out_pokemon_probably [color="#a4e839" style="filled"];
+	bc_8013728 [color="#a4e839" style="filled"];
+	bc_801385C [color="#a4e839" style="filled"];
+	bc_80150A8 [color="#a4e839" style="filled"];
+	bc_80154A0 [color="#a4e839" style="filled"];
+
+	subgraph cluster_seven_times {
+		style=filled;
+		color=lightblue;
+
+		bx_exec_buffer_A [label="{bx_exec_buffer_A|<bt>b_buffer_A[0]}"]
+		bx_battle_menu [label="bx_battle_menu"];
+
+		bt_move_menu;
+		bt_battle_menu;
+	}
+
+	mainloop:c1 -> c1_exec_bc_and_bx;
+
+	mainloop:c2 -> c2_battle;
+	c2_battle -> task_exec;
+
+	mainloop:c2 -> c2_pre_battle_1
+	mainloop:c2 -> c2_pre_battle_2_single
+
+	trainer_battle_start -> task_add_01_battle_start_with_music_and_stats;
+	task_add_01_battle_start_with_music_and_stats -> task_add_01_battle_start;
+	task_add_01_battle_start -> task01_battle_start [style="dashed"];
+	task01_battle_start -> c2_pre_battle_1 [style="dashed"];
+	c2_pre_battle_1 -> sub_800FE24;
+	sub_800FE24 -> c2_pre_battle_2_single [style="dashed"];
+	c2_pre_battle_2_single -> c1_exec_bc_and_bx [style="dashed"];
+	c2_pre_battle_2_single -> c2_battle [style="dashed"];
+	c2_pre_battle_2_single -> b_setup_bx;
+	b_setup_bx -> b_setup_bx_local;
+	b_setup_bx -> b_setup_bx_link;
+	b_setup_bx_local -> bc_80123C0 [style="dashed"];
+	bc_80123C0 -> bc_8012FAC [style="dashed"];
+	bc_8012FAC -> bc_8013020 [style="dashed"];
+	bc_8013020 -> bc_8013070 [style="dashed"];
+	bc_8013070 -> bc_801333C [style="dashed"];
+	bc_801333C -> bc_8013514 [style="dashed"];
+	bc_801333C -> bc_80134DC [style="dashed"];
+	bc_8013514 -> bc_send_out_pokemon_probably [style="dashed"];
+	bc_8013514 -> bc_move_exec_returning [style="dotted"];
+	bc_80134DC -> bc_8013568 [style="dashed"];
+	bc_8013568 -> bc_801359C [style="dashed"];
+	bc_801359C -> bc_801362C [style="dashed"];
+	bc_801362C -> bc_send_out_pokemon_probably [style="dashed"];
+	bc_send_out_pokemon_probably -> bc_8013728;
+	bc_8013728 -> bc_801385C [style="dashed"];
+	bc_801385C -> bc_menu [style="dashed"];
+	bc_menu -> bt_12_emit;
+	bc_menu -> bt_14_emit;
+	bc_menu -> bc_move_exec_returning [style="dotted"];
+	bc_menu -> bc_80150A8 [style="dashed"];
+	bc_80150A8 -> bc_80154A0 [style="dashed"];
+	bc_80154A0 -> bc_bs_exec [style="dashed"];
+	bt_12_emit -> bt_battle_menu [style="dashed"];
+	bt_battle_menu -> bx_battle_menu [style="dashed"];
+	bt_14_emit -> bt_move_menu [style="dashed"];
+	bt_move_menu -> bx_battle_menu [style="dashed"];
+}
