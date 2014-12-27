@@ -11,7 +11,12 @@ struct br18 {
 	u16 movehistory_1[8];
 	u16 movehistory_2[8];
 	u8  abilites_used[2];
-	u8  item_x12[14];
+	u8  item_x12[2];
+	u16 t24[4];
+	u8  t24count;
+	u8  field_2D;
+	u8  field_2E;
+	u8  field_2F;
 };
 
 struct trainer_ai {
