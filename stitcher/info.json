@@ -1,0 +1,26 @@
+{
+	"rom": ["0x08000000", "0x09000000"],
+	"gap": ["0x0871B1C8", "0x08D00000"],
+	"functions": [
+		{"range": ["0x0805F700", "0x10"], "name": "npc_coords_shift"},
+		{"range": ["0x0807741C",   "82"], "name": "task_add"},
+		{"range": ["0x08077470",  "150"], "name": "task_insert_sorted"},
+		{"range": ["0x08077508",  "112"], "name": "task_del"},
+		{"range": ["0x08077578",   "42"], "name": "task_exec"},
+		{"range": ["0x080775A8",   "56"], "name": "task_get_first"},
+		{"range": ["0x080775E4",    "2"], "name": "task_null"},
+		{"range": ["0x08077650",   "54"], "name": "task_is_running"},
+		{"range": ["0x08077688",   "46"], "name": "task_find_id_by_funcptr"}
+	],
+	"symbols-thumb": [
+		["0x081E5E79", "memcpy"],
+		["0x081E5ED9", "memset"],
+		["0x081E3BA9", "_call_via_r0"],
+		["0x081E3BBD", "_call_via_r1"],
+		["0x081E3BB1", "_call_via_r2"],
+		["0x081E3BB5", "_call_via_r3"]
+	],
+	"symbols-ram": [
+		["0x03005090", "task"]
+	]
+}

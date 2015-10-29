@@ -1,42 +1,18 @@
-/* Usage of TASK_PRIV:
-	void task_FOOBAR(task_id c) {
-		typedef struct {
-			u32 privdata1;
-			u8  privdata2;
-			u16 privdata3[4];
-			void *privdata4;
-		} TASK_PRIV;
-		...
-		foobar(priv->privdata4);
-		...
-	}
-*/
-#define TASK_PRIV priv_t; priv_t *priv = (priv_t*) &task[c]->priv
-#define TASK_PRIV_ASSIGN32(t, i, v) ((t).priv[i] = (v)>>16, (t).priv[i+1] = (v)&0xFFFF)
+#include "task.h"
 
-#define NUM_TASKS 16
-
-typedef u8 task_id;
-
-struct task_t {
-	void (*funcptr)(task_id);
-	u8 in_use;
-	task_id prev;
-	task_id next;
-	u8 priority;
-	u16 priv[16];
-};
-
+#ifndef NO_RAM
 struct task_t task[16];
+#endif
 
 // 0807741C
 task_id task_add(void (*funcptr)(task_id), u8 priority) {
 	for (task_id c=0; c<NUM_TASKS; c++) {
-		if (task[c]->in_use) continue;
+		if (task[c].in_use) continue;
 		task[c].funcptr = funcptr;
 		task[c].priority = priority;
 		task_insert_sorted(c);
-		memset(&task[c].args, 0, sizeof(task[c].args));
+		memset(&task[c].priv, 0, sizeof(task[c].priv));
+		//((void *(*)(void *, int, size_t))0x081E5E79)(&task[c].priv, 0, sizeof(task[c].priv));
 		task[c].in_use = 1;
 		return c;
 	}
@@ -89,23 +65,24 @@ void task_exec() {
 }
 
 // 080775A8
-task_id task_get_first() {
-	for (task_id c=0; c<NUM_TASKS; c++)
+task_id __attribute__((noinline)) task_get_first() {
+	task_id c;
+	for (c=0; c<NUM_TASKS; c++)
 		if (task[c].in_use && task[c].prev == 0xFE) break;
 	return c;
 }
 
 // 080775E4
-void task_null(task_id c) {
-	// nothing
-}
+// void task_null(task_id c) {
+// 	// nothing
+// }
 
 // two functions missing here
 
 // 08077650
 bool task_is_running(void (*funcptr)(task_id)) {
 	for (task_id c=0; c<NUM_TASKS; c++)
-		if (task[c]->in_use && task[c]->funcptr == funcptr)
+		if (task[c].in_use && task[c].funcptr == funcptr)
 			return true;
 	return false;
 }
@@ -113,7 +90,7 @@ bool task_is_running(void (*funcptr)(task_id)) {
 // 08077688
 task_id task_find_id_by_funcptr(void (*funcptr)(task_id)) {
 	for (task_id c=0; c<NUM_TASKS; c++)
-		if (task[c]->in_use && task[c]->funcptr == funcptr)
+		if (task[c].in_use && task[c].funcptr == funcptr)
 			return c;
 	return 0xFF;
 }

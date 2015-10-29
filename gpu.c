@@ -183,7 +183,7 @@ void gpu_bg_config_set_field(u8 bg_id, u8 field, u8 value) {
 		case 4:  bg->fullcolor  = value; break;
 		case 5:  bg->mosaic     = value; break;
 		case 6:  bg->wraparound = value; break;
-		case 5:  bg->priority   = value; break;
+		case 7:  bg->priority   = value; break;
 		default: return;
 	}
 	bg->active = 1;

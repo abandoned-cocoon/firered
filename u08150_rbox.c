@@ -4,7 +4,7 @@
 
 // 0814FD04
 
-// 0814FD38 (unused)
+// 0814FD38 (wrong address?) (unused)
 void bgid_upload_textbox_84566A8(u8 bgid, u16 tileindex, u8 palindex) {
 	gpu_copy_to_tileset(bgid, &gfx_tiles_textbox_84566A8, 0x280u, tileindex);
 	gpu_pal_apply(stdpal_get(2), palindex, 32);
