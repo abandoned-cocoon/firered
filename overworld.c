@@ -67,6 +67,159 @@ void mapdata_load_assets_to_gpu_and_full_redraw() {
     cur_mapheader_run_tileset_funcs_after_some_cpuset();
 }
 
+// 08055864
+void mliX_load_map(u8 mapbank, u8 mapnr) {
+
+    warp0_set(mapbank, mapnr, -1);
+    sub_8055E94();
+    warp_shift();
+    // mli0
+    cur_mapheader_load_sav1_and_update_sav1_mapindex();
+    copy_rom_npcs_to_ram();
+    sav2_set_x9_depending_on_sav1_map();
+    sub_806E110();
+    nullsub_50();
+    sub_806D7E8();
+    sub_810C578(mapbank, mapnr);
+    weather_807B140();
+    wild_pokemon_reroll();
+    sav1_write_flash_status();
+    sav1_clear_music_override();
+    mapheader_run_script_with_tag_x3();
+    sub_815D8F8();
+    mapheader_copy_mapdata_and_run_tag_x1();
+    // mli1
+    mapdata_load_blockset2_(current_mapheader.mapdata_header);
+    mapdata_load_palette2_to_gpu(current_mapheader.mapdata_header);
+
+    for (u32 i = 7; i < 12; i++)
+        sub_807AB74(i);
+
+    cur_mapheader_run_tileset2_func_();
+    mapnumbers_history_shift_sav1_0_2_4_out();
+    roaming_pokemon_roam();
+    prev_quest_postbuffer_cursor_backup_reset();
+    weather_set2();
+    wild_encounter_reset_coro_args();
+    mapheader_run_script_with_tag_x5();
+    if ( warp0_get_name() != current_mapheader.name )
+        show_new_mapname(1);
+}
+
+// 08055920
+void mli0_load_map() {
+    int light;
+
+    cur_mapheader_load_sav1_and_update_sav1_mapindex();
+    copy_rom_npcs_to_ram();
+    light = is_light_level_1_2_3_5_or_6(current_mapheader.light);
+    sav2_set_x9_depending_on_sav1_map();
+    sub_806E110();
+    nullsub_50();
+    sub_806D7E8();
+    sub_810C578(saveblock1_mapdata->location.bank & 0xFFFF, saveblock1_mapdata->location.map & 0xFFFF);
+    weather_807B140();
+    wild_pokemon_reroll();
+    if (light)
+        flag_clear(2054);
+    sav1_write_flash_status();
+    sav1_clear_music_override();
+    mapheader_run_script_with_tag_x3();
+    sub_815D8F8();
+    mapnumbers_history_shift_sav1_0_2_4_out();
+    roaming_pokemon_roam_freely();
+    prev_quest_postbuffer_cursor_backup_reset();
+    mapheader_copy_mapdata_and_run_tag_x1();
+}
+
+// 080559A8
+void sub_80559A8() {
+    cur_mapheader_load_sav1_and_update_sav1_mapindex();
+    copy_rom_npcs_to_ram();
+    is_light_level_1_2_3_5_or_6(current_mapheader.light);
+    sav2_set_x9_depending_on_sav1_map();
+    weather_807B140();
+    wild_pokemon_reroll();
+    sav1_write_flash_status();
+    prev_quest_postbuffer_cursor_backup_reset();
+    sub_8111708();
+    cur_mapheader_from_sav1();
+    mapheader_copy_mapdata_and_run_tag_x1();
+}
+
+// 080559E4 player_avatar_init_params_reset
+// 080559F8
+
+// 08055A08
+void walkrun_find_lowest_active_bit_in_bitfield() {
+    char bit;
+
+    unk_2031DD5 = player_get_direction__sp1AA(a1);
+
+    if ( walkrun_bitfield_and_r0(2) << 24 ) {
+        bit = 2;
+    } else if ( walkrun_bitfield_and_r0(4) << 24 ) {
+        bit = 4;
+    } else if ( walkrun_bitfield_and_r0(8) << 24 ) {
+        bit = 8;
+    } else if ( walkrun_bitfield_and_r0(16) << 24 ) {
+        bit = 16;
+    } else {
+        bit = 1;
+    }
+
+    player_avatar_init_params = bit;
+    byte_2031DD6 = 0;
+}
+
+// 08055A6C
+// 08055ACC
+
+// 08055B38
+void is_tile_grass_on_seafoam_island_maybe() {
+    warpdata *w = &saveblock1_mapdata->location
+    return (is_tile_grass_maybe(a1) == 1) && (
+        // Seafoam Island
+        w->bank == 1 && w->map == 86 ||
+        w->bank == 1 && w->map == 87
+    );
+}
+
+// 08055B74
+
+// 08055C74
+int cur_mapdata_block_role_at_screen_center_acc_to_sav1() {
+    return cur_mapdata_block_role_at(
+        (saveblock1_mapdata->camera_position.x + 7),
+        (saveblock1_mapdata->camera_position.y + 7));
+}
+
+// 08055C9C
+// 08055CB8 sav1_write_flash_status
+// 08055D08
+// 08055D30 sav1_get_flash_used_on_map
+// 08055D5C warp1_assign
+
+// music
+// 08055D6C warp_target_get_music
+// 08055D8C sav1_get_music
+// 08055DA4 warp1_target_get_music
+// 08055DB8 map_music_set_to_zero_
+// 08055DC4 map_music_something
+// 08055E78 sav1_set_music_override
+// 08055E84 sav1_clear_music_override
+// 08055E94
+// 08055F1C
+// 08055F48
+
+// 08055F68 is_warp1_light_level_8_or_9
+// 08055F88 music_something
+
+// 08055FC4
+// 08055FD4
+// 08055FE0
+// 08056078 wild_encounter_related
+
 // 0805610C
 void wild_pokemon_reroll() {
     wild_pokemon_index = wild_pokemon_rand_for_map(&wild_pokemon_from_water_category);
@@ -325,6 +478,57 @@ void sub_8056F08() {
     sub_8056A34();
     lcd_reset();
     mapdata_load_assets_to_gpu_and_full_redraw();
+}
+
+// 08057650
+bool map_loading_iteration_5() {
+    switch (super.multi_purpose_state_tracker) {
+        case 0:
+            overworld_bg_setup_2();
+            mli0_load_map();
+            break;
+        case 1:
+            dp12_8087EA4();
+            dp13_810BB8C();
+            clear_all_callback6();
+            sub_805ADF8();
+            oe_active_list_clear();
+            sub_8079C08();
+            weather_set_by_sav1_maybe();
+            overworld_ensure_per_step_coros_running();
+            mapheader_run_script_with_tag_x5();
+            break;
+        case 2:
+            sub_8056A34();
+            lcd_reset();
+            break;
+        case 3:
+            sub_805A5E4();
+            break;
+        case 4:
+            mapdata_load_blockset_1(current_mapheader.mapdata_header);
+            break;
+        case 5:
+            mapdata_load_blockset_2(current_mapheader.mapdata_header);
+            break;
+        case 6:
+            if ( sub_80F682C() == 1 )
+                return 0;
+            mapdata_load_palettes_to_gpu(current_mapheader.mapdata_header);
+            break;
+        case 7:
+            cur_mapdata_full_redraw__sp08E();
+            break;
+        case 8:
+            cur_mapheader_run_tileset_funcs_after_some_cpuset();
+            pal_fade_control.field_8 &= 0x7Fu;
+            sub_807A944(0, 0, 0x3FFFFFFF);
+            break;
+        default:
+            return 1;
+    }
+    ++super.multi_purpose_state_tracker;
+    return 0;
 }
 
 // 08058D44
