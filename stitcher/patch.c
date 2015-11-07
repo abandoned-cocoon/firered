@@ -18,3 +18,4 @@ void npc_coords_shift(struct npc_state *n, u16 x, u16 y) {
 
 #define NO_RAM
 #include "../task.c"
+#include "../gpu.c"

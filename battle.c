@@ -98,8 +98,8 @@ void b_setup_bx_local() {
 		} else {
 			bx[0] = &bx1_goto_buffer_A;
 			bx[1] = &bx2_goto_buffer_A;
-			bx[1] = &bx1_goto_buffer_A;
-			bx[1] = &bx2_goto_buffer_A;
+			bx[2] = &bx1_goto_buffer_A;
+			bx[3] = &bx2_goto_buffer_A;
 		}
 
 	} else {

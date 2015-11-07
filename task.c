@@ -65,7 +65,7 @@ void task_exec() {
 }
 
 // 080775A8
-task_id __attribute__((noinline)) task_get_first() {
+task_id task_get_first() {
 	task_id c;
 	for (c=0; c<NUM_TASKS; c++)
 		if (task[c].in_use && task[c].prev == 0xFE) break;

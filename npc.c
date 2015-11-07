@@ -15,9 +15,29 @@ struct npc_pos_h {
 
 struct npc_state {
     u8 bitfield1;
+        // 0x01: active
+        // 0x02: visible / exempt from general anim pausing
+        // 0x04: use npc_analyze_ground_{pre,post}
+        // 0x08: use npc_analyze_ground_post_2; on grid
+        // 0x10: ?
+        // 0x20: enables 08067F2C
+        // 0x40: refuse pause bit overriding
+        // 0x80: ?
     u8 bitfield2;
+        // 0x01: anim_delay_countdown backuped because of override
+        // 0x02: affects whether npc_Set_direction affects the upper or both nibbles of npc->direction
+        // 0x04: pending image anim pausing (set and cleared based on "tile_to" at 08063E80 (read at 080679AC))
+        // 0x08: pending image anim unpausing
+        // 0x10: ?
+        // 0x20: invisible/hidden (controlled through script cmds 0x58 and 0x59)
+        // 0x40: offscreen/culled
+        //  ^ these two are checked by 08067B0C
+        // 0x80: checked t 0805F1B4
     u8 field_2;
+        // 0x80: backup of image anim pause flag
     u8 field_3;
+        // 0x01: backup of rotscale anim pause flag
+        // 0x04: lock obj->y_height_related
     u8 oam_id;
     u8 type_id;
     u8 running_behaviour;
