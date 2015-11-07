@@ -1,6 +1,6 @@
 ROM = firered.gba
 TOOLCHAIN = arm-none-eabi
-OBJDIR = obj
+OBJDIR = out
 PATCHES = $(OBJDIR)/patch.o
 
 LDS        = $(OBJDIR)/out.ldscript
@@ -12,25 +12,26 @@ OUT_ELF    = out.elf
 OUT_GBA    = out.gba
 
 
-# vbam forces dwarf version <=2
-
-PATCH_CFLAGS = -gdwarf-2 -gstrict-dwarf -ffunction-sections -fomit-frame-pointer -O2 -mthumb -mcpu=arm7tdmi
+PATCH_CFLAGS =
+PATCH_CFLAGS += -ffunction-sections -fno-inline -fomit-frame-pointer -mlong-calls
+PATCH_CFLAGS += -mthumb -mcpu=arm7tdmi
+PATCH_CFLAGS += -O2 -gdwarf-2 -gstrict-dwarf # vbam forces dwarf version <=2
 
 $(OUT_ELF): $(LDS) $(OUT_O) $(PATCHES)
-	$(TOOLCHAIN)-ld -o $(OUT_ELF) -T $(LDS) $(OUT_O) $(PATCHES)
+	$(TOOLCHAIN)-ld -A arm7tdmi --fix-v4bx -o $(OUT_ELF) -T $(LDS) $(OUT_O) $(PATCHES)
 
 $(OUT_GBA): $(OUT_ELF)
 	$(TOOLCHAIN)-objcopy -O binary $(OUT_ELF) $(OUT_GBA)
 
 $(PATCH_O): patch.c Makefile
-	mkdir -p obj
+	mkdir -p $(OBJDIR)
 	$(TOOLCHAIN)-gcc $(PATCH_CFLAGS) -c -o $(PATCH_O) patch.c
 
 $(PATCH_JSON): $(PATCH_O)
 	rabin2 -Sj $(PATCH_O) > $(PATCH_JSON)
 
 $(OUT_O): $(OUT_S)
-	$(TOOLCHAIN)-as -o $(OUT_O) $(OUT_S)
+	$(TOOLCHAIN)-as -mthumb -o $(OUT_O) $(OUT_S)
 
 $(OUT_S) $(LDS): build.py info.json $(PATCH_JSON) $(ROM)
 	python build.py $(ROM) $(PATCH_JSON) $(OUT_S) $(LDS)

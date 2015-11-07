@@ -40,6 +40,7 @@ class Patch(SectionBreaker):
 
 	def write_ld(self):
 		return "\t\t*(.text.{}) /* {:08x} */".format(self.original.name, self.addr)
+		#return "\t\t. = 0x{1:08x};\n\t\t*(.text.{0})".format(self.original.name, self.addr)
 
 	def __repr__(self):
 		return repr(self.original.name)
@@ -71,7 +72,7 @@ def write(info, patches, symbols_thumb, symbols_ram, rom_path, out_s, out_ld):
 	for patch in patches:
 		original = patch.original
 
-		if patch.size > original.size:
+		if original.size is not None and patch.size > original.size:
 			trampoline = Trampoline(original)
 
 			if trampoline.size > original.size:
@@ -80,6 +81,9 @@ def write(info, patches, symbols_thumb, symbols_ram, rom_path, out_s, out_ld):
 				raise Exception("No space for trampoline")
 
 			events.append(trampoline)
+			original.addr = None
+
+		if original.addr is None:
 			free_placement.append(patch)
 
 		else:
@@ -128,6 +132,23 @@ def write(info, patches, symbols_thumb, symbols_ram, rom_path, out_s, out_ld):
 		print("\t}", file=out_ld)
 		in_region = None
 
+	def do_gap(event):
+		nonlocal addr
+		addr = event.addr
+		for p in free_placement:
+			p.addr = addr
+			addr += p.size
+			print(p.write_ld(), file=out_ld)
+
+		print("""
+		*(.text .stub .text.* .gnu.linkonce.t.*)
+		*(.data .data.* .gnu.linkonce.d.*)
+		SORT(CONSTRUCTORS)
+		*(.bss .bss.* .gnu.linkonce.b.*)
+		*(.rodata*) /* this should be empty */
+		*(COMMON)""", file=out_ld)
+
+
 	#	. = 0x08000000;
 	#	* (s08000000)
 	#	. = 0x08000111;
@@ -143,12 +164,15 @@ def write(info, patches, symbols_thumb, symbols_ram, rom_path, out_s, out_ld):
 	print("", file=out_ld)
 
 	addr = rombegin
+	in_gap = False
 	for event in events:
 		evaddr = event.addr
 		#print("{:08x}/{:08x}/{}/{}".format(addr, evaddr, type(event), vars(event)))
 
-		if (in_region and in_region.gap):
-			#print("\t\t/* remaining functions here */", file=out_ld)
+		if in_gap:
+			print("\t\t/* remaining functions here */", file=out_ld)
+			do_gap(event)
+			in_gap = False
 			pass
 		else:
 			incbin(addr, evaddr)
@@ -161,14 +185,26 @@ def write(info, patches, symbols_thumb, symbols_ram, rom_path, out_s, out_ld):
 				section = None
 
 		if isinstance(event, Region):
-			if in_region and not in_region.gap:
-				close_region()
+			if "new_region":
+				if not in_region:
+					in_region = event
+					print("\t.text.{} 0x{:08x} : {{".format(rnum, evaddr), file=out_ld)
+					rnum += 1
 
-			in_region = event
+				print("\t\t. = 0x{:08x};".format(evaddr-in_region.addr), file=out_ld)
 
-			if not in_region.gap:
-				print("\t.text.{} 0x{:08x} : {{".format(rnum, evaddr), file=out_ld)
-				rnum += 1
+				if event.gap:
+					in_gap = True
+
+			else:
+				if in_region and not in_region.gap:
+					close_region()
+
+				in_region = event
+
+				if not in_region.gap:
+					print("\t.text.{} 0x{:08x} : {{".format(rnum, evaddr), file=out_ld)
+					rnum += 1
 
 		if isinstance(event, Region) and event.gap is False:
 			addr = evaddr
@@ -178,18 +214,6 @@ def write(info, patches, symbols_thumb, symbols_ram, rom_path, out_s, out_ld):
 	incbin(addr, romend)
 	close_region()
 
-
-	print("""
-	.remaining 0x{gapstart:08x} : {{
-		*(.text .stub .text.* .gnu.linkonce.t.*)
-		*(.data .data.* .gnu.linkonce.d.*)
-		SORT(CONSTRUCTORS)
-		*(.bss .bss.* .gnu.linkonce.b.*)
-		*(COMMON)""".format(gapstart=gapstart), file=out_ld)
-	for p in free_placement:
-		print(p.write_ld(), file=out_ld)
-
-	print("\t}", file=out_ld)
 
 	print("""
 	/* DWARF debug sections.
@@ -245,7 +269,11 @@ def main():
 	for section in patch["sections"]:
 		if section["name"].startswith(".text."):
 			funcname = section["name"][6:]
-			func = funcs[funcname]
+			if funcname not in funcs:
+				# allow all unknowns
+				func = Function(funcname, None, None)
+			else:
+				func = funcs[funcname]
 			patches.append(Patch(func, section["size"]))
 
 	leval_sym_addr = lambda ts: [(leval(addr_expr), name) for addr_expr, name in ts]
