@@ -1,62 +1,79 @@
-struct mapdata {
-    u32 width;
-    u32 height;
-    u16 *borderblock;
-    u16 *data;
-    struct tileset *tileset1;
-    struct tileset *tileset2;
-    u8 bb_width;
-    u8 bb_height;
-    u16 field_1A;
-};
+#include "fade.h"
+#include "flags.h"
+#include "main.h"
+#include "memory.h"
+#include "npc_cmds.h"
+#include "npc_interp.h"
+#include "overworld.h"
+#include "overworld_navigation.h"
+#include "save.h"
+#include "task.h"
+#include "u0807d_overworld.h"
+#include "vars.h"
+#include "whiteout.h"
+#include "uncategorized.h"
 
-struct mapscript {
-    u8 tag;
-    u8 *data; // unaligned
-};
-
-struct map {
-    struct mapdata   *data;
-    struct mapevents *events;
-    struct mapscript *scripts;
-    struct mapconn   *connections;
-    u16 music;
-    u16 mapindex;
-    u8 name;
-    u8 cave;
-    u8 weather;
-    u8 light;
-    u8 field_18;
-    u8 escape_rope
-    u8 showname;
-    u8 battletype;
-}; // 0x1C
-
-typedef u32 block;
-
-struct tileset {
-    u8     isCompressed;
-    u8     primaryOrSecondary;
-    u16    padding;
-    void  *tiles;
-    void  *palette;
-    u16   *bdef;
-    void (*fptr)(void);
-    block *blocks;
-}; // 0xC
-
-struct conditional_script {
-    u16 var1; // not guaranteed to be aligned.
-    u16 var2; // read bytewise.
-    u8 *ptr;
-};
-
+#ifndef NO_RAM
+//* 02031DB4
+struct warpdata warp0;
+//* 02031DBC
+struct warpdata warp1;
+//* 02031DC4
+struct warpdata warp2;
+//* 02031DCC
+struct warpdata warp3;
+//* 02031DD4
+u8 player_avatar_init_params[3];
+//* 02031DD8
+u8 warp_sound_disable;
+//* 02031DDA
+u16 wild_pokemon_index;
+//* 02031DDC
+u8 wild_pokemon_from_water_category;
+//* 02036DFC
+struct map current_mapheader;
+//* 03000FAE
+u32 bs1_time;
+//* 03000FB0
+u32 bs1_time_wraparound;
+//* 03000FB2
+u32 bs2_time;
+//* 03000FB4
+u32 bs2_time_wraparound;
+//* 03000FB8
+void (*bs1_func)(void);
+//* 03000FBC
+void (*bs2_func)(void);
 //* 03005014
 u16 *overworld_bg2_tilemap;
 //* 03005018
 u16 *overworld_bg1_tilemap;
 //* 0300501C
 u16 *overworld_bg3_tilemap;
+//* 03005020
+void (*map_post_load_hook)(void);
+//* 03005024
+void (*hm_phase_1)(void); // type ok?
+//* 03005028
+u16 c1_link_related_func_retvl;
+//* 0300502C
+u8 linknpc_id_self_maybe;
+//* 03005030
+u32 linknpc_count;
+//* 03005050
+struct cameradata cameradata;
+//* 03005068
+u16 nu_y;
+//* 0300506C
+u16 nu_x;
+//* 03005070
+u32 script_env_locking_player;
+//* 03005074
+u32 scripting_npc; // the npc currently executing a script (context_npc instead?)
+#endif
+
+// TODO: Place somewhere
+struct cameradata *cd;
 
 // 08055148
 void mapdata_load_assets_to_gpu_and_full_redraw() {
@@ -95,7 +112,7 @@ void mliX_load_map(u8 mapbank, u8 mapnr) {
     for (u32 i = 7; i < 12; i++)
         sub_807AB74(i);
 
-    cur_mapheader_run_tileset2_func_();
+    cur_mapheader_run_blockset2_func_();
     mapnumbers_history_shift_sav1_0_2_4_out();
     roaming_pokemon_roam();
     prev_quest_postbuffer_cursor_backup_reset();
@@ -154,7 +171,7 @@ void sub_80559A8() {
 void walkrun_find_lowest_active_bit_in_bitfield() {
     char bit;
 
-    unk_2031DD5 = player_get_direction__sp1AA(a1);
+    player_avatar_init_params[1] = player_get_direction__sp1AA();
 
     if ( walkrun_bitfield_and_r0(2) << 24 ) {
         bit = 2;
@@ -168,16 +185,16 @@ void walkrun_find_lowest_active_bit_in_bitfield() {
         bit = 1;
     }
 
-    player_avatar_init_params = bit;
-    byte_2031DD6 = 0;
+    player_avatar_init_params[0] = bit;
+    player_avatar_init_params[2] = 0;
 }
 
 // 08055A6C
 // 08055ACC
 
 // 08055B38
-void is_tile_grass_on_seafoam_island_maybe() {
-    warpdata *w = &saveblock1_mapdata->location
+void is_tile_grass_on_seafoam_island_maybe(u8 a1) {
+    struct warpdata *w = &saveblock1_mapdata->location;
     return (is_tile_grass_maybe(a1) == 1) && (
         // Seafoam Island
         w->bank == 1 && w->map == 86 ||
@@ -307,16 +324,24 @@ void overworld_bg_setup_1() {
     overworld_bg_setup_2();
 }
 
+// 0826D320
+u32 overworld_bg_setup_data[] = {
+    0x01F8,
+    0x11D1,
+    0x21C2,
+    0x31E3
+};
+
 // 08056354
 void overworld_bg_setup_2() {
     sub_8001618(0);
-    overworld_bg_vram_setup(0, unk_826D320, 4);
+    overworld_bg_vram_setup(0, overworld_bg_setup_data, 4);
     gpu_bg_config_set_field(1, 5, 1); // mosaic activate (??)
     gpu_bg_config_set_field(2, 5, 1); // mosaic activate (??)
     gpu_bg_config_set_field(3, 5, 1); // mosaic activate (??)
-    overworld_bg1_tilemap = malloc_and_clear(0x800);
-    overworld_bg2_tilemap = malloc_and_clear(0x800);
-    overworld_bg3_tilemap = malloc_and_clear(0x800);
+    overworld_bg1_tilemap = mem_alloc_cleared(0x800);
+    overworld_bg2_tilemap = mem_alloc_cleared(0x800);
+    overworld_bg3_tilemap = mem_alloc_cleared(0x800);
     bgid_set_tilemap(1, overworld_bg1_tilemap);
     bgid_set_tilemap(2, overworld_bg2_tilemap);
     bgid_set_tilemap(3, overworld_bg3_tilemap);
@@ -339,8 +364,8 @@ void flag_clear_safari_zone() {
 }
 
 // 0805642C
-bool is_c1_x8057884() {
-    return super.c1 == &c1_x8057884;
+bool is_c1_link_related_active() {
+    return super.callback1 == &c1_link_related;
 }
 
 //* 0203AE8C
@@ -358,7 +383,7 @@ void c1_overworld_normal(u16 keypad_new, u16 keypad_held) {
     sub_805BEB8();
 
     u8 d[4];
-    sub_806C888(d);
+    sub_806C888(&d[0]);
     input_process(d, keypad_new, keypad_held);
     sub_806CD30(d);
     if (!script_env_2_is_enabled()) {
@@ -394,7 +419,7 @@ void c1_overworld_prev_quest() {
 // 08056534
 void c1_overworld() {
     if (super.callback2 != &c2_overworld) return;
-    if (sub_8112CAC() == 1 || byte_203ADFA == 2)
+    if (sub_8112CAC() == 1 || prev_quest_mode == 2)
         c1_overworld_prev_quest();
     else
         c1_overworld_normal(super.buttons3_new_remapped,
@@ -424,7 +449,7 @@ void c2_ov_to_battle_anim() {
 void c2_overworld() {
     u8 *trs = (u8*)0x02037AB8;
     bool t = trs[7] >> 7;
-    if (!t) super.field_C = NULL;
+    if (!t) super.callback5_vblank = NULL;
     c2_ov_basic();
     if (!t) sub_8056A04();
 }
@@ -444,9 +469,9 @@ void c2_new_game() {
     gameclock_sanity_check();
     script_env_1_start();
     script_env_2_disable();
-    map_post_load_hook = &mapldr_for_new_game;
+    map_post_load_hook = &mapldr_black;
     hm_phase_1 = 0;
-    map_loading_loop_1(&super.map_loading_state);
+    map_loading_loop_1(&super.multi_purpose_state_tracker);
     sub_8056A04();
     set_callback1(&c1_overworld);
     set_callback2(&c2_overworld);
@@ -454,7 +479,7 @@ void c2_new_game() {
 
 // 080566A4
 void c2_whiteout_maybe() {
-    if (superstate.map_loading_state++ < 120) return;
+    if (super.multi_purpose_state_tracker++ < 120) return;
     sub_80569BC();
     sub_8071A94();
     flag_clear_safari_zone();
@@ -462,7 +487,7 @@ void c2_whiteout_maybe() {
     sub_80559F8(2);
     script_env_1_start();
     script_env_2_disable();
-    map_post_load_hook = &mapldr_c3_whiteout;
+    map_post_load_hook = &mapldr_whiteout;
     u8 state = 0;
     map_loading_loop_1(&state);
     sub_8112364();
@@ -529,6 +554,39 @@ bool map_loading_iteration_5() {
     }
     ++super.multi_purpose_state_tracker;
     return 0;
+}
+
+// 08057884
+// void c1_link_related() {
+//     if (!link_mode_is_wireless || !sub_80F90DC() || !sub_800A00C()) {
+//         u32 id = linknpc_id_self_maybe;
+//         linknpc_process_commands(linknpc_command_buffer, linknpc_id_self_maybe);
+//         u16 r = c1_link_related_func(id);
+//         sub_8057C4C(r);
+//         linknpc_command_buffer_clear_with_x11_();
+//     }
+// }
+
+static inline u16 helper1(s16 x, s16 y) {
+    u8  hsize = current_mapheader.data->bb_width;
+    u8  vsize = current_mapheader.data->bb_height;
+    u16 *grid = current_mapheader.data->borderblock;
+
+    u32 x2 = (hsize<<3)+x-7 % hsize;
+    u32 y2 = (vsize<<3)+y-7 % vsize;
+
+    return grid[x + y*hsize]; // & 0xC00;
+}
+
+static inline u16 helper2(s16 x, s16 y) {
+    u32 hsize = *(u32* )0x03005040;
+    u32 vsize = *(u32* )0x03005044;
+    u16 *grid = *(u16**)0x03005048;
+
+    if ((x>=0) && (x<hsize)
+     && (y>=0) && (y<vsize))
+        return grid[x + y*hsize];
+    return helper1(x, y);
 }
 
 // 08058D44
@@ -600,8 +658,8 @@ u8 cur_mapdata_block_role_at(u16 x, u16 y) {
 u32 mapdata_block_get_field(struct mapdata *data, u16 blockid, u8 fieldid) {
     if (blockid >= 0x400) return 0xFF;
     return block_get_field((blockid < 0x280)
-        ? data->tileset1->blocks[blockid]
-        : data->tileset2->blocks[blockid-0x100],
+        ? data->blockset1->blocks[blockid]
+        : data->blockset2->blocks[blockid-0x100],
         fieldid);
 }
 
@@ -707,10 +765,12 @@ bool is_block_that_overrides_player_control(u8 role) {
     return 0;
 }
 
+// 03000E90
+struct coords8 tilemap_camera_move_something;
 
 // 0805A91C
 void overworld_draw_block_type1_on_map_coord(u32 x, u32 y, u16 *blockdef) {
-    i16 pos = map_pos_to_screenspace(&byte_3000E90, x, y);
+    i16 pos = map_pos_to_screenspace(&tilemap_camera_move_something, x, y);
     if (pos >= 0)
         overworld_draw_block(/*ttype*/1, blockdef, pos);
 }
@@ -721,9 +781,9 @@ void cur_mapdata_draw_block_internal(struct mapdata *data, u16 screenpos, s16 x,
     u16 blockid = cur_mapdata_get_blockid_at(x, y);
     if (blockid >= 0x400) blockid = 0;
     if (blockid < 0x280)
-        blockdef = &data->tileset1->bdef[blockid];
+        blockdef = &data->blockset1->bdef[blockid];
     else
-        blockdef = &data->tileset2->bdef[blockid-0x280];
+        blockdef = &data->blockset2->bdef[blockid-0x280];
     u32 ttype = cur_mapdata_block_get_bgs_at(x, y);
     overworld_draw_block(ttype, blockdef, screenpos);
 }
@@ -767,17 +827,8 @@ void overworld_draw_block(u32 ttype, u16 *blockdef, u16 pos) {
     side_c[pos+33] = empty;
 }
 
-struct cameradata {
-    void (*hook)(struct cameradata*);
-    void *field04;
-    int a_x;
-    int a_y;
-    int b_x;
-    int b_y;
-};
-
 // 0805ABB0
-void camera_update(struct cameradata *cd) {
+void camera_update() {
     int dx, dy, ex, ey;
 
     if (cd->hook) cd->hook(cd);
@@ -800,13 +851,13 @@ void camera_update(struct cameradata *cd) {
     if (ex || ey) {
         camera_move_maybe(ex, ey);
         overworld_rebase(ex, ey);
-        tilemap_move_something(&tilemap_move_something_data, ex*2, ey*2);
-        cur_mapheader_draw_map_slice(&tilemap_move_something_data, ex*2, ey*2);
+        tilemap_move_something(&tilemap_camera_move_something, ex*2, ey*2);
+        cur_mapheader_draw_map_slice(&tilemap_camera_move_something, ex*2, ey*2);
     }
 
-    coords8_add(&tilemap_move_something_data.field_0, dx, dy);
-    nu.x -= dx;
-    nu.y -= dy;
+    coords8_add(&tilemap_camera_move_something, dx, dy);
+    nu_x -= dx;
+    nu_y -= dy;
 }
 
 // 08069AE4
@@ -817,8 +868,8 @@ void script_env_12_start_and_stuff(u8 *scr) {
     keypad_override_through_script_env_2_disable();
 
     // XXX: It's 1, not 2!
-    script_env_init(script_env_1, script_cmds, script_cmd_max);
-    script_mode_set_bytecode_and_goto(script_env_1, scr);
+    script_env_init(&script_env_1, npc_cmds, npc_cmd_max);
+    script_mode_set_bytecode_and_goto(&script_env_1, scr);
 
     script_env_2_enable();
     script_env_2_context = 0; // running
@@ -837,7 +888,7 @@ void script_env_12_start_and_stuff(u8 *scr) {
 
 // 08069B80
 u8 *mapheader_get_tagged_pointer(u8 tag) {
-    for (struct mapscript *s = current_mapheader->scripts; s->tag; s++)
+    for (struct mapscript *s = current_mapheader.scripts; s->tag; s++)
         if (s->tag == tag)
             return s->data;
 }
@@ -858,43 +909,19 @@ u8 *mapheader_get_first_match_from_tagged_ptr_list(u8 tag) {
 // 08069C74
 bool mapheader_run_first_tag2_script_list_match_conditionally() {
     u8 *ptr;
-    if (byte_203ADFA==3) return 0;
+    if (prev_quest_mode==3) return 0;
     if (!(ptr = mapheader_get_first_match_from_tagged_ptr_list(2))) return 0;
     script_env_12_start_and_stuff(ptr);
     return 1;
 }
 
-static inline u16 helper1(s16 x, s16 y) {
-    u8  hsize = current_mapheader.data->bb_width;
-    u8  vsize = current_mapheader.data->bb_height;
-    u16 *grid = current_mapheader.data->borderblock;
-
-    u32 x2 = (hsize<<3)+x-7 % hsize;
-    u32 y2 = (vsize<<3)+y-7 % vsize;
-
-    return grid[x + y*hsize]; // & 0xC00;
-}
-
-static inline u16 helper2(s16 x, s16 y) {
-    u32 hsize = *(u32* )0x03005040;
-    u32 vsize = *(u32* )0x03005044;
-    u16 *grid = *(u16**)0x03005048;
-
-    if ((x>=0) && (x<hsize)
-     && (y>=0) && (y<vsize))
-        return grid[x + y*hsize];
-    return helper1(x, y);
-}
-
 //* 0806C888
 void sub_806C888(u8 *d) {
+    // rename to ptr_andeq_xFF00E000?
     d[0] = 0;
     d[1] &= ~0x1F;
     d[2] = 0;
 }
-
-//* 03005074
-u32 scripting_npc; // the npc currently executing a script
 
 //* 080CBDE8
 void context_npc_set_0() {
@@ -911,18 +938,18 @@ void cur_mapheader_run_tileset_funcs_after_806FED8() {
 
 // 0807002C
 void cur_mapheader_run_blockset1_func() {
-    struct blockset *bs = current_mapheader.data.blockset1;
-    word_3000FAE = 0;
-    word_3000FB0 = 0;
-    dword_3000FB8 = 0;
-    if (bs && bs->funcptr) bs->funcptr();
+    struct blockset *bs = current_mapheader.data->blockset1;
+    bs1_time = 0;
+    bs1_time_wraparound = 0;
+    bs1_func = 0;
+    if (bs && bs->fptr) bs->fptr();
 }
 
 // 08070068
 void cur_mapheader_run_blockset2_func() {
-    struct blockset *bs = current_mapheader.data.blockset2;
-    word_3000FB2 = 0;
-    word_3000FB4 = 0;
-    dword_3000FBC = 0;
-    if (bs && bs->funcptr) bs->funcptr();
+    struct blockset *bs = current_mapheader.data->blockset2;
+    bs2_time = 0;
+    bs2_time_wraparound = 0;
+    bs2_func = 0;
+    if (bs && bs->fptr) bs->fptr();
 }

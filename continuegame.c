@@ -5,6 +5,8 @@ u8 prev_quest_mode; // 0: normal
 					// 1: unknown
 					// 2: flashback
 					// 3: fade flashback to normal
+// 03005E90
+u32 dword_3005E90;
 
 // 08056938
 void c2_8056938() {
@@ -103,7 +105,7 @@ void flashback_2() {
 
 // 08111CF0
 void render_prev_quest_text_if_appropriate() {
-	if (byte_203ADFA == 2)
+	if (prev_quest_mode == 2)
 		render_previous_quest_text(prev_quest_display_number);
 }
 

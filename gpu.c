@@ -1,5 +1,6 @@
 #include "gpu.h"
 #include "lcd_registers.h"
+#include "uncategorized.h"
 
 #ifndef NO_RAM
 // 03000000
@@ -186,7 +187,7 @@ s8 gpu_copy_to_vram_by_bgid(u8 bg_id, u16 *src, size_t size, u16 offset, u8 mode
 	else
 		return -1;
 	u16 *dst = (u16*)(0x06000000 + offset);
-	return dma3_add_to_copy_queue(src, dst, size, /*16 bit DMA*/0);
+	return dma3_queue_add_transfer(src, dst, size, /*16 bit DMA*/0);
 }
 
 // 08001320
@@ -222,6 +223,11 @@ void gpu_sync_text_mode_and_hide_bgs() {
 	u16 dispcnt = lcd_io_get(0);
 	lcd_io_set(0, dispcnt & 0xF0F8);
 }
+
+// 08001658
+// void bg_vram_setup() {
+//
+// }
 
 // // 080017D0
 // s16 gpu_copy_to_tileset(u8 bg_id, u16 *src, size_t size, size_t offset) {

@@ -3,6 +3,12 @@ Assumptions:
 void *memcpy(void *dst, const void *src, char n)
 */
 
+#define P ((struct fishing_priv*)&t->priv)
+
+struct fishing_priv {
+	u16 state;
+};
+
 // 0805D2C0
 void fishing_start(u8 rod_quality) {
 	u8 taskid = task_add(&taskFF_fishing, 0xFF);
@@ -15,7 +21,7 @@ void fishing_start(u8 rod_quality) {
 // 0805D304
 void taskFF_fishing(u8 taskid) {
 	struct task_t *t = &tasks[taskid];
-	while (fishing_states[t->priv[15]](t));
+	while (fishing_states[P->state](t));
 }
 
 // 0805D33C
@@ -159,8 +165,8 @@ bool fishingA(struct task_t *t) {
 
 	if (!t->priv[1])
 		sub_805D9C4(player_obj);
-	remoboxes_upload_tilesets(player_obj);
-	bool a_pressed = remoif_a_pressed_maybe(0)
+	dialogboxes_upload_tilesets(player_obj);
+	bool a_pressed = dialogid_was_acknowledged(0);
 	if (a_pressed && !(t->priv[1])) {
 		return false;
 	} else if (a_pressed) {
@@ -252,3 +258,5 @@ bool fishingF(struct task_t *t) {
 	task_del(taskid);
 	return false;
 }
+
+#undef P

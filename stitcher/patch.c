@@ -16,6 +16,14 @@ void npc_coords_shift(struct npc_state *n, u16 x, u16 y) {
 	n->to.y = y;
 }*/
 
+
+// Definitions to ease porting stuff from the db over
+#define mapdata_header data
+#define saveblock1_mapdata sav1
+#define saveblock2_trainerdata sav2
+#define saveblock3_boxdata sav3
+
 #define NO_RAM
-#include "../task.c"
 #include "../gpu.c"
+//#include "../overworld.c"
+#include "../task.c"

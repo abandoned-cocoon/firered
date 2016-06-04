@@ -1,21 +1,11 @@
-typedef bool (*vbptr)();
-typedef bool (*sbptr)(struct script_env *s)
+#include "npc_interp.h"
 
-struct script_env {
-    u8 depth;             // 00
-    u8 mode;              // 01 script or asm
-    u16 cmp_result;       // 02
-    vbptr ptr_asm;        // 04
-    u8 *ptr_script;       // 08
-    u8 *return_addr[20];  // 0C
-    sbptr *cmd_table;     // 5C
-    sbptr *cmd_table_max; // 60
-    u32 vars[4];          // 64
-};
-
+#ifndef NO_RAM
+u8 script_env_2_context;        // 03000EA8
 struct script_env script_env_1; // 03000EB0
 struct script_env script_env_2; // 03000F28
 u8 script_running;              // 03000F9C
+#endif
 
 // 080697AC
 void script_env_init(struct script_env *s, sbptr *cmd_table, sbptr *cmd_table_max) {

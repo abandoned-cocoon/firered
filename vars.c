@@ -1,3 +1,6 @@
+#include "vars.h"
+
+#ifndef NO_RAM
 u16 var_8000; // 020370B8
 u16 var_8001; // 020370BA
 u16 var_8002; // 020370BC
@@ -27,6 +30,7 @@ u16 *var_80xx[] = {
     &var_8007, &var_8008, &var_8009, &var_800A, &var_800B, &var_800C, &var_800D,
     &var_800E, &var_800F, &var_8010, &var_8011, &var_8012, &var_8013, &var_8014
 };
+#endif
 
 // 0806E454
 u16 *var_access(u16 nr) {

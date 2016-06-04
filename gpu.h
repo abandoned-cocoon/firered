@@ -63,6 +63,7 @@ u8   gpu_bg_config_get_field(u8 bg_id, u8 field);
 s8   gpu_copy_to_vram_by_bgid(u8 bg_id, u16 *src, size_t size, u16 offset, u8 mode);
 void gpu_bg_show(u8 bg_id);
 void gpu_bg_hide(u8 bg_id);
+void bg_vram_setup(u8 mode, u32 *config, u32 count); // rename?
 void gpu_sync_bg_visibility_and_mode(void);
 void gpu_sync_text_mode_and_hide_bgs(void);
 s16  gpu_copy_to_tileset(u8 bg_id, u16 *src, size_t size, size_t offset);

@@ -40,7 +40,7 @@ bool map_loading_iteration_1(u8 *state, u32 arg1) {
         ml_mapscripts();
             // this is where npc_state[0] is filled for the player
         sub_8057114();
-        if (byte_203ADFA != 2) {
+        if (prev_quest_mode != 2) {
             sub_80CC534();
             sub_80CC59C();
         }

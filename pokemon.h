@@ -1,5 +1,7 @@
-enum pokemon_data_request
-{
+#pragma once
+#include "types.h"
+
+enum pokemon_data_request {
 	req_pokemon_id_or_personality = 0x0,
 	req_trainer_id = 0x1,
 	req_nick = 0x2,
@@ -273,10 +275,10 @@ struct pokemon {
 };
 
 // 02024029
-u8 party_player_count;
+extern u8 party_player_count;
 
 // 0202402C
-struct pokemon party_opponent[6];
+extern struct pokemon party_opponent[6];
 
 // 02024284
-struct pokemon party_player[6];
+extern struct pokemon party_player[6];

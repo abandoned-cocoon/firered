@@ -1,3 +1,5 @@
+// #include "u0807d_overworld.h"
+
 // 0807DB58
 void pal_fill_for_maplights() {
     u8 warp0_light    = warp_get_light_level();
@@ -15,9 +17,17 @@ void pal_fill_for_maplights() {
 }
 
 // 0807DF64
-void map_post_load_hook_default() {
+void mapldr_default() {
     map_music_something();
     render_prev_quest_text_if_appropriate();
-    pal_fade_depending_on_room_and_tile(0);
+    start_map_chg_seq_and_pal_fill_depending_on_room_and_tile(false);
+    script_env_2_enable();
+}
+
+// 0807DF7C
+void mapldr_black() {
+    map_music_something();
+    render_prev_quest_text_if_appropriate();
+    start_map_chg_seq_and_pal_fill_depending_on_room_and_tile(true);
     script_env_2_enable();
 }

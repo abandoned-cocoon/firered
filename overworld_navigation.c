@@ -1,3 +1,5 @@
+#include "overworld_navigation.h"
+
 // 0805B4D4
 void player_step_by_keypad(u8 direction, u16 keypad_new, u16 keypad_held) {
     // reverse engineered by min <3

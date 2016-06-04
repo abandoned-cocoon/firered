@@ -5,7 +5,7 @@ bool is_it_battle_time_2(blockinfo bi, u16 role);
 bool repel_per_step() {
     if (in_trade_center())
         return 0;
-    if (byte_203ADFA == 2)
+    if (prev_quest_mode == 2)
         return 0;
 
     u16 remaining_steps = var_load(VAR_REPEL_STEPS);

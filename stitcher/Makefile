@@ -21,11 +21,11 @@ $(OUT_ELF): $(LDS) $(OUT_O) $(PATCHES)
 	$(TOOLCHAIN)-ld -A arm7tdmi --fix-v4bx -o $(OUT_ELF) -T $(LDS) $(OUT_O) $(PATCHES)
 
 $(OUT_GBA): $(OUT_ELF)
-	$(TOOLCHAIN)-objcopy -O binary $(OUT_ELF) $(OUT_GBA)
+	$(TOOLCHAIN)-objcopy -S -O binary $(OUT_ELF) $(OUT_GBA)
 
 $(PATCH_O): patch.c Makefile
 	mkdir -p $(OBJDIR)
-	$(TOOLCHAIN)-gcc $(PATCH_CFLAGS) -c -o $(PATCH_O) patch.c
+	$(TOOLCHAIN)-gcc $(PATCH_CFLAGS) -Wno-implicit -c -o $(PATCH_O) patch.c
 
 $(PATCH_JSON): $(PATCH_O)
 	rabin2 -Sj $(PATCH_O) > $(PATCH_JSON)
@@ -39,3 +39,6 @@ $(OUT_S) $(LDS): build.py info.json $(PATCH_JSON) $(ROM)
 clean:
 	rm -rf out.gba out.sav ./$(OBJDIR)
 	mkdir ./$(OBJDIR)
+
+
+$(PATCH_O): ../gpu.c ../task.c ../overworld.c

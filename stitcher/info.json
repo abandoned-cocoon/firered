@@ -41,7 +41,7 @@
 		{"range": ["0x08077688",   "48"], "name": "task_find_id_by_funcptr"}
 	],
 	"symbols-thumb": [
-		["0x08000EAD", "dma3_add_to_copy_queue"],
+		["0x08000EAD", "dma3_queue_add_transfer"],
 		["0x0800283D", "tile_rebase_indices"],
 		["0x08002899", "bgid_get_tile_mode_attr"],
 		["0x08002901", "gpu_something_is_tilemap_outside_of_ram"],
@@ -63,6 +63,7 @@
 		["0x030008E8", "bg_config2"],
 		["0x03000928", "dmas_busy_with_gpu_copy_bitfield"],
 		["0x03000938", "gpu_tile_allocation_map_bg"],
+		["0x030030F0", "super"],
 		["0x03005090", "task"],
 		["0x04000000", "DISPCNT"],
 		["0x04000004", "DISPSTAT"],

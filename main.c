@@ -1,3 +1,5 @@
+#include "main.h"
+
 // 080003A4
 void mainloop() {
 	RegisterRamReset(0xFF);
