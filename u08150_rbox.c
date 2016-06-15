@@ -1,3 +1,10 @@
+// TODO
+extern u16 gfx_tiles_textbox_84566A8[];
+extern u16 gfx_tiles_curved_textbox_1[];
+extern u16 gfx_tiles_textbox_8470B0C[];
+extern u16 gfx_tiles_textbox_1[];
+extern u16 gfx_tiles_curved_textbox_2[];
+
 // 0814F884 fbox6_func
 
 // ...
@@ -6,31 +13,31 @@
 
 // 0814FD38 (wrong address?) (unused)
 void bgid_upload_textbox_84566A8(u8 bgid, u16 tileindex, u8 palindex) {
-	gpu_copy_to_tileset(bgid, &gfx_tiles_textbox_84566A8, 0x280u, tileindex);
+	gpu_copy_to_tileset(bgid, gfx_tiles_textbox_84566A8, 0x280u, tileindex);
 	gpu_pal_apply(stdpal_get(2), palindex, 32);
 }
 
 // 0814FD38 (unused)
 void bgid_upload_curved_textbox_1(u8 bgid, u16 tileindex, u8 palindex) {
-	gpu_copy_to_tileset(bgid, &gfx_tiles_curved_textbox_1, 0x280u, tileindex);
+	gpu_copy_to_tileset(bgid, gfx_tiles_curved_textbox_1, 0x280u, tileindex);
 	gpu_pal_apply(stdpal_get(0), palindex, 32);
 }
 
 // 0814FD6C (unused)
 void bgid_upload_textbox_8470B0C(u8 bgid, u16 tileindex, u8 palindex) {
-	gpu_copy_to_tileset(bgid, &gfx_tiles_textbox_8470B0C, 0x260u, tileindex);
+	gpu_copy_to_tileset(bgid, gfx_tiles_textbox_8470B0C, 0x260u, tileindex);
 	gpu_pal_apply(stdpal_get(1), palindex, 32);
 }
 
 // 0814FDA0
 void bgid_upload_textbox_1(u8 bgid, u16 tileindex, u8 palindex) {
-	gpu_copy_to_tileset(bgid, &gfx_tiles_textbox_1, 0x120u, tileindex);
+	gpu_copy_to_tileset(bgid, gfx_tiles_textbox_1, 0x120u, tileindex);
 	gpu_pal_apply(stdpal_get(3), palindex, 32);
 }
 
 // 0814FDD4
 void bgid_upload_curved_textbox_2_no_pal(u8 bgid, u16 tileindex, u8 palindex) {
-	gpu_copy_to_tileset(bgid, &gfx_tiles_curved_textbox_2, 0x280u, tileindex);
+	gpu_copy_to_tileset(bgid, gfx_tiles_curved_textbox_2, 0x280u, tileindex);
 }
 
 // 0814FDF4
@@ -40,36 +47,36 @@ void bgid_upload_curved_textbox_2_no_pal(u8 bgid, u16 tileindex, u8 palindex) {
 // 0814FE6C
 
 // 0814FEAC
-void rboxid_upload_curved_textbox_1(u8 rboxid) {
+void rboxid_upload_curved_textbox_1(u8 rboxid, u16 tileindex, u8 palindex) {
 	u8 bgid = rboxid_get_field(rboxid, 0);
-	gpu_copy_to_tileset(bgid, &gfx_tiles_curved_textbox_1, 0x280u, tileindex);
+	gpu_copy_to_tileset(bgid, gfx_tiles_curved_textbox_1, 0x280u, tileindex);
 	gpu_pal_apply(stdpal_get(0), palindex, 32);
 }
 
 // 0814FEEC
 void rboxid_upload_textbox_8470B0C(u8 rboxid, u16 tileindex, u8 palindex) {
 	u8 bgid = rboxid_get_field(rboxid, 0);
-	gpu_copy_to_tileset(bgid, &gfx_tiles_textbox_8470B0C, 0x260u, tileindex);
+	gpu_copy_to_tileset(bgid, gfx_tiles_textbox_8470B0C, 0x260u, tileindex);
 	gpu_pal_apply(stdpal_get(1), palindex, 32);
 }
 
 // 0814FF2C
 void rboxid_upload_textbox_1(u8 rboxid, u16 tileindex, u8 palindex) {
 	u8 bgid = rboxid_get_field(rboxid, 0);
-	gpu_copy_to_tileset(bgid, &gfx_tiles_textbox_1, 0x120u, tileindex);
+	gpu_copy_to_tileset(bgid, gfx_tiles_textbox_1, 0x120u, tileindex);
 	gpu_pal_apply(stdpal_get(3), palindex, 32);
 }
 
 // 0814FF6C
 void rboxid_upload_textbox_1_no_pal(u8 rboxid, u16 tileindex, u8 palindex) {
 	u8 bgid = rboxid_get_field(rboxid, 0);
-	gpu_copy_to_tileset(bgid, &gfx_tiles_textbox_1, 0x120u, tileindex);
+	gpu_copy_to_tileset(bgid, gfx_tiles_textbox_1, 0x120u, tileindex);
 }
 
 // 0814FF98
 void rboxid_upload_curved_textbox_2_no_pal(u8 rboxid, u16 tileindex, u8 palindex) {
 	u8 bgid = rboxid_get_field(rboxid, 0);
-	gpu_copy_to_tileset(bgid, &gfx_tiles_curved_textbox_2, 0x280u, tileindex);
+	gpu_copy_to_tileset(bgid, gfx_tiles_curved_textbox_2, 0x280u, tileindex);
 }
 
 // 0814FFC4

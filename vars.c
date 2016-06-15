@@ -1,4 +1,5 @@
 #include "vars.h"
+#include "save.h"
 
 #ifndef NO_RAM
 u16 var_8000; // 020370B8
@@ -39,7 +40,7 @@ u16 *var_access(u16 nr) {
     u8 m = *(u8*)0x03005E88;
     if (m == 1) {
         u16 *z;
-        if (z = sub_08112D40(0, nr))
+        if (z = (u16*)sub_08112D40(0, nr))
             saveblock1_mapdata->var_4000[nr-0x3800] = *z;
     } else if (m == 2) {
         if (sub_0806E528(nr-0x4000, 1)) {

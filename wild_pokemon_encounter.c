@@ -1,5 +1,10 @@
+#include "engine_scripts.h"
+#include "flags.h"
+#include "overworld.h"
+#include "wild_pokemon_encounter.h"
+
 // 08082CBC
-bool is_it_battle_time_2(blockinfo bi, u16 role);
+bool is_it_battle_time_2(block bi, u16 role);
 
 // 080830B8
 bool repel_per_step() {
@@ -12,8 +17,8 @@ bool repel_per_step() {
     if (remaining_steps == 0)
         return 0;
 
-    var_set(VAR_REPEL_STEPS, remaining_steps-1)
-    if (remainings_steps > 0)
+    var_set(VAR_REPEL_STEPS, remaining_steps-1);
+    if (remaining_steps > 0)
         return 0;
 
     script_env_12_start_and_stuff(scr_repel_wore_off);
@@ -26,7 +31,7 @@ bool sub_808310C(u8 limit) {
         return true;
 
     for (u32 i=0; i<6; i++) {
-        struct pokemon *pk = &party_player[i];
+        struct pokemon_extended *pk = &party_player[i];
         if (pokemon_getattr(pk, req_current_hp) == 0)
             continue;
         if (pokemon_getattr(pk, req_is_egg) == true)
@@ -38,20 +43,20 @@ bool sub_808310C(u8 limit) {
 }
 
 // 080832E4
-bool is_it_battle_time_1(blockinfo bi);
+bool is_it_battle_time_1(block bi);
 
 // 080833B0
-bool is_it_battle_time_3(blockinfo bi) {
+bool is_it_battle_time_3(block bi) {
     u16 role = block_get_field(bi, BLOCK_FIELD_ROLE);
 
-    if (is_it_battle_time_1(bi)                        == false ||
-        is_it_battle_time_2(bi, struc_20386D0.field_4) == false)
+    if (is_it_battle_time_1(bi)                       == false ||
+        is_it_battle_time_2(bi, struc_20386D0.role_4) == false)
     {
-        struc_20386D0.field_4 = role;
+        struc_20386D0.role_4 = role;
         return false;
     } else {
-        struc_20386D0.field_4 = role;
-        struc_20386D0.field_6 = 0;
+        struc_20386D0.role_4 = role;
+        struc_20386D0.encounter_probability_bonus = 0;
         struc_20386D0.field_8 = 0;
         return true;
     }

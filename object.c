@@ -1,98 +1,9 @@
-#define NUM_OBJS 0x40
-#define NUM_ROTSCALE_OBJS 0x20
-#define NUM_COPY_QUEUE_ENTRIES 0x40
+#include "object.h"
 
-#define OBJ_BIT2_IN_USE    1
-#define OBJ_BIT2_INVISIBLE 4
-
-#define OBJ_BIT1_HFLIP               0x01
-#define OBJ_BIT1_VFLIP               0x02
-#define OBJ_BIT1_ANIM_IMAGE_BEGIN    0x04 // TODO
-#define OBJ_BIT1_SHARES_RESOURCES    0x40
-#define OBJ_BIT1_ANIM_ROTSCALE_BEGIN 0x80 // TODO
-
-#define OBJ_ANIM_IMAGE_PAUSED     0x40
-#define OBJ_ANIM_ROTSCALE_PAUSED  0x80
-#define OBJ_ANIM_ANY_PAUSED       0xC0
-
-struct proto_t {
-	u16 tile_tag;
-	u16 pal_tag;
-	gpu_sprite   *sprite; // a.k.a. OAM
-	image_seq    *image_anims;
-	gfxentry     *gfx_table;
-	rotscale_seq *rotscale_anims;
-	void *callback;
-};
-
-struct obj_oversize_piece {
-	uint x          :  8;
-	uint y          :  8;
-	uint shape      :  2;
-	uint size       :  2;
-	uint tileoffset : 10;
-	uint priority   :  2;
-};
-
-struct obj_oversize_formation {
-	u32 count;
-	obj_oversize_piece *data;
-};
-
-typedef struct obj obj_t;
-
-struct obj {
-	gpu_sprite              sprite; // a.k.a. OAM
-	image_seq              *image_anims;
-	gfxentry               *gfx_table;
-	rotscale_seq           *rotscale_anims;
-	struct proto_t         *template;
-	obj_oversize_formation *formations;
-	void                  (*callback)(obj_t *);
-
-	coords16 pos_1;
-	coords16 pos_2;
-	coords8  pos_neg_center;
-
-	u8 anim_number;
-	u8 anim_frame;
-	u8 anim_delay_countdown; // top two bits used as flags (OBJ_ANIM_ANY_PAUSED)
-	u8 anim_unknown_counter;
-	u16 priv0; // in npcs: npcid
-	u16 priv1; // in npcs: local id(?)
-	u16 priv2; // in npcs: an_sub_index
-	u16 priv3; // in npcs: direction supplied to the stepper
-	u16 priv4; // in npcs: stepperspeed
-	u16 priv5; // in npcs: stepperphase
-	u16 priv6;
-	u16 priv7;
-	u8 bitfield2;
-		// 0x01 - in use
-		// 0x02 - affected by global_sprite_displace
-		// 0x04 - invisible
-		// 0x08
-		// 0x10
-		// 0x20
-		// 0x40
-		// 0x80
-	u8 bitfield;
-		// 0x01 - horizontal flip
-		// 0x02 - vertical flip
-		// 0x04 - set when the image animation is at its beginning
-		// 0x08
-		// 0x10 - cleared by 0800786C anim_player_2
-		// 0x20
-		// 0x40 - disable memory allocation (for tiles and palettes)
-		// 0x80 - set when the rotscale animation is at its beginning
-	u16 anim_data_offset; // ?
-	u8 formation_index               : 6;
-	u8 formation_determines_priority : 1;
-	u8 formation_enabled             : 1;
-	u8 y_height_related;
-};
-
+#ifndef NO_RAM
 // 0202063C
-struct obj_t objects[NUM_OBJS];
+struct obj objects[NUM_OBJS];
+#endif
 
 // from here on everything up to 08007434 and except for
 // the parts marked with TODO is continuously documented
@@ -114,7 +25,7 @@ void obj_and_aux_reset_all() {
 // 08006B5C
 void objc_exec() {
 	for (u8 i = 0; i<NUM_OBJS; i++) {
-		obj *o = &objects[i];
+		obj_t *o = &objects[i];
 
 		if (o->bitfield2 & OBJ_BIT2_IN_USE) o->callback(o);
 		if (o->bitfield2 & OBJ_BIT2_IN_USE) obj_anim_step(o);
@@ -158,10 +69,10 @@ void sub_08006CF8() {
 void write_rotscale_coefficients() {
 	for (u8 i = 0; i<NUM_ROTSCALE_OBJS; i++) {
 		obj *o = &objects[i];
-		super.oam[i*4+0].rotscale = rotscale_coefficients[i].a;
-		super.oam[i*4+1].rotscale = rotscale_coefficients[i].b;
-		super.oam[i*4+2].rotscale = rotscale_coefficients[i].c;
-		super.oam[i*4+3].rotscale = rotscale_coefficients[i].d;
+		super.sprites[i*4+0].rotscale = rotscale_coefficients[i].a;
+		super.sprites[i*4+1].rotscale = rotscale_coefficients[i].b;
+		super.sprites[i*4+2].rotscale = rotscale_coefficients[i].c;
+		super.sprites[i*4+3].rotscale = rotscale_coefficients[i].d;
 	}
 }
 
@@ -169,7 +80,7 @@ void write_rotscale_coefficients() {
 void super_sprites_fill() {
 	u8 super_index = 0;
 
-	// transfer all objects into super.oam
+	// transfer all objects into super.sprites
 
 	for (u8 i = 0; i<NUM_OBJS; i++) {
 		obj *o = &objects[obj_ids_to_display[i]];
@@ -180,10 +91,10 @@ void super_sprites_fill() {
 		}
 	}
 
-	// pad the rest of super.oam with dummy entries
+	// pad the rest of super.sprites with dummy entries
 
 	while (super_index < last_super_index)
-		super.oam[super_index++] = dummy_oam;
+		super.sprites[super_index++] = dummy_oam;
 }
 
 // 08006F8C
@@ -273,7 +184,7 @@ void obj_delete_and_free_tiles(struct obj_t *o) {
 // 080072E8
 void super_sprites_delete_all(u8 start, u8 end) {
 	for (u8 i=start; i<end; i++)
-		super.oam[i] = oam_dummy;
+		super.sprite[i] = oam_dummy;
 }
 
 // 08007320
@@ -281,7 +192,7 @@ void gpu_sprites_upload() {
 	if (super.gpu_sprites_upload_skip & 1)
 		return;
 
-	CpuSet(super.oam, 0x07000000, 0x4000000 | (sizeof(super.oam)>>2));
+	CpuSet(super.sprite, 0x07000000, 0x4000000 | (sizeof(super.sprite)>>2));
 }
 
 // 08007350

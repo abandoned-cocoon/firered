@@ -1,31 +1,31 @@
 // 0804C1F0
 void save_serialize_pokemon() {
-	struct pokemon *dst = sav1->party_pokemon;
-	struct pokemon *src = party_player;
-	sav1->num_party_pokemon = party_player_count;
-	memcpy(dst, src, 6*sizeof(struct pokemon));
+	struct pokemon_extended *dst = sav1i->party_pokemon;
+	struct pokemon_extended *src = party_player;
+	sav1i->num_party_pokemon = party_player_count;
+	memcpy(dst, src, 6*sizeof(struct pokemon_extended));
 }
 
 // 0804C230
 void save_deserialize_pokemon() {
-	struct pokemon *dst = party_player;
-	struct pokemon *src = sav1->party_pokemon;
-	sav1->num_party_pokemon = party_player_count;
-	memcpy(dst, src, 6*sizeof(struct pokemon));
+	struct pokemon_extended *dst = party_player;
+	struct pokemon_extended *src = sav1i->party_pokemon;
+	sav1i->num_party_pokemon = party_player_count;
+	memcpy(dst, src, 6*sizeof(struct pokemon_extended));
 }
 
 // 0804C270
 void save_serialize_npcs() {
-	struct npc_state *dst = sav1->npc_states;
+	struct npc_state *dst = sav1i->npc_states;
 	struct npc_state *src = npc_states;
-	memcpy(dst, src, MAX_NPXS*sizeof(struct npc_state));
+	memcpy(dst, src, MAX_NPCS*sizeof(struct npc_state));
 }
 
 // 0804C2B8
 void save_deserialize_npcs() {
-	struct npc_state *dst = sav1->npc_states;
+	struct npc_state *dst = sav1i->npc_states;
 	struct npc_state *src = npc_states;
-	memcpy(dst, src, MAX_NPXS*sizeof(struct npc_state));
+	memcpy(dst, src, MAX_NPCS*sizeof(struct npc_state));
 }
 
 // 0804C300
@@ -45,8 +45,8 @@ void save_game(u8 mode) {
 	// mode:
 	//   0 normal save
 	//   4 save newly started game
-	void *vblank_backup = super.vblank_handler;
-	super.vblank_handler = NULL;
+	void *vblank_backup = super.vblank_callback;
+	super.vblank_callback = NULL;
 	sub_080DA1D4();
 	switch (mode) {
 		case 1:
@@ -75,5 +75,5 @@ void save_game(u8 mode) {
 			save_write_to_flash(0xFFFF, &dword_030053B0);
 			break;
 	}
-	super.vblank_handler = vblank_backup;
+	super.vblank_callback = vblank_backup;
 }

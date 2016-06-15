@@ -1,3 +1,7 @@
+#include "vars.h"
+#include "npc_interp.h"
+#include "save.h"
+
 // 08069ED0
 bool s00_nop(struct script_env *s) {
     return false;
@@ -33,12 +37,12 @@ bool s05_goto(struct script_env *s) {
 }
 
 // 083A7248
-u8 compare_modes[] = {1, 0, 0,  // less
-                      0, 1, 0,  // equal
-                      0, 0, 1,  // more
-                      1, 1, 0,  // less or same
-                      0, 1, 1,  // more or same
-                      1, 0, 1}; // not equal
+u8 compare_mode[] = {1, 0, 0,  // less
+                     0, 1, 0,  // equal
+                     0, 0, 1,  // more
+                     1, 1, 0,  // less or same
+                     0, 1, 1,  // more or same
+                     1, 0, 1}; // not equal
 
 // 08069FEC
 bool s06_if_jump(struct script_env *s) {
@@ -142,6 +146,7 @@ bool s12_u32_var_to_ptr(struct script_env *s) {
 
 // 0806A330
 bool s13_u8_var_to_ptr(struct script_env *s) {
+    u8 nr = script_read_byte(s);
     *(u8*)script_read_word(s) = (u8)s->vars[nr];
     return false;
 }
@@ -474,7 +479,7 @@ bool s4E_nop_para_u16(struct script_env *s) {
 bool s4F_execute_movement(struct script_env *s) {
     u16 local_id = var_load(script_read_half(s));
     u8* movement = script_read_word(s);
-    execute_movement(local_id, sav1.location.map, sav1.location.bank, movement);
+    execute_movement(local_id, sav1i.location.map, sav1i.location.bank, movement);
     script_last_npc_localid = local_id;
     return false;
 }
@@ -495,8 +500,8 @@ bool s51_waitmove(struct script_env *s) {
     u16 local_id = var_load(script_read_half(s));
     if (local_id) script_last_npc_localid = local_id;
 
-    waitmove_mapbank = sav1.location.bank;
-    waitmove_mapnr   = sav1.location.map;
+    waitmove_mapbank = sav1i.location.bank;
+    waitmove_mapnr   = sav1i.location.map;
 
     script_enter_asm_mode(s, &s51a_0806B288);
 
@@ -520,7 +525,7 @@ bool s52_waitmove_remote(struct script_env *s) {
 
 // 0806B5BC
 bool s5A_face_player(struct script_env *s) {
-    struct npc_state *npc = &npc_states[scripting_npc];
+    struct npc_state *npc = &npc_states[context_npc];
     if (npc->bits & 1)
         npc_reciprocate_look(npc, player_get_direction());
 }
@@ -529,7 +534,7 @@ bool s5A_face_player(struct script_env *s) {
 bool s5B_npc_set_direction(struct script_env *s) {
     u16 local_id = var_load(script_read_half(s));
     u8 direction = script_read_byte(s);
-    npc_set_direction_by_local_id_and_map(local_id, sav1.location.map, sav1.location.bank, direction);
+    npc_set_direction_by_local_id_and_map(local_id, sav1i.location.map, sav1i.location.bank, direction);
     return false;
 }
 

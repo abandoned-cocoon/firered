@@ -1,10 +1,12 @@
+#include "engine_scripts.h"
+
 // 08097874
 /* ... */
 
 // 080979A0
 bool oei_cut() {
 	u8 tid = oei_task_add();
-	TASK_PRIV_ASSIGN32(tasks[tid], 8, &oei_cut_finish);
+	TASK_PRIV_ASSIGN32(task[tid], 8, &oei_cut_finish);
 	sav_xor_incr(0x12);
 	return false;
 }
@@ -19,7 +21,7 @@ void hm_cut_run_scr() {
 // 080979F0
 bool oei_cut2() {
 	u8 tid = oei_task_add();
-	TASK_PRIV_ASSIGN32(tasks[tid], 8, &oei_cut2_finish);
+	TASK_PRIV_ASSIGN32(task[tid], 8, &oei_cut2_finish);
 	sav_xor_incr(0x12);
 	return false;
 }

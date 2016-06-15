@@ -1,3 +1,7 @@
+#include "overworld.h"
+#include "save.h"
+#include "vars.h"
+
 // 08097898
 bool hm_prepare_cut() {
 	if (ruin_valley_trigger()) {
@@ -89,7 +93,7 @@ bool hm_prepare_dig() {
 
 // 080C9B2C
 bool hm_prepare_flash() {
-	if (current_mapheader.cave == 1 && !flag_check(2054))
+	if (current_mapheader.cave == 1 && !flag_check(2054)) {
 		hm_phase_1 = hm_add_c3_launch_phase_2;
 		hm_phase_2 = hm2_flash;
 		return true;

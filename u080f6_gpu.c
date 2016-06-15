@@ -1,3 +1,6 @@
+// 0203AB58
+extern u8 bgmaps_that_need_syncing[4];
+
 // 080F6790
 void gpu_tilemaps_sync_none() {
 	bgmaps_that_need_syncing[0] = false;

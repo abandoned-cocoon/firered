@@ -1,4 +1,5 @@
 #include "overworld_navigation.h"
+#include "wild_pokemon_encounter.h" // for repel_per_step signature
 
 // 0805B4D4
 void player_step_by_keypad(u8 direction, u16 keypad_new, u16 keypad_held) {
@@ -22,7 +23,7 @@ void sub_805BCEC(u16 x, u16 y, u8 direction) {
     if (npc->type_id != 0x61)
         return 0;
 
-    p = npc_states[npc_id].to;
+    coords p = npc_states[npc_id].to;
     numbers_move_direction(direction, &next_p.x, &next_p.y);
 
     u8 role = cur_mapdata_block_role_at(p.x, p.y);
@@ -37,13 +38,13 @@ void sub_805BCEC(u16 x, u16 y, u8 direction) {
 
 // 0805B3E0
 void player_step(u8 direction, u16 keypad_new, u16 keypad_held) {
-    struct npc_state *avatar = npc_states[walkrun.npc_id];
+    struct npc_state *avatar = npc_states[walkrun_state.npc_id];
 
     sub_0805CC40(avatar);
 
-    if (walkrun.lock)
+    if (walkrun_state.lock)
         return;
-    if (player_lock_for_tile_x54_x55_x56_x57()) // always 1 when (walkrun.bitfield & 0x40)
+    if (player_lock_for_tile_x54_x55_x56_x57()) // always 1 when (walkrun_state.bitfield & 0x40)
         return;
     if (sub_0805B45C(avatar, direction))
         return;
@@ -51,7 +52,7 @@ void player_step(u8 direction, u16 keypad_new, u16 keypad_held) {
     npc_clear_strange_bits(avatar);
     bike_related();
 
-    if (player_override_call()) // always 1 when (walkrun.bitfield & 0x20)
+    if (player_override_call()) // always 1 when (walkrun_state.bitfield & 0x20)
         return;
 
     player_step_by_keypad(direction, keypad_new, keypad_held);
@@ -60,18 +61,18 @@ void player_step(u8 direction, u16 keypad_new, u16 keypad_held) {
 
 // 0805C538
 void player_get_pos_to(u16 x, u16 y) {
-    *x = npc_states[walkrun.npc_id].x;
-    *y = npc_states[walkrun.npc_id].y;
+    *x = npc_states[walkrun_state.npc_id].x;
+    *y = npc_states[walkrun_state.npc_id].y;
 }
 
 // 0805C6C4
 u8 player_get_direction() {
-    return npc_states[walkrun.npc_id].direction & 0xF;
+    return npc_states[walkrun_state.npc_id].direction & 0xF;
 }
 
 // 0805C700
 u8 player_get_height() {
-    return npc_states[walkrun.npc_id].height >> 4;
+    return npc_states[walkrun_state.npc_id].height >> 4;
 }
 
 // 0806CA4C
@@ -85,8 +86,8 @@ void script_env_2_apply_keypad_override(u8 *ignored, u16 *keypad_new, u16 *keypa
 // 0805CCD0
 void sub_805CCD0(u8 npc_id, u8 direction) {
     u8 task_id = task_add(taskFF_805CD0C, 0xFF);
-    tasks[task_id].args[1] = npc_id;
-    tasks[task_id].args[2] = direction;
+    task[task_id].args[1] = npc_id;
+    task[task_id].args[2] = direction;
     taskFF_805CD0C(task_id);
 }
 
@@ -105,7 +106,7 @@ void input_process(u8 *d, u16 keypad_new, u16 keypad_held) {
     if (!script_env_2_context_is_normal() && keypad_override_through_script_env_2_enabled())
         script_env_2_apply_keypad_override(d, &keypad_new, &keypad_held);
 
-    if (((running1 == 2 && !override) || running1 == 0) && (walkrun.bitfield & 0x40)) {
+    if (((running1 == 2 && !override) || running1 == 0) && (walkrun_state.bitfield & 0x40)) {
         if (sub_80BD674() != 4) {
             if ((keypad_new & KEYPAD_START)) d[0] |= 0x04;
 
@@ -151,7 +152,7 @@ bool sub_806CAC8(u8 *d) {
     if (mapheader_run_first_tag2_script_list_match_conditionally()) return 1;
 
     // executed every frame
-    if (walkrun.bitfield & 0x40) {
+    if (walkrun_state.bitfield & 0x40) {
         // executed every step
         sub_8054E90(5);
         sub_8146CA4();
@@ -213,7 +214,7 @@ void sub_806CD30(u8 *d) {
 
     if (direction_held == 0 || direction_held == player_get_direction()) {
 
-        if (!(walkrun.bitfield & 0x40))
+        if (!(walkrun_state.bitfield & 0x40))
             return;
 
         script_env_2_start_and_stuff(scr_special_15A);
@@ -284,21 +285,22 @@ u32 onpress_a_get_script_npc(struct npc_position *n, u8 role, u8 direction) {
         n->y,
         n->height
     );
+
     if (npc_id == MAX_NPCS || npc_states[npc_id].local_id == 0xFF) {
         if (!is_role_x80(tt)) return 0;
 
         npc_id = npc_id_by_pos_and_height(
-            n->x + directions_i32[d*2+0],
-            n->y + directions_i32[d*2+1],
+            n->x + directions_i32[direction*2+0],
+            n->y + directions_i32[direction*2+1],
             n->height
         );
         if (npc_id == MAX_NPCS || npc_states[npc_id].local_id == 0xFF) return 0;
     }
     if (in_trade_center() && !sub_08063D68(&npc_states[npc_id])) return 0;
 
-    scripting_npc = npc_id;
+    context_npc = npc_id;
     var_800F = npc_states[npc_id].local_id;
-    var_800C = d;
+    var_800C = direction;
     return sub_08069D8C(var_800F, npc_get_script_by_npc_id(npc_id));
 }
 
@@ -339,19 +341,19 @@ u32 onpress_a_get_script_block(struct npc_position *n, u8 role, u8 direction) {
     if (is_role_x8F(tt)) return 0x081A7702; // complex stuff.
     if (is_role_x8E_and_d_is_x2(tt, d)) return 0x081BB8A7; // complex stuff.
     if (is_role_x91(tt)) {
-        (*(u8*)03000FA1) = 1;
+        message_signpost = 1;
         return 0x081A76F0; // INDIGO PLATEAU_The ultimate goal of TRAINERS! POKeMON LEAGUE HQ
     }
     if (is_role_x92(tt)) {
-        (*(u8*)03000FA1) = 1;
+        message_signpost = 1;
         return 0x081A76F9; // INDIGO PLATEAU_The highest POKeMON authority! POKeMON LEAGUE HQ
     }
     if (is_role_x88_and_d_is_x2(tt, d)) {
-        (*(u8*)03000FA1) = 1;
+        message_signpost = 1;
         return 0x081A76DE; // All your item needs fulfilled! POKeMON MART
     }
     if (is_role_x87_and_d_is_x2(tt, d)) {
-        (*(u8*)03000FA1) = 1;
+        message_signpost = 1;
         return 0x081A76E7; // Heal Your POKeMON! POKeMON CENTER
     }
     return 0;
@@ -368,7 +370,7 @@ bool per_step_2(struct npc_state *npc, u16 role, u8 direction) {
         return 1;
     if (per_step_scripts(role) == 1)
         return 1;
-    if (walkrun.bitfield & 0x40)
+    if (walkrun_state.bitfield & 0x40)
         return 0;
     if (is_tile_that_overrides_player_control(role))
         return 0;
@@ -397,17 +399,17 @@ void taskFF_805CD0C(u8 task_id) {
     struct task_t *c = &task[task_id];
     struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &c->args;
     do {
-        player_npc = npc_states[walkrun.npc_id];
-         other_npc = npc_states[  args->npc_id];
+        player_npc = &npc_states[walkrun_state.npc_id];
+         other_npc = &npc_states[  args->npc_id];
     } while(off_835B8A0[args->mode](c, player_npc, other_npc));
 }
 
 // 0805CD64
-bool sub_805CD64_mode_0(struct task_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+bool sub_805CD64_mode_0(struct task* c, struct npc_state* player_npc, struct npc_state* other_npc) {
     struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &c->args;
 
     script_env_2_enable();
-    walkrun.lock = 1;
+    walkrun_state.lock = 1;
     args->mode++; // from 0 to 1
     return 0;
 }
@@ -429,7 +431,7 @@ bool sub_805CE20_mode_2(struct task_t* c, struct npc_state* player_npc, struct n
     struct coords *o_to = other_npc.to;
     if_role_x20_run_trigger_at_position_maybe(o_to->x, o_to->y);
 
-    walkrun.lock = 0;
+    walkrun_state.lock = 0;
     script_env_2_disable();
     u8 task_id = task_find_id_by_funcptr(&task_805CD0C);
     task_del(task_id);

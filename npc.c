@@ -1,3 +1,6 @@
+#include "npc.h"
+#include "object.h"
+
 struct task_args_0805CD0C {
     enum mode_0805CD0C {
         ZERO = 0,
@@ -50,7 +53,7 @@ u8 rom_npc_to_npc_state(struct rom_npc *rnpc, u8, u8) {
 u8 npc_id_by_local_id_ignore_map(u8 local_id) {
     u8 i=0;
     while (i<MAX_NPCS) {
-        if (npc_states[i].bits & 1 && \
+        if (npc_states[i].bitfield1 & NPC_BIT_ACTIVE && \
             npc_states[i].local_id == local_id) break;
         i++;
     }
@@ -74,7 +77,7 @@ void hide_sprite(u8 local_id, u8 mapnr, u8 mapgroup) {
 }
 
 // 0805E590
-void *npc_spawn_with_provided_template(byte, void*, byte, byte, short, short) {
+void *npc_spawn_with_provided_template(u8, void*, u8, u8, short, short) {
     // TODO
     return 0;
 }
@@ -84,7 +87,7 @@ void npc_to_template(u8 npc_type_id, void *objcallback, struct proto_t *p, u32 *
     struct npc_type *nt;
     nt = npc_get_type(npc_type_id);
 
-    p->tiles_tag      = nt->tiles_tag;
+    p->tile_tag       = nt->tile_tag;
     p->pal_num        = nt->pal_num;
     p->oam            = nt->oam;
     p->image_anims    = nt->image_anims;
@@ -104,7 +107,7 @@ void npc_to_template(u8 npc_type_id, void *objcallback, struct proto_t *p, u32 *
 void npc_turn(struct npc_state *npc, u8 direction) {
     npc_set_direction(npc, direction);
 
-    if (npc->field_1 & 0x20)
+    if (npc->bitfield2 & (npc_invisble >> 8))
         return;
 
     obj_anim_image_start(o, npc_direction_to_obj_anim_image_number(npc->direction & 4));
@@ -149,7 +152,7 @@ void npc_coords_set(struct npc_state *n, u16 x, u16 y) {
 }
 
 // 0805F818
-void npc_coords_shift_still(struct npc_state *npc) {
+void npc_coords_shift_still(struct npc_state *n) {
     n->from = n->to;
 }
 
@@ -187,7 +190,7 @@ bool npc_does_height_match(struct npc_state *npc, u8 height) {
 // 0805F218
 void npc_set_direction(struct npc_state *npc, u8 direction) {
     npc->unknown = npc->direction.low;
-    if (npc->field_1 & 0x02 == 0)
+    if (npc->bitfield2 & (npc_use_upper_direction_nibble >> 8) == 0)
         npc->direction.low = direction;
     npc->direction.high = direction;
 }
@@ -226,6 +229,8 @@ AN(look1_dn) { an_look_any(1); return true; } // 08064638
 AN(look1_up) { an_look_any(2); return true; } // 08064648
 AN(look1_lf) { an_look_any(3); return true; } // 08064658
 AN(look1_rt) { an_look_any(4); return true; } // 08064668
+
+// TODO: Don't reassing the same name. Split 'an_' prefix in two prefixes?
 
 anptr an_look1_dn[] = { an_look1_dn, an_stop }; // 083A6864
 anptr an_look1_up[] = { an_look1_up, an_stop }; // 083A686C
@@ -277,56 +282,205 @@ anptr an_run_rt[] = { an_run_rt_1, an_run_rt_2, an_stop }; // 083A69F4
 
 #define Q(n) n##_dn, n##_up, n##_lf, n##_rt
 
+// temporary forward decls
+extern anptr off_83A6964[];
+extern anptr off_83A6970[];
+extern anptr off_83A697C[];
+extern anptr off_83A6988[];
+extern anptr off_83A6994[];
+extern anptr off_83A69A0[];
+extern anptr off_83A69AC[];
+extern anptr off_83A69B8[];
+extern anptr off_83A69C4[];
+extern anptr off_83A6A50[];
+extern anptr off_83A6A5C[];
+extern anptr off_83A6A68[];
+extern anptr off_83A6A74[];
+extern anptr off_83A6A80[];
+extern anptr off_83A6A8C[];
+extern anptr off_83A6A98[];
+extern anptr off_83A6AA4[];
+extern anptr off_83A6AB0[];
+extern anptr off_83A6ABC[];
+extern anptr off_83A6AC8[];
+extern anptr off_83A6AD4[];
+extern anptr off_83A6AE0[];
+extern anptr off_83A6AEC[];
+extern anptr off_83A6AF8[];
+extern anptr off_83A6B04[];
+extern anptr off_83A6B10[];
+extern anptr off_83A6B1C[];
+extern anptr off_83A6B28[];
+extern anptr off_83A6B34[];
+extern anptr off_83A6B40[];
+extern anptr off_83A6B4C[];
+extern anptr off_83A6B58[];
+extern anptr off_83A6B64[];
+extern anptr off_83A6B70[];
+extern anptr off_83A6B7C[];
+extern anptr off_83A6B88[];
+extern anptr off_83A6B94[];
+extern anptr off_83A6BA0[];
+extern anptr off_83A6BAC[];
+extern anptr off_83A6BB8[];
+extern anptr off_83A6BC4[];
+extern anptr off_83A6BD0[];
+extern anptr off_83A6BDC[];
+extern anptr off_83A6BE8[];
+extern anptr off_83A6BF4[];
+extern anptr off_83A6C00[];
+extern anptr off_83A6C0C[];
+extern anptr off_83A6C18[];
+extern anptr off_83A6C24[];
+extern anptr off_83A6C30[];
+extern anptr off_83A6C6C[];
+extern anptr off_83A6C74[];
+extern anptr off_83A6C7C[];
+extern anptr off_83A6C84[];
+extern anptr off_83A6C8C[];
+extern anptr off_83A6C98[];
+extern anptr off_83A6CA4[];
+extern anptr off_83A6CB0[];
+extern anptr off_83A6CBC[];
+extern anptr off_83A6CC8[];
+extern anptr off_83A6CD4[];
+extern anptr off_83A6CE0[];
+extern anptr off_83A6CEC[];
+extern anptr off_83A6CF8[];
+extern anptr off_83A6D04[];
+extern anptr off_83A6D10[];
+extern anptr off_83A6D1C[];
+extern anptr off_83A6D24[];
+extern anptr off_83A6D30[];
+extern anptr off_83A6D38[];
+extern anptr off_83A6D40[];
+extern anptr off_83A6D48[];
+extern anptr off_83A6D50[];
+extern anptr off_83A6D58[];
+extern anptr off_83A6D60[];
+extern anptr off_83A6D68[];
+extern anptr off_83A6D70[];
+extern anptr off_83A6D78[];
+extern anptr off_83A6D80[];
+extern anptr off_83A6D88[];
+extern anptr off_83A6D94[];
+extern anptr off_83A6DA4[];
+extern anptr off_83A6DB4[];
+extern anptr off_83A6DBC[];
+extern anptr off_83A6DC4[];
+extern anptr off_83A6DCC[];
+extern anptr off_83A6DD4[];
+extern anptr off_83A6DE0[];
+extern anptr off_83A6DEC[];
+extern anptr off_83A6DF4[];
+extern anptr off_83A6DFC[];
+extern anptr off_83A6E04[];
+extern anptr off_83A6E0C[];
+extern anptr off_83A6E18[];
+extern anptr off_83A6E24[];
+extern anptr off_83A6E30[];
+extern anptr off_83A6E3C[];
+extern anptr off_83A6E48[];
+extern anptr off_83A6E54[];
+extern anptr off_83A6E60[];
+extern anptr off_83A6E9C[];
+extern anptr off_83A6EA8[];
+extern anptr off_83A6EB4[];
+extern anptr off_83A6EC0[];
+extern anptr off_83A6ECC[];
+extern anptr off_83A6ED8[];
+extern anptr off_83A6EE4[];
+extern anptr off_83A6EF0[];
+extern anptr off_83A6EFC[];
+extern anptr off_83A6F08[];
+extern anptr off_83A6F14[];
+extern anptr off_83A6F20[];
+extern anptr off_83A6F2C[];
+extern anptr off_83A6F38[];
+extern anptr off_83A6F44[];
+extern anptr off_83A6F50[];
+extern anptr off_83A6F5C[];
+extern anptr off_83A6F68[];
+extern anptr off_83A6F74[];
+extern anptr off_83A6F80[];
+extern anptr off_83A6F8C[];
+extern anptr off_83A6F98[];
+extern anptr off_83A6FA4[];
+extern anptr off_83A6FB0[];
+extern anptr off_83A6FBC[];
+extern anptr off_83A6FC8[];
+extern anptr off_83A6FD4[];
+extern anptr off_83A6FE0[];
+extern anptr off_83A6FEC[];
+extern anptr off_83A6FF4[];
+extern anptr off_83A6FFC[];
+extern anptr off_83A6898[];
+extern anptr off_83A68A4[];
+extern anptr off_83A68B0[];
+extern anptr off_83A68BC[];
+extern anptr off_83A7004[];
+extern anptr off_83A6A00[];
+extern anptr off_83A6A0C[];
+extern anptr off_83A6A18[];
+extern anptr off_83A6A24[];
+extern anptr off_83A700C[];
+extern anptr off_83A7018[];
+extern anptr off_83A6C3C[];
+extern anptr off_83A6C48[];
+extern anptr off_83A6C54[];
+extern anptr off_83A6C60[];
+// end temporary forward decls
+
 // 083A65BC
 anptr (*an_table[]) = {
-    Q(&an_look1),  // 0x00
-    Q(&an_look2),  // 0x04
-    Q(&an_walk),   // 0x08
-    Q(&an_go),     // 0x0C; can't remember the difference between "walk" and "go"
-    Q(&an_pulse),  // 0x10
-    &off_83A6964, &off_83A6970, &off_83A697C, &off_83A6988, // 0x14
-    &off_83A6994, &off_83A69A0, &off_83A69AC, &off_83A69B8, // 0x18
-    &off_83A69C4,
-        Q(&an_run),
-                  &off_83A6A50, &off_83A6A5C, &off_83A6A68, // 0x20
-    &off_83A6A74, &off_83A6A80, &off_83A6A8C, &off_83A6A98, // 0x24
-    &off_83A6AA4, &off_83A6AB0, &off_83A6ABC, &off_83A6AC8, // 0x28
-    &off_83A6AD4, &off_83A6AE0, &off_83A6AEC, &off_83A6AF8, // 0x2C
-    &off_83A6B04, &off_83A6B10, &off_83A6B1C, &off_83A6B28, // 0x30
-    &off_83A6B34, &off_83A6B40, &off_83A6B4C, &off_83A6B58, // 0x34
-    &off_83A6B64, &off_83A6B70, &off_83A6B7C, &off_83A6B88, // 0x38
-    &off_83A6B94, &off_83A6BA0, &off_83A6BAC, &off_83A6BB8, // 0x3C
-    &off_83A6BC4, &off_83A6BD0, &off_83A6BDC, &off_83A6BE8, // 0x40
-    &off_83A6BF4, &off_83A6C00, &off_83A6C0C, &off_83A6C18, // 0x44
-    &off_83A6C24, &off_83A6C30, &off_83A6C6C, &off_83A6C74, // 0x48
-    &off_83A6C7C, &off_83A6C84, &off_83A6C8C, &off_83A6C98, // 0x4C
-    &off_83A6CA4, &off_83A6CB0, &off_83A6CBC, &off_83A6CC8, // 0x50
-    &off_83A6CD4, &off_83A6CE0, &off_83A6CEC, &off_83A6CF8, // 0x54
-    &off_83A6D04, &off_83A6D10, &off_83A6D1C, &off_83A6D24, // 0x58
-    &off_83A6D30, &off_83A6D38, &off_83A6D40, &off_83A6D48, // 0x5C
-    &off_83A6D50, &off_83A6D58, &off_83A6D60, &off_83A6D68, // 0x60
-    &off_83A6D70, &off_83A6D78, &off_83A6D80, &off_83A6D88, // 0x64
-    &off_83A6D94, &off_83A6DA4, &off_83A6DB4, &off_83A6DBC, // 0x68
-    &off_83A6DC4, &off_83A6DCC, &off_83A6DD4, &off_83A6DE0, // 0x6C
-    &off_83A6DEC, &off_83A6DF4, &off_83A6DFC, &off_83A6E04, // 0x70
-    &off_83A6E0C, &off_83A6E18, &off_83A6E24, &off_83A6E30, // 0x74
-    &off_83A6E3C, &off_83A6E48, &off_83A6E54, &off_83A6E60, // 0x78
-    &off_83A6E9C, &off_83A6EA8, &off_83A6EB4, &off_83A6EC0, // 0x7C
-    &off_83A6ECC, &off_83A6ED8, &off_83A6EE4, &off_83A6EF0, // 0x80
-    &off_83A6EFC, &off_83A6F08, &off_83A6F14, &off_83A6F20, // 0x84
-    &off_83A6F2C, &off_83A6F38, &off_83A6F44, &off_83A6F50, // 0x88
-    &off_83A6F5C, &off_83A6F68, &off_83A6F74, &off_83A6F80, // 0x8C
-    &off_83A6F8C, &off_83A6F98, &off_83A6FA4, &off_83A6FB0, // 0x90
-    &off_83A6FBC, &off_83A6FC8, &off_83A6FD4, &off_83A6FE0, // 0x94
-    &off_83A6FEC, &off_83A6FF4, &off_83A6FFC, &off_83A6898, // 0x98
-    &off_83A68A4, &off_83A68B0, &off_83A68BC, &off_83A7004, // 0x9C
-    &off_83A6A00, &off_83A6A0C, &off_83A6A18, &off_83A6A24, // 0xA0
-    &off_83A700C, &off_83A7018, &off_83A6C3C, &off_83A6C48, // 0xA4 
-    &off_83A6C54, &off_83A6C60                              // 0xA8
+    Q(an_look1),  // 0x00
+    Q(an_look2),  // 0x04
+    Q(an_walk),   // 0x08
+    Q(an_go),     // 0x0C; can't remember the difference between "walk" and "go"
+    Q(an_pulse),  // 0x10
+    off_83A6964, off_83A6970, off_83A697C, off_83A6988, // 0x14
+    off_83A6994, off_83A69A0, off_83A69AC, off_83A69B8, // 0x18
+    off_83A69C4,
+        Q(an_run),
+                 off_83A6A50, off_83A6A5C, off_83A6A68, // 0x20
+    off_83A6A74, off_83A6A80, off_83A6A8C, off_83A6A98, // 0x24
+    off_83A6AA4, off_83A6AB0, off_83A6ABC, off_83A6AC8, // 0x28
+    off_83A6AD4, off_83A6AE0, off_83A6AEC, off_83A6AF8, // 0x2C
+    off_83A6B04, off_83A6B10, off_83A6B1C, off_83A6B28, // 0x30
+    off_83A6B34, off_83A6B40, off_83A6B4C, off_83A6B58, // 0x34
+    off_83A6B64, off_83A6B70, off_83A6B7C, off_83A6B88, // 0x38
+    off_83A6B94, off_83A6BA0, off_83A6BAC, off_83A6BB8, // 0x3C
+    off_83A6BC4, off_83A6BD0, off_83A6BDC, off_83A6BE8, // 0x40
+    off_83A6BF4, off_83A6C00, off_83A6C0C, off_83A6C18, // 0x44
+    off_83A6C24, off_83A6C30, off_83A6C6C, off_83A6C74, // 0x48
+    off_83A6C7C, off_83A6C84, off_83A6C8C, off_83A6C98, // 0x4C
+    off_83A6CA4, off_83A6CB0, off_83A6CBC, off_83A6CC8, // 0x50
+    off_83A6CD4, off_83A6CE0, off_83A6CEC, off_83A6CF8, // 0x54
+    off_83A6D04, off_83A6D10, off_83A6D1C, off_83A6D24, // 0x58
+    off_83A6D30, off_83A6D38, off_83A6D40, off_83A6D48, // 0x5C
+    off_83A6D50, off_83A6D58, off_83A6D60, off_83A6D68, // 0x60
+    off_83A6D70, off_83A6D78, off_83A6D80, off_83A6D88, // 0x64
+    off_83A6D94, off_83A6DA4, off_83A6DB4, off_83A6DBC, // 0x68
+    off_83A6DC4, off_83A6DCC, off_83A6DD4, off_83A6DE0, // 0x6C
+    off_83A6DEC, off_83A6DF4, off_83A6DFC, off_83A6E04, // 0x70
+    off_83A6E0C, off_83A6E18, off_83A6E24, off_83A6E30, // 0x74
+    off_83A6E3C, off_83A6E48, off_83A6E54, off_83A6E60, // 0x78
+    off_83A6E9C, off_83A6EA8, off_83A6EB4, off_83A6EC0, // 0x7C
+    off_83A6ECC, off_83A6ED8, off_83A6EE4, off_83A6EF0, // 0x80
+    off_83A6EFC, off_83A6F08, off_83A6F14, off_83A6F20, // 0x84
+    off_83A6F2C, off_83A6F38, off_83A6F44, off_83A6F50, // 0x88
+    off_83A6F5C, off_83A6F68, off_83A6F74, off_83A6F80, // 0x8C
+    off_83A6F8C, off_83A6F98, off_83A6FA4, off_83A6FB0, // 0x90
+    off_83A6FBC, off_83A6FC8, off_83A6FD4, off_83A6FE0, // 0x94
+    off_83A6FEC, off_83A6FF4, off_83A6FFC, off_83A6898, // 0x98
+    off_83A68A4, off_83A68B0, off_83A68BC, off_83A7004, // 0x9C
+    off_83A6A00, off_83A6A0C, off_83A6A18, off_83A6A24, // 0xA0
+    off_83A700C, off_83A7018, off_83A6C3C, off_83A6C48, // 0xA4 
+    off_83A6C54, off_83A6C60                            // 0xA8
 };
 
 // 08064788
-bool npc_obj_ministep_stop_on_arrival(struct npc_states *npc, struct obj_t *o) {
+bool npc_obj_ministep_stop_on_arrival(struct npc_state *npc, struct obj *o) {
     if (!obj_npc_ministep(o))
         // stepping continues
         return false;
@@ -339,7 +493,7 @@ bool npc_obj_ministep_stop_on_arrival(struct npc_states *npc, struct obj_t *o) {
 }
 
 // 080653CC
-bool npc_ministep(struct npc_states *npc, struct obj_t *o) {
+bool npc_ministep(struct npc_state *npc, struct obj *o) {
     if (!obj_npc_ministep(o))
         // stepping continues
         return false;
@@ -364,44 +518,44 @@ coords directions_i16[] {
 };
 
 // 08068A8C
-void step1(struct obj_t *o, u8 d) {
+void step1(struct obj *o, u8 d) {
     o->pos_1.x += directions_i16[d].x;
     o->pos_1.y += directions_i16[d].y;
 }
 
 // 08068AAC
-void step2(struct obj_t *o, u8 d) {
+void step2(struct obj *o, u8 d) {
     o->pos_1.x += directions_i16[d].x * 2;
     o->pos_1.y += directions_i16[d].y * 2;
 }
 
 // 08068AD0
-void step3(struct obj_t *o, u8 d) {
+void step3(struct obj *o, u8 d) {
     o->pos_1.x += directions_i16[d].x * 3;
     o->pos_1.y += directions_i16[d].y * 3;
 }
 
 // 08068AF8
-void step4(struct obj_t *o, u8 d) {
+void step4(struct obj *o, u8 d) {
     o->pos_1.x += directions_i16[d].x * 4;
     o->pos_1.y += directions_i16[d].y * 4;
 }
 
 // 08068B1C
-void step8(struct obj_t *o, u8 d) {
+void step8(struct obj *o, u8 d) {
     o->pos_1.x += directions_i16[d].x * 8;
     o->pos_1.y += directions_i16[d].y * 8;
 }
 
 // 08068B40
-void obj_npc_ministep_reset(struct obj_t *o, u16 speed, u16 phase) {
+void obj_npc_ministep_reset(struct obj *o, u16 speed, u16 phase) {
     o->priv3 = 0;
     o->priv4 = speed;
     o->priv5 = phase;
 }
 
 // 083A710C
-void (*stepspeed1[])(a, b) = {
+void (*stepspeed1[])(struct obj*, u8) = {
     step1, step1, step1, step1,
     step1, step1, step1, step1,
     step1, step1, step1, step1,
@@ -409,23 +563,23 @@ void (*stepspeed1[])(a, b) = {
 };
 
 // 083A714C
-void (*stepspeed2[])(a, b) = {
+void (*stepspeed2[])(struct obj*, u8) = {
     step2, step2, step2, step2,
     step2, step2, step2, step2
 };
 
 // 083A7184
-void (*stepspeed4[])(a, b) = {
+void (*stepspeed4[])(struct obj*, u8) = {
     step4, step4, step4, step4
 };
 
 // 083A7194
-void (*stepspeed5[])(a, b) = {
+void (*stepspeed5[])(struct obj*, u8) = {
     step8, step8
 };
 
 // 083A719C
-void (**stepspeeds[])(struct obj_t *, u8) = {
+void (**stepspeeds[])(struct obj *, u8) = {
     stepspeed1,
     stepspeed2,
     stepspeed3,
@@ -439,22 +593,22 @@ u16 stepspeed_seq_length[] = {
 };
 
 // 08068B54
-bool obj_npc_ministep(struct obj_t *o) {
-    u8   z =  o->private3; // direction
-    u16  s =  o->private4; // speed
-    u16 *i = &o->private5; // phase
+bool obj_npc_ministep(struct obj *o) {
+    u8   z =  o->priv3; // direction
+    u16  s =  o->priv4; // speed
+    u16 *i = &o->priv5; // phase
     u16  l = stepspeed_seq_length[s];
     if (*i >= l) return false;
-    stepspeeds[s][i](o, z);
-    if (*i++ >= l) return true;
+    stepspeeds[s][*i](o, z);
+    if ((*i)++ >= l) return true;
     return false;
 }
 
 // 08068BBC
-void obj_npc_ministep_set_direction(struct obj_t *o, u16 direction) {
-    o->private3 = direction;
-    o->private4 = 0;
-    o->private5 = 0;
+void obj_npc_ministep_set_direction(struct obj *o, u16 direction) {
+    o->priv3 = direction;
+    o->priv4 = 0;
+    o->priv5 = 0;
 }
 
 struct npc_image_anim_looping_info {
@@ -475,7 +629,7 @@ void npc_apply_anim_looping(struct npc_state *npc, struct obj *obj, u8 anim_numb
 }
 
 // 0806DE28
-void npc_hide_and_trainer_flag_clear_on_role_x66_at_pos(stuct npc_state *npc) {
+void npc_hide_and_trainer_flag_clear_on_role_x66_at_pos(struct npc_state *npc) {
     u8 role = cur_mapdata_block_role_at(npc->to.x, npc->to.y);
     if (role != 0x66) return;
     sound_play(0x25);

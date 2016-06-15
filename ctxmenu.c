@@ -1,3 +1,5 @@
+#include "ctxmenu.h"
+
 typedef void (*cvptr)(task_id);
 
 struct ctxmenuentry {
@@ -8,7 +10,7 @@ struct ctxmenuentry {
 // 0811FA78
 void sub_0811FA78(task_id c) {
     sub_08070588(~1, ~2, 0, 0x10, 0);
-    task[c].func = task_0811FAB4;
+    task[c].funcptr = task_0811FAB4;
 }
 
 // 08122D4C
@@ -34,12 +36,12 @@ void ctxmenu_shift_sendout(task_id c) {
     else {
         sub_08121CE4(ptr_brmo2->field_D);
         sub_081202F8(displayed_string, 1);
-        task[c].func = task_081203B8;
+        task[c].funcptr = task_081203B8;
     }
 }
 
 // 0845A618
-struct menuentry pokemon_context_menu[] = {
+struct ctxmenuentry pokemon_context_menu[] = {
     { "Summary",    ctxmenu_summary     },
     { "Switch",     ctxmenu_switch      },
     { "Cancel",     ctxmenu_cancel_1    },

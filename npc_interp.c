@@ -44,13 +44,13 @@ void script_mode_stop(struct script_env *s) {
 // 08069884
 bool script_stack_push(struct script_env *s, u32 value) {
     if (s->depth > 18) return true;
-    s->stack[s->depth++] = target;
+    s->return_addr[s->depth++] = target;
 }
 
 // 080698AC
 u32 script_stack_pop(struct script_env *s) {
     if (s->depth == 0) return 0;
-    return s->stack[--s->depth];
+    return s->return_addr[--s->depth];
 }
 
 // 080698D0

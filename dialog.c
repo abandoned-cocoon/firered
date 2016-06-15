@@ -1,88 +1,33 @@
+#include "dialog.h"
+
+#ifndef NO_RAM
 // 03003E50
 u32 textflags;
-	// 2 - gray arrow
-	// 4 - auto continue
+#endif
 
-struct typesetter {
-	u8 *ccursor;
+struct dialog dialogs[32];
 
-	u8 rbox_id;
-	u8 fbox_id;
-
-	u8 reset_x;
-	u8 reset_y;
-
-	u8 cursor_x;
-	u8 cursor_y;
-
-	u8 stride_x;
-	u8 stride_y;
-
-	uint color0 : 4;
-	uint color1 : 4;
-	uint color2 : 4;
-	uint color3 : 4;
-
-	char padding[2];
-};
-
-struct dialogsub {
-	union {
-		char font_type;
-		struct {
-			u8 ft_lo : 4;
-			u8 ft_hi : 4;
-		};
+// 08005680
+bool text_is_it_time_to_continue() {
+	if (textflags & TEXT_AUTO_CONTINUE)
+		return text_is_it_time_to_continue_autopilot();
+	if (super.buttons_new_remapped & (KEYPAD_A|KEYPAD_B)) {
+		audio_play(sound_generic_clink);
+		return true;
 	}
-	char field_1;
-	u16 frames_visible_counter;
-	int field_4;
-};
+	return false;
+}
 
-struct dialogsub2 {
-	u8  font : 4;
-	u8  user_can_skip : 1; // set to 0 after skipping, set to 1 after releasing buttons
-	u8  field_1;
-	u16 frames_visible_counter;
-	u8  field_4;
-	u8  field_5;
-	u8  field_6;
-	u8  acknowledged;
-};
+uint dialog_update(struct dialog *dialog) {
 
-struct dialog {
-	void *char_cursor; // what about ccursor?
-	u8 rbox_id;
-	u8 fbox_id;
-	u8 menu_cursor_1a;
-	u8 menu_cursor_1b;
-	u8 menu_cursor_2a;
-	u8 menu_cursor_2b;
-	u8 field_A;
-	u8 field_B;
-	u8 field_C;
-	u8 field_D;
-	u8 padding_E[2];
-	u32 field_10;
-	dialogsub sub;
-	u8 mode;
-	u8 text_speed_inv; // lower is faster
-	u8 field_1E;
-	u8 remaining_scroll_lines;
-	u8 field_20;
-	u8 japanese;
-};
-
-uint dialog_update(dialog *dialog) {
-
-	typesetter *tys   = &dialog->ts;
-	dialogsub2 *dsub2 = &dialog->sub2;
+	typesetter *tys  = &dialog->tys;
+	dialogsub *dsub = &dialog->sub;
 	
 	switch (dialog->mode) {
 		// Parse mode
 		case 0u:
 			if (super.buttons2_held_remapped & (keypad_b|keypad_a)) {
-				if (dsub2->user_can_skip)
+				if (dsub->user_can_skip)
 					dialog->wait_frames = 0;
 			}
 
@@ -129,7 +74,7 @@ uint dialog_update(dialog *dialog) {
 								tys->ccursor++;
 								return 2;
 							case 6:     // Select font
-								dsub2->font = *tys->ccursor++;
+								dsub->font = *tys->ccursor++;
 								return 2;
 							case 7:     // Nop (but stay)
 								return 2;
@@ -140,7 +85,7 @@ uint dialog_update(dialog *dialog) {
 							case 9:     // Wait for key
 								dialog->mode = 1;
 								if ( textflags & 4 )
-									LOBYTE(dsub2->frames_visible_counter) = 0;
+									LOBYTE(dsub->frames_visible_counter) = 0;
 								return 3;
 							case 0xA:   // Wait for audio
 								dialog->mode = 5;
@@ -231,7 +176,7 @@ uint dialog_update(dialog *dialog) {
 					default:
 						break;
 				}
-				switch (dsub2->font)
+				switch (dsub->font)
 				{
 					case 0:
 						font_render_tiny_en_jp(c, dialog->japanese);
@@ -275,7 +220,7 @@ uint dialog_update(dialog *dialog) {
 			--dialog->wait_frames;
 			if ( textflags & 1 ) {
 				if ( super.buttons3_new_remapped & 3 ) {
-					dsub2->user_can_skip = 0;
+					dsub->user_can_skip = 0;
 					dialog->wait_frames = 0;
 				}
 			}

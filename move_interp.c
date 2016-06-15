@@ -1,3 +1,5 @@
+#include "move_interp.h"
+
 struct stack {
 	void *values[8];
 	u8 height;

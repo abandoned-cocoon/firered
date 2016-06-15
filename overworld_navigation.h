@@ -8,7 +8,7 @@ struct walkrun {
 	u8  running2;
 	u8  running1;
 	u8  oamid;
-	u8  npcid;
+	u8  npc_id;
 	u8  lock;
 	u8  gender;
 	u8  xmode;
@@ -24,8 +24,19 @@ struct walkrun {
 	u16 most_recent_override_tile;
 };
 
+struct npc_position {
+	u16 x, y;
+	u8 height;
+};
+
+#define walkrun_state walkrun_i
+
 //* 02037078
-extern struct walkrun walkrun;
+extern struct walkrun walkrun_i;
+// 02037098
+extern u8 npc_palette_mode;
+// 03000FA1
+extern u8 message_signpost;
 
 void player_step_by_keypad(u8 direction, u16 keypad_new, u16 keypad_held);
 void sub_805BCEC(u16 x, u16 y, u8 direction);

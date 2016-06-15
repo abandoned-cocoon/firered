@@ -1,24 +1,27 @@
-pokemon *party_of(int owner) {
+#include "pokemon.h"
+
+struct pokemon_extended *party_of(int owner) {
     return owner ? party_opponent : party_player;
 }
 
 enum as_mode {
     // actions
-    as_0 = 0x0,
-    as_1 = 0x1,
-    as_2 = 0x2,
-    as_3 = 0x3,
-    as_4 = 0x4,
-    as_5 = 0x5,
-    as_6 = 0x6,
-    as_7 = 0x7,
-    as_8 = 0x8,
-    as_9 = 0x9,
-    as_A = 0xA,
-    as_B = 0xB,
+    as_pre_turn = 0x0,
+    as_post_turn = 0x1,
+    as_move_veto_soundproof = 0x2,
+    as_move_veto = 0x3,
+    as_post_move = 0x4,
+    as_pre_ailment = 0x5,
+    as_forecast = 0x6,
+    as_post_ailment_1 = 0x7,
+    as_post_ailment_2 = 0x8,
+    as_enter_battle_maybe_1 = 0x9,
+    as_enter_battle_maybe_2 = 0xA,
+    as_trace = 0xB,
     // queries
-    as_find_in_other_team = 0xCu,
-    as_find_in_own_team = 0xDu,
+    as_find_in_other_team = 0xC,
+    as_find_in_own_team = 0xD,
+    as_update_bits_for_mud_and_water_sport = 0xE,
     as_find_in_own_team_excl_self = 0xF,
     as_count_other_team = 0x10,
     as_count_own_team = 0x11,
@@ -82,11 +85,11 @@ int ability_something(
     #define find_side_cabi(cond) for_each_side { if(cond) { b_last_copied_ability = ability1; return_value=i+1; break; } }
 
     switch (mode) {
-        case 0u:
+        case /* 0x0 */ as_pre_turn:
             if (b_attacker >= b_num_active_sides)
                 b_attacker = battle_side_given;
             v23 = ability;
-            if (v23 == sand_stream) {
+            if (v23 == ab_sand_stream) {
                 if (weather & 0x10)
                     goto def_801A8CE;
                 weather = 24;
@@ -94,8 +97,8 @@ int ability_something(
                 battle_side_unknown = battle_side_given;
                 return_value = 1;
                 goto def_801A8CE;
-            } else if (v23 > sand_stream) { // 0x2D
-                if (v23 == drought) {
+            } else if (v23 > ab_sand_stream) { // 0x2D
+                if (v23 == ab_drought) {
                     if ((weather & 0x40) == 0) {
                         weather = 96;
                         b_push_move_exec(&unk_81D9379);
@@ -104,8 +107,8 @@ int ability_something(
                     }
 
                 } else {
-                    if (v23 <= drought) {
-                        if (v23 != forecast)
+                    if (v23 <= ab_drought) {
+                        if (v23 != ab_forecast)
                             goto def_801A8CE;
                         v28 = castform_switch(battle_side_given);
                         return_value = v28;
@@ -116,7 +119,7 @@ int ability_something(
                         dp08_ptr->pading_7F[0] = return_value - 1;
                         goto def_801A8CE;
                     }
-                    if (v23 == air_lock)
+                    if (v23 == ab_air_lock)
                         goto airlock_cloudnine;
                     if (v23 != 255)
                         goto def_801A8CE;
@@ -161,7 +164,7 @@ int ability_something(
                     return return_value;
                 }
             }
-            if (v23 == cloud_nine) {
+            if (v23 == ab_cloud_nine) {
               airlock_cloudnine:
                 for_each_side {
                     if ((return_value = castform_switch(i)))
@@ -171,41 +174,41 @@ int ability_something(
                 battle_side_unknown = i+1;
                 dp08_ptr->pading_7F[0] = return_value - 1;
 
-            } else if (v23 > cloud_nine) {
-                if (v23 == intimidate) {
+            } else if (v23 > ab_cloud_nine) {
+                if (v23 == ab_intimidate) {
                     v25 = &dp16_array[battle_side_given];
                     if (v25->field_0 & 8)
                         goto def_801A8CE;
-                    b_effect_bitfield_pbs[battle_side_given] |= 0x80000u;
+                    b_status3_bits_pbs[battle_side_given] |= 0x80000u;
                     v26 = v25->field_0;
                     v27 = 8;
                     v25->field_0 = v26 | v27;
                 }
-                else if (v23 == trace)
+                else if (v23 == ab_trace)
                     v25 = &dp16_array[battle_side_given];
                     if ((v25->field_0 & 0x10) == 0) {
-                        b_effect_bitfield_pbs[battle_side_given] |= 0x100000u;
+                        b_status3_bits_pbs[battle_side_given] |= 0x100000u;
                         v26 = v25->field_0;
                         v27 = 16;
                         v25->field_0 = v26 | v27;
                     }
                 }
 
-            } else if (v23 == drizzle && !(weather & 4)) {
+            } else if (v23 == ab_drizzle && !(weather & 4)) {
                 weather = 5;
                 b_push_move_exec(&unk_81D927F);
                 battle_side_unknown = battle_side_given;
                 return_value = 1;
             }
-        case 1u:
+        case /* 0x1 */ as_post_turn:
             v31 = &battle_data[battle_side_given];
             if (!v31->current_hp)
                 break;
             b_attacker = battle_side_given;
             v32 = ability;
-            if (v32 == rain_dish) {
-                if (!ability_something(0x13u, 0, cloud_nine, 0, 0)
-                  && !(ability_something(0x13u, 0, air_lock, 0, 0) << 24)
+            if (v32 == ab_rain_dish) {
+                if (!ability_something(0x13u, 0, ab_cloud_nine, 0, 0)
+                  && !(ability_something(0x13u, 0, ab_air_lock, 0, 0) << 24)
                   && weather & 7
                   && v31->max_hp > v31->current_hp) {
                     b_last_copied_ability = rain_dish;
@@ -218,12 +221,12 @@ int ability_something(
                     goto def_801A8CE;
                 }
             }
-            else if (v32 > rain_dish) {
-                if (v32 == truant) {
+            else if (v32 > ab_rain_dish) {
+                if (v32 == ab_truant) {
                     b_disable_data_pbs[b_attacker].field_18 = b_disable_data_pbs[b_attacker].field_18 & 0xFE | b_disable_data_pbs[b_attacker].field_18 & 1 ^ 1;
                     goto def_801A8CE;
                 }
-                if (v32 == shed_skin) {
+                if (v32 == ab_shed_skin) {
                     v33 = &battle_data[battle_side_given].status1;
                     if (LOBYTE(battle_data[battle_side_given].status1)) {
                         if (!(rand() % 3u & 0xFFFF)) {
@@ -250,7 +253,7 @@ int ability_something(
                     }
                 }
             }
-            else if (v32 == speed_boost && v31->stat_buffs[3] <= 11 && b_disable_data_pbs[battle_side_given].battle_start != 2) {
+            else if (v32 == ab_speed_boost && v31->stat_buffs[3] <= 11 && b_disable_data_pbs[battle_side_given].battle_start != 2) {
                 ++v31->stat_buffs[3];
                 byte_2023FD4 = 17;
                 byte_2023FD5 = 0;
@@ -260,8 +263,8 @@ int ability_something(
                 goto def_801A8CE;
             }
             goto def_801A8CE;
-        case 2u:
-            if (ability != soundproof)
+        case /* 0x2 */ as_move_veto_soundproof:
+            if (ability != ab_soundproof)
                 goto def_801A8CE;
             v34 = 0;
             if (a_0gn[0] == 65535)
@@ -286,7 +289,7 @@ int ability_something(
                     goto def_801A8CE;
                 }
             }
-        case 3u:
+        case /* 0x3 */ as_move_veto:
             if (!move_override)
                 goto def_801A8CE;
             if (ability == water_absorb) {
@@ -301,8 +304,8 @@ int ability_something(
                 v42 = 1;
             }
             else {
-                if (ability <= water_absorb) {
-                    if (ability == volt_absorb) {
+                if (ability <= ab_water_absorb) {
+                    if (ability == ab_volt_absorb) {
                         if (move_type == type_electric) {
                             if (move_data[move_override].power) {
                                 if (protect_structs[b_attacker].field_2 & 8) {
@@ -332,7 +335,7 @@ int ability_something(
                     }
                     goto def_801A8CE;
                 }
-                if (ability != flash_fire || move_type != type_fire || battle_data[battle_side_given].status1 & 0x20)
+                if (ability != ab_flash_fire || move_type != type_fire || battle_data[battle_side_given].status1 & 0x20)
                     goto LABEL_145;
                 if (!(*(&battle_resource_bundle->field_4->field_0 + battle_side_given) & 1)) {
                     byte_2023E87 = 0;
@@ -357,10 +360,10 @@ int ability_something(
             }
             return_value = v42;
             goto LABEL_145;
-        case 4u:
+        case /* 0x4 */ as_post_move:
             // ability effects for touching moves
             switch (ability) {
-                case color_change:
+                case ab_color_change:
                     if ((b_attack_effectivity & (B_AE_FAILED | B_AE_NOT_AFFECTED | B_AE_MISSED)))
                         break;
                     if (move_override == mve_struggle)
@@ -387,7 +390,7 @@ int ability_something(
                         }
                     }
                     break;
-                case rough_skin:
+                case ab_rough_skin:
                     if ((b_attack_effectivity & (B_AE_FAILED | B_AE_NOT_AFFECTED | B_AE_MISSED)))
                         break;
                     if (battle_data[b_attacker].current_hp == 0)
@@ -407,7 +410,7 @@ int ability_something(
                     }
                     break;
 
-                case effect_spore:
+                case ab_effect_spore:
                     if ((b_attack_effectivity & (B_AE_FAILED | B_AE_NOT_AFFECTED | B_AE_MISSED)))
                         break;
                     if (battle_data[b_attacker].current_hp == 0)
@@ -434,7 +437,7 @@ int ability_something(
                     }
                     break;
 
-                case poison_point:
+                case ab_poison_point:
                     if ((b_attack_effectivity & (B_AE_FAILED | B_AE_NOT_AFFECTED | B_AE_MISSED)))
                         break;
                     if (battle_data[b_attacker].current_hp == 0)
@@ -452,7 +455,7 @@ int ability_something(
                         }
                     }
                     break;
-                case static_:
+                case ab_static_:
                     if ((b_attack_effectivity & (B_AE_FAILED | B_AE_NOT_AFFECTED | B_AE_MISSED)))
                         break;
                     if (battle_data[b_attacker].current_hp == 0)
@@ -472,7 +475,7 @@ int ability_something(
                     }
                     break;
 
-                case flame_body:
+                case ab_flame_body:
                     if ((b_attack_effectivity & (B_AE_FAILED | B_AE_NOT_AFFECTED | B_AE_MISSED)))
                         break;
                     if (battle_data[b_attacker].current_hp == 0)
@@ -492,7 +495,7 @@ int ability_something(
                         }
                     }
                     break;
-                case cute_charm:
+                case ab_cute_charm:
                     if ((b_attack_effectivity & (B_AE_FAILED | B_AE_NOT_AFFECTED | B_AE_MISSED)))
                         break;
                     if (battle_data[b_attacker].current_hp == 0)
@@ -531,15 +534,15 @@ int ability_something(
                     break;
             }
             break;
-        case 5u:
+        case /* 0x5 */ as_pre_ailment:
             battle_side_given = 0;
             if (b_num_active_sides <= 0u)
                 goto def_801A8CE;
             while (1) {
                 v66 = (battle_data[battle_side_given].ability_id - 7);
-                if (v66+7 <= shell_armor) {
+                if (v66+7 <= ab_shell_armor) {
                     switch (battle_data[battle_side_given].ability_id) {
-                        case immunity:
+                        case ab_immunity:
                             v66 = (battle_data[battle_side_given].status1 & 0xF88);
                             if (!v66)
                                 break;
@@ -548,14 +551,14 @@ int ability_something(
                             v66 = strcpy_xFF_terminated(v67, v68);
                             return_value = 1;
                             break;
-                        case own_tempo:
+                        case ab_own_tempo:
                             v66 = (battle_data[battle_side_given].status2 & 7);
                             if (!v66)
                                 break;
                             v66 = strcpy_xFF_terminated(&battle_outcome, &unk_82500BC);
                             return_value = 2;
                             break;
-                        case limber:
+                        case ab_limber:
                             v66 = (battle_data[battle_side_given].status1 & 0x40);
                             if (!v66)
                                 break;
@@ -564,8 +567,8 @@ int ability_something(
                             v66 = strcpy_xFF_terminated(v67, v68);
                             return_value = 1;
                             break;
-                        case insomnia:
-                        case vital_spirit:
+                        case ab_insomnia:
+                        case ab_vital_spirit:
                             v66 = (battle_data[battle_side_given].status1 & 7);
                             if (!v66)
                                 break;
@@ -574,14 +577,14 @@ int ability_something(
                             v66 = 1;
                             return_value = 1;
                             break;
-                        case water_veil:
+                        case ab_water_veil:
                             v66 = (battle_data[battle_side_given].status1 & 0x10);
                             if (!v66)
                                 break;
                             v66 = strcpy_xFF_terminated(&battle_outcome, &unk_82500AC);
                             return_value = 1;
                             break;
-                        case magma_armor:
+                        case ab_magma_armor:
                             v66 = (battle_data[battle_side_given].status1 & 0x20);
                             if (!v66)
                                 break;
@@ -590,7 +593,7 @@ int ability_something(
                             v66 = strcpy_xFF_terminated(v67, v68);
                             return_value = 1;
                             break;
-                        case oblivious:
+                        case ab_oblivious:
                             v69 = battle_data[battle_side_given].status2;
                             v66 = (v69 & attraction_infatuation);
                             if (v66) {
@@ -640,7 +643,7 @@ int ability_something(
             dp01_build_cmdbuf_x02_a_b_varargs(0, 40, 0, 4);
             b_active_side_mark_buffer_for_execution(b_active_side);
             return return_value;
-        case 6u:
+        case /* 0x6 */ as_forecast:
             for_each_side {
                 if (battle_data[i].ability_id == forecast) {
                     return_value = castform_switch(i);
@@ -652,7 +655,7 @@ int ability_something(
                     }
                 }
             }
-        case 7u:
+        case /* 0x7 */ as_post_ailment_1:
             if (ability != synchronize || !(b_features_bitfield & 0x4000))
                 goto def_801A8CE;
             b_features_bitfield &= ~0x00004000;
@@ -666,7 +669,7 @@ int ability_something(
             b_features_bitfield |= 0x2000u;
             return_value = 1;
             goto def_801A8CE;
-        case 8u:
+        case /* 0x8 */ as_post_ailment_2:
             if (ability != synchronize || !(b_features_bitfield & 0x4000))
                 goto def_801A8CE;
             b_features_bitfield &= ~0x00004000;
@@ -681,12 +684,12 @@ int ability_something(
             b_features_bitfield |= 0x2000u;
             return_value = 1;
             goto def_801A8CE;
-        case 9u:
+        case /* 0x9 */ as_enter_battle_maybe_1:
             v74 = 0;
             v75 = b_num_active_sides;
             if (b_num_active_sides <= 0)
                 goto def_801A8CE;
-            v76 = b_effect_bitfield_pbs;
+            v76 = b_status3_bits_pbs;
             v77 = &battle_data[0].ability_id;
             while (*v77 != intimidate || !(*v76 & 0x80000)) {
                 v76 += 4;
@@ -701,7 +704,7 @@ int ability_something(
             dp08_ptr->pading_C0[24] = v74;
             return_value = 1;
             goto def_801A8CE;
-        case 0xBu:
+        case /* 0xB */ as_trace:
             v78 = 0;
             if (b_num_active_sides <= 0)
                 goto def_801A8CE;
@@ -710,7 +713,7 @@ int ability_something(
             while (2) {
                 if (*v131 != 36)
                     goto LABEL_301;
-                v79 = b_effect_bitfield_pbs[v132];
+                v79 = b_status3_bits_pbs[v132];
                 if (!(v79 & 0x100000))
                     goto LABEL_301;
                 v80 = (battle_get_per_side_status(v78) ^ 1) & 1;
@@ -773,7 +776,7 @@ int ability_something(
                 break;
             }
             b_push_move_exec(&unk_81D92A1);
-            b_effect_bitfield_pbs[v132] &= 0xFFEFFFFFu;
+            b_status3_bits_pbs[v132] &= 0xFFEFFFFFu;
             battle_side_unknown = v78;
             battle_outcome = -3;
             byte_2022AB9 = 4;
@@ -786,12 +789,12 @@ int ability_something(
             byte_2022ACB = -1;
             goto def_801A8CE;
 
-        case 0xAu:
+        case /* 0xA */ as_enter_battle_maybe_2:
             for_each_side {
-                if (battle_data[i].ability_id == intimidate && (b_effect_bitfield_pbs[i] & 0x80000)) {
+                if (battle_data[i].ability_id == intimidate && (b_status3_bits_pbs[i] & 0x80000)) {
                     b_last_copied_ability = intimidate;
-                    v120 = b_effect_bitfield_pbs[i] & 0xFFF7FFFF;
-                    b_effect_bitfield_pbs[i] = v120;
+                    v120 = b_status3_bits_pbs[i] & 0xFFF7FFFF;
+                    b_status3_bits_pbs[i] = v120;
                     b_movescr_stack_push_cursor();
                     b_move_cursor = &movescr_abilities_081D9310;
                     dp08_ptr->pading_C0[24] = i;
@@ -800,7 +803,7 @@ int ability_something(
                 }
             }
 
-        case 0xCu:
+        case as_find_in_other_team:
             // find ability in opponents
             u8 given_owner = battle_side_get_owner(battle_side_given);
             find_side_cabi (
@@ -808,7 +811,7 @@ int ability_something(
                 battle_data[i].ability_id == ability1);
             break;
 
-        case 0xDu:
+        case as_find_in_own_team:
             // find ability in own team
             unsigned owner = battle_side_get_owner(battle_side_given);
             for_each_side {
@@ -822,10 +825,10 @@ int ability_something(
 
         case 0xEu:
             if (ability == 0xFD) {
-                find_side (b_effect_bitfield_pbs[i] & 0x10000);
+                find_side (b_status3_bits_pbs[i] & 0x10000);
             }
             else if (ability == 0xFE) {
-                find_side (b_effect_bitfield_pbs[i] & 0x20000);
+                find_side (b_status3_bits_pbs[i] & 0x20000);
             }
             else {
                 for_each_side {
@@ -850,7 +853,7 @@ int ability_something(
             }
             break;
 
-        case 0xFu:
+        case as_find_in_own_team_excl_self:
             // find ability in opponents then own team, excluding user
             unsigned given_owner = battle_side_get_owner(battle_side_given);
 
@@ -874,7 +877,7 @@ int ability_something(
             }
             break;
 
-        case 0x10: {
+        case as_count_other_team: {
             // count pokemon of other team with ability X
             u32 owner = battle_side_get_owner(battle_side_given);
             for_each_side {
@@ -888,7 +891,7 @@ int ability_something(
             break;
         }
 
-        case 0x11: {
+        case as_count_own_team: {
             // count pokemon of own team with ability X
             u32 owner = battle_side_get_owner(battle_side_given);
             for_each_side {
@@ -902,7 +905,7 @@ int ability_something(
             break;
         }
 
-        case 0x12: {
+        case as_count_excl_self: {
             // count pokemon except self with ability X
             for_each_side {
                 if (battle_data[j].ability_id == ability1) {

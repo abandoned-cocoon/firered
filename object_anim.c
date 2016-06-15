@@ -1,43 +1,5 @@
-typedef struct {
-	void *data;
-	u16 size;
-	u16 tag;
-} gfxentry;
-
-struct image_frame {
-	u16 data;
-	union {
-		u16 _rd;
-		struct {
-			u8 duration : 6; // or goto-target
-			u8 hflip    : 1;
-			u8 vflip    : 1;
-			u8 padding  : 8;
-		};
-	};
-};
-
-struct rotscale_frame {
-	u16 scale_x_delta;
-	u16 scale_y_delta;
-	u8  rotation_delta;
-	u8  duration;
-	u16 _padding;
-};
-
-struct rotscale_state {
-	u8 index;
-	u8 subindex;
-	u8 delay_countdown;
-	u8 field_3;
-	u16 scale_x;
-	u16 scale_y;
-	u16 rotation;
-	u16 _padding2;
-};
-
-typedef struct image_frame    *image_seq;
-typedef struct rotscale_frame *rotscale_seq;
+#include "object.h"
+#include "object_anim.h"
 
 // 03000C68
 struct rotscale_state rotscale_states[32];
@@ -363,7 +325,7 @@ void sub_0800834C(struct obj *o, struct rotscale_frame *f) {
 // 0800838C
 void obj_anim_image_start(struct obj *o, u8 anim_number) {
 	o->anim_number = anim_number;
-	o->bitfield1 |= OBJ_BIT1_ANIM_IMAGE_BEGIN;
+	o->bitfield |= OBJ_BIT1_ANIM_IMAGE_BEGIN;
 }
 
 // 080083A4
@@ -371,27 +333,27 @@ void obj_anim_image_start_if_different(struct obj *o, u8 anim_number) {
 	if (o->anim_number == anim_number)
 		return;
 	o->anim_number = anim_number;
-	o->bitfield1 |= OBJ_BIT1_ANIM_IMAGE_BEGIN;
+	o->bitfield |= OBJ_BIT1_ANIM_IMAGE_BEGIN;
 }
 
 // 080083C0
 void obj_anim_image_seek(struct obj *obj, u8 frame) {
 	u8 old_image_pause_flag = obj.anim_delay_countdown & OBJ_ANIM_IMAGE_PAUSED;
 
-	obj.anim_frame = frame-1;
+	obj->anim_frame = frame-1;
 
-	obj.anim_delay_countdown &= ~OBJ_ANIM_ANY_PAUSED;
+	obj->anim_delay_countdown &= ~OBJ_ANIM_ANY_PAUSED;
 
-	obj.bitfield &= ~0x10;
-	obj.bitfield &= ~OBJ_BIT1_ANIM_IMAGE_BEGIN;
+	obj->bitfield &= ~0x10;
+	obj->bitfield &= ~OBJ_BIT1_ANIM_IMAGE_BEGIN;
 	obj_anim_image_continue(obj);
 
-	u8 countdown = obj.anim_delay_countdown & 0x3F;
+	u8 countdown = obj->anim_delay_countdown & 0x3F;
 	if (countdown) {
-		obj.anim_delay_countdown &= OBJ_ANIM_ANY_PAUSED;
-		obj.anim_delay_countdown |= ++countdown;
+		obj->anim_delay_countdown &= OBJ_ANIM_ANY_PAUSED;
+		obj->anim_delay_countdown |= ++countdown;
 	}
 
-	obj.anim_delay_countdown &= ~OBJ_ANIM_IMAGE_PAUSED;
-	obj.anim_delay_countdown |= old_image_pause_flag;
+	obj->anim_delay_countdown &= ~OBJ_ANIM_IMAGE_PAUSED;
+	obj->anim_delay_countdown |= old_image_pause_flag;
 }

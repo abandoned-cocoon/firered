@@ -24,4 +24,6 @@ extern u16 var_8014; // 020370DE
 
 extern u16 var_800E; // 0203AD30
 
+extern u16 *var_80xx[];
+
 u16 *var_access(u16 nr);

@@ -1,6 +1,15 @@
 #pragma once
 #include "types.h"
 
+#define BLOCK_FIELD_ROLE 0
+#define BLOCK_FIELD_1 1
+#define BLOCK_FIELD_2 2
+#define BLOCK_FIELD_3 3
+#define BLOCK_FIELD_GRASS_WATER 4
+#define BLOCK_FIELD_5 5
+#define BLOCK_FIELD_BG_ASSIGNMENT 6
+#define BLOCK_FIELD_7 7
+
 struct mapdata {
     u32 width;
     u32 height;
@@ -122,7 +131,7 @@ extern u16 nu_x;
 //* 03005070
 extern u32 script_env_locking_player;
 //* 03005074
-extern u32 scripting_npc; // the npc currently executing a script (context_npc instead?)
+extern u32 context_npc; // the npc currently executing a script (context_npc instead?)
 
 //* 0826D320
 extern u32 overworld_bg_setup_data[];

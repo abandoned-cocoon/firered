@@ -69,14 +69,14 @@ u16 nu_x;
 //* 03005070
 u32 script_env_locking_player;
 //* 03005074
-u32 scripting_npc; // the npc currently executing a script (context_npc instead?)
+u32 context_npc; // the npc currently executing a script (context_npc instead?)
 #endif
 
 // TODO: Place somewhere
 struct cameradata *cd;
 
 // 08055148
-void mapdata_load_assets_to_gpu_and_full_redraw() {
+void cur_mapdata_load_assets_to_gpu_and_full_redraw() {
     sub_805A5E4();
     mapdata_load_blocksets(current_mapheader.data);
     mapdata_load_palettes_to_gpu(current_mapheader.data);
@@ -112,7 +112,7 @@ void mliX_load_map(u8 mapbank, u8 mapnr) {
     for (u32 i = 7; i < 12; i++)
         sub_807AB74(i);
 
-    cur_mapheader_run_blockset2_func_();
+    cur_mapheader_run_blockset2_func();
     mapnumbers_history_shift_sav1_0_2_4_out();
     roaming_pokemon_roam();
     prev_quest_postbuffer_cursor_backup_reset();
@@ -266,7 +266,7 @@ u8 warp_get_light_level(struct warpdata *w) {
 
 // 08056188
 u8 sav1_map_get_light_level() {
-    return warp_get_light_level(&sav1->location);
+    return warp_get_light_level(&sav1i->location);
 }
 
 // 080561A0
@@ -298,21 +298,21 @@ bool is_light_level_8_or_9(u8 light) {
 // 08056238
 u8 sav1_x14_get_name() {
     // unused
-    struct warpdata *l = &sav1->field_14;
+    struct warpdata *l = &sav1i->field_14;
     struct map *m = mapheader_by_mapnumbers(l->bank, l->map);
     return m->name;
 }
 
 // 08056260
 u8 sav1_map_get_name() {
-    struct warpdata *l = &sav1->location;
+    struct warpdata *l = &sav1i->location;
     struct map *m = mapheader_by_mapnumbers(l->bank, l->map);
     return m->name;
 }
 
 // 08056288
 u8 sav1_map_get_battletype() {
-    struct warpdata *l = &sav1->location;
+    struct warpdata *l = &sav1i->location;
     struct map *m = mapheader_by_mapnumbers(l->bank, l->map);
     return m->battletype;
 }
@@ -353,9 +353,9 @@ void overworld_bg_setup_2() {
 // 080563F0
 void overworld_free_resources() {
     sub_80F6C8C(); // free rboxes
-    free(overworld_bg3_tilemap);
-    free(overworld_bg2_tilemap);
-    free(overworld_bg1_tilemap);
+    memory_free(overworld_bg3_tilemap);
+    memory_free(overworld_bg2_tilemap);
+    memory_free(overworld_bg1_tilemap);
 }
 
 // 08056420
@@ -520,7 +520,7 @@ bool map_loading_iteration_5() {
             oe_active_list_clear();
             sub_8079C08();
             weather_set_by_sav1_maybe();
-            overworld_ensure_per_step_coros_running();
+            overworld_ensure_per_step_tasks_running();
             mapheader_run_script_with_tag_x5();
             break;
         case 2:
@@ -542,7 +542,7 @@ bool map_loading_iteration_5() {
             mapdata_load_palettes_to_gpu(current_mapheader.mapdata_header);
             break;
         case 7:
-            cur_mapdata_full_redraw__sp08E();
+            cur_mapdata_draw_all_blocks();
             break;
         case 8:
             cur_mapheader_run_tileset_funcs_after_some_cpuset();
@@ -650,7 +650,7 @@ u32 cur_mapdata_block_get_field_at(u16 x, u16 y, u8 fieldid) {
 }
 
 // 08058F78
-u8 cur_mapdata_block_role_at(u16 x, u16 y) {
+u8 cur_mapdata_get_block_role_at(u16 x, u16 y) {
     return (u8)cur_mapdata_block_get_field_at(x, y, 0);
 }
 
@@ -925,7 +925,7 @@ void sub_806C888(u8 *d) {
 
 //* 080CBDE8
 void context_npc_set_0() {
-    scripting_npc = 0;
+    context_npc = 0;
     var_8012 = 0xFF; // current text color
 }
 

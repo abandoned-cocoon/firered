@@ -1,6 +1,49 @@
 #pragma once
 #include "types.h"
 
+enum lcdreg {
+	O_DISPCNT = 0x0,
+	O_GREENSWAP = 0x2,
+	O_DISPSTAT = 0x4,
+	O_VCOUNT = 0x6,
+	O_BG0CNT = 0x8,
+	O_BG1CNT = 0xA,
+	O_BG2CNT = 0xC,
+	O_BG3CNT = 0xE,
+	O_BG0HOFS = 0x10,
+	O_BG0VOFS = 0x12,
+	O_BG1HOFS = 0x14,
+	O_BG1VOFS = 0x16,
+	O_BG2HOFS = 0x18,
+	O_BG2VOFS = 0x1A,
+	O_BG3HOFS = 0x1C,
+	O_BG3VOFS = 0x1E,
+	O_BG2PA = 0x20,
+	O_BG2PB = 0x22,
+	O_BG2PC = 0x24,
+	O_BG2PD = 0x26,
+	O_BG2X = 0x28,
+	O_BG2Y = 0x2C,
+	O_BG3PA = 0x30,
+	O_BG3PB = 0x32,
+	O_BG3PC = 0x34,
+	O_BG3PD = 0x36,
+	O_BG3X = 0x38,
+	O_BG3Y = 0x3C,
+	O_WIN0H = 0x40,
+	O_WIN1H = 0x42,
+	O_WIN0V = 0x44,
+	O_WIN1V = 0x46,
+	O_WININ = 0x48,
+	O_WINOUT = 0x4A,
+	O_MOSAIC = 0x4C,
+	O_UNUSED_4E = 0x4E,
+	O_BLDCNT = 0x50,
+	O_BLDALPHA = 0x52,
+	O_BLDY = 0x54,
+	O_UNUSED_56 = 0x56,
+};
+
 struct bg_config {
 	uint active     : 1;
 	uint _          : 1;

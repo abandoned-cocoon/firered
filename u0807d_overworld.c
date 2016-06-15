@@ -1,8 +1,10 @@
-// #include "u0807d_overworld.h"
+#include "continuegame.h"
+#include "overworld.h"
+#include "u0807d_overworld.h"
 
 // 0807DB58
 void pal_fill_for_maplights() {
-    u8 warp0_light    = warp_get_light_level();
+    u8 warp0_light    = warp0_get_light_level();
     u8 sav1_map_light = sav1_map_get_light_level();
     u8 ft = fade_type_for_given_maplight_pair(warp0_light, sav1_map_light);
     if (ft == 0) {

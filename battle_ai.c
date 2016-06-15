@@ -1,3 +1,7 @@
+#include "battle.h"
+#include "pokemon.h"
+#include "battle_rpc.h"
+
 // 080391EC
 int ai_080391EC() {
 	if (b_type_flags & 1)
@@ -22,7 +26,7 @@ int ai_080391EC() {
 	// except for the one, he currently has on the field
 
 	for (u32 i=0; i<6; i++) {
-		struct pokemon *oppoke = pokemon_opponent[i];
+		struct pokemon_extended *oppoke = &party_opponent[i];
 		if (pokemon_getattr(oppoke, req_current_hp) == 0) // dead pokemon can't battle
 			continue;
 		if (pokemon_getattr(oppoke, req_species2) == 0) // species 0 can't battle
@@ -34,13 +38,15 @@ int ai_080391EC() {
 
 		pokemon_getattr(oppoke, req_species); // discard result
 		pokemon_getattr(oppoke, req_ability_bit); // discard result
-		u8 plside2 = battle_get_side_with_given_state(0),
+		u8 plside2 = battle_get_side_with_given_state(0);
+
+		struct battle_data *plpoke2 = &b_data[plside2];
 
 		for (u32 j=0; j<4; j++) {
 			u16 move = pokemon_getattr(oppoke, req_move1 + j);
-			if (move && (ai_rate_move(move, oppoke->species, oppoke->ability_id) & 2) && rand()%3 == 0) {
+			if (move && (ai_rate_move(move, plpoke2->species, plpoke2->ability_id) & 2) && rand()%3 == 0) {
 				u8 status = battle_get_per_side_status(b_active_side);
-				dword_02023FE8.field_92[status] = j;
+				b_dp08_ptr->switchout_index_maybe[status] = j;
 				dp01_build_cmdbuf_x21_a_bb(TARGET_BUFFER_B, 2, 0);
 				return 1;
 			}

@@ -1,16 +1,3 @@
-// 08005680
-bool text_is_it_time_to_continue() {
-	if (textflags & TEXT_AUTO_CONTINUE)
-		return text_is_it_time_to_continue_autopilot();
-	if (super.buttons_new_remapped & (KEYPAD_A|KEYPAD_B)) {
-		audio_play(sound_generic_clink);
-		return true;
-	}
-	return false;
-}
-
-// ...
-
 // 08006448
 // font_render_tiny_en_jp
 

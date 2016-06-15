@@ -1,3 +1,6 @@
+#include "continuegame.h"
+#include "save.h"
+
 // 0203ADF9
 u8 prev_quest_display_number;
 // 0203ADFA
@@ -29,7 +32,7 @@ void prev_quest_mode_set(u8 mode) {
 
 // 08110AC8
 bool questlog_active_at_cursor() {
-	return sav1->questlog[flashback_cursor].active;
+	return sav1i->questlog[flashback_cursor].active;
 }
 
 // 08110F14
@@ -38,7 +41,7 @@ void game_continue(u8 task_id) {
 	prev_quest_display_number = 0;
 
 	for (uint i=0; i<4; i++)
-		if (sav1->questlog[i].active)
+		if (sav1i->questlog[i].active)
 			prev_quest_display_number++;
 
 	if (prev_quest_display_number > 0) {
@@ -53,9 +56,9 @@ void game_continue(u8 task_id) {
 // 08110F90
 void flashback() {
 	// Route 1
-	sav1.location.bank = 3;
-	sav1.location.map = 19;
-	sav1.location.warpid = 0xFF;
+	sav1i->location.bank = 3;
+	sav1i->location.map = 19;
+	sav1i->location.warpid = 0xFF;
 
 	quest_log_id_in_saveblock1 = 0;
 	warp_sound_disable = 1;
@@ -68,9 +71,10 @@ void hmp1_8111000() {
 	pal_bg_patch(stdpal_get(4), 0xF0, 0x20);
 	prev_quest_mode_set(2);
 	mapldr_default();
-	dword_203AE94 = 0;
-	byte_203AE94 &= 0xF0;
-	byte_203AE94 |= 0x02;
+	// dword_203AE94 = 0;
+	// dword_203AE94 &= 0xF0;
+	// dword_203AE94 |= 0x02;
+	dword_203AE94 = 2;
 	return 1;
 }
 
@@ -79,9 +83,10 @@ void hmp1_8111038() {
 	pal_bg_patch(stdpal_get(4), 0xF0, 0x20);
 	prev_quest_mode_set(2);
 	mapldr_for_new_game();
-	dword_203AE94 = 0;
-	byte_203AE94 &= 0xF0;
-	byte_203AE94 |= 0x02;
+	// dword_203AE94 = 0;
+	// dword_203AE94 &= 0xF0;
+	// dword_203AE94 |= 0x02;
+	dword_203AE94 = 2;
 	return 1;
 }
 
@@ -109,11 +114,14 @@ void render_prev_quest_text_if_appropriate() {
 		render_previous_quest_text(prev_quest_display_number);
 }
 
+// 0203AF98
+extern u16 pq_npc_cursor;
+
 // 08114710
 void prev_quest_write_x10_union_room(u8 *cursor) {
 	cursor[0] = 0x10;
-	cursor[2] = word_0203AF98 & 0xFF;
-	cursor[3] = word_0203AF98 >> 8;
+	cursor[2] = pq_npc_cursor & 0xFF;
+	cursor[3] = pq_npc_cursor >> 8;
 	return cursor+4;
 }
 
@@ -126,8 +134,8 @@ void prev_quest_read_x10_union_room(u8 *cursor) {
 // 08114744
 void prev_quest_write_x11_chat_with_trainers(u8 *cursor) {
 	cursor[0] = 0x11;
-	cursor[2] = word_0203AF98 & 0xFF;
-	cursor[3] = word_0203AF98 >> 8;
+	cursor[2] = pq_npc_cursor & 0xFF;
+	cursor[3] = pq_npc_cursor >> 8;
 	return cursor+4;
 }
 

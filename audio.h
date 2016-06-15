@@ -1,3 +1,5 @@
+#pragma once
+
 enum audio {
 	sound_RS_berry_picking_maybe = 0x1,
 	sound_PC_go_back = 0x3,
@@ -24,14 +26,16 @@ enum audio {
 	sound_damage_ice_floor = 0x24,
 	sound_RSE_roulette_ball_fall = 0x25,
 	sound_RSE_roulette_ball_land = 0x26,
+	sound_teleport_maybe = 0x27,
 	sound_some_beep = 0x28,
 	sound_game_saved = 0x30,
+	sound_overworld_poison = 0x48,
 	sound_countinous_raining_1 = 0x4A,
 	sound_rain_end = 0x4B,
 	sound_countinous_raining_2 = 0x4C,
 	sound_level_up = 0x58,
 	sound_sunlight = 0xC3,
-	soubd_boulder_bump = 0xCF,
+	sound_boulder_bump = 0xCF,
 	sound_yawn_maybe = 0xDC,
 	sound_run_the_terminator = 0xE3,
 	sound_some_air_move_1 = 0xE4,

@@ -139,7 +139,7 @@ void intro_end(struct intro *in) {
 	} else if (in->field4 == 1) {
 		if (sub_080F682C() == 0) {
 			task_del(in->tid);
-			free(in);
+			memory_free(in);
 			sub_08000B94(2);
 			hblank_handler_set(0);
 			set_callback2(&c2_intro_2);
@@ -215,10 +215,10 @@ void objc_080EE580(struct obj *o) { // for sub_080EE528
 			o->priv1--;
 	o->priv0 += o->priv1;
 
-	o->pos1.x = o->priv0 / 16;
+	o->pos_1.x = o->priv0 / 16;
 
-	if (o->pos1.x >= o->priv3) {
-		o->pos1.x = o->priv3;
+	if (o->pos_1.x >= o->priv3) {
+		o->pos_1.x = o->priv3;
 		o->callback = &objc_nothing;
 	}
 }
@@ -264,8 +264,8 @@ void sub_080EEA94(struct intro *in) { // intro 9 sub
 	o->priv4 = 0;
 	o->priv5 = 0;
 
-	o->pos1.x += o->pos2.x;
-	o->pos2.x = 0;
+	o->pos_1.x += o->pos_2.x;
+	o->pos_2.x = 0;
 
 	word_0203AB0C = 0x24;
 	word_0203AB06 = 0x28;

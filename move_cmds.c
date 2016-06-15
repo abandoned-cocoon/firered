@@ -1,3 +1,6 @@
+#include "battle.h"
+#include "move_interp.h"
+
 /* 
 03: pp_decrement
 04: critical_calculator
@@ -46,34 +49,35 @@ F4: subtract_damage_from_attacker_hp
 F5: reset_attacker_bd_x4C
 */
 
+// 0801D760
 void mcmd00_0801D760() {
 
-    if (battle_exit_type > 0) {
+    if (bc_bs_followup_bc_func_index /*battle_exit_type*/) {
         bs_mode = 12; // 08016D70
         return;
     }
 
-    struct battle_data *batk = battle_data_4x[b_attacker_side_hl];
+    struct battle_data *batk = battle_data[b_attacker_side_hl];
 
     if (batk->current_hp == 0 && (b_features_bitfield & 0x200)==0) {
         b_features_bitfield |= 0x80000;
-        b_move_cursor = &movescr_081D694E;
+        b_move_cursor = &movescr_081D694E_common;
         return;
     }
 
-    if (sub_080192D4())
+    if (dp08_B7_effects_80192D4())
         return;
 
-    if (sub_08019F18(2, b_defender_side_hl, 0, 0, 0))
+    if (ability_something(as_move_veto_soundproof, b_defender, 0, 0, 0))
         return;
 
-    if (batk->field_24[byte_02023D48] == 0 &&
-        move_to_execute != 0xA5            && // 165
-        b_features_bitfield & 0x00800200 == 0   &&
-        batk->field_50 & 0x00001000 == 0) {
+    if (batk->current_pp[b_moveset_index] == 0 &&
+        b_move_to_execute_A != mve_struggle &&
+        b_features_bitfield & 0x00800200 == 0 &&
+        batk->status2 & 0x00001000 == 0) {
 
-        b_move_cursor = &movescr_081D8EA8;
-        byte_02023DCC |= 1;
+        b_move_cursor = &movescr_no_pp_left;
+        b_attack_effectivity |= 1;
         return;
     }
 
@@ -82,20 +86,20 @@ void mcmd00_0801D760() {
     uint x;
 
     if (b_features_bitfield & 0x02000000 == 0 &&
-        batk->field_50 & 0x00001000 == 0 &&
+        batk->status2 & 0x00001000 == 0 &&
         (x = sub_0801D438())) {
 
         if (x == 2)
             b_features_bitfield |= 0x02000000;
         else
-            byte_02023DCC |= 1;
+            b_attack_effectivity |= 1;
         return;
     }
 
     b_features_bitfield |= 0x02000000;
 
     if ((int5)x_02023E8C[b_defender_side_hl] < 0 &&
-        move_data[move_to_execute].flags & MOVE_AFFECTED_BY_MAGIC_COAT) {
+        move_data[b_move_to_execute_A].flags & MOVE_AFFECTED_BY_MAGIC_COAT) {
         sub_08016EC8(b_attacker_side_hl,
                      b_defender_side_hl,
                      0x115); // 277
@@ -184,7 +188,8 @@ void mcmd03_pp_decrement() {
                 if ( !((b_disable_data_pbs[b_attacker].flags_mmmmuuuu__m_moves >> 4) & bits[b_moveset_index]) )
                 {
                     b_active_side = b_attacker;
-                    dp01_build_cmdbuf_x02_a_b_varargs(0, (b_moveset_index + 9) & 0xFF, 0, 1);
+                    bt_02_emit(TARGET_BUFFER_A, (b_moveset_index + 9) & 0xFF, 0, 1,
+                        &battle_data[b_attacker].current_pp[b_moveset_index]);
                     b_active_side_mark_buffer_for_execution(b_attacker);
                 }
             }
@@ -278,7 +283,7 @@ void mcmd60_08025B74() {
 
 void mcmd62_08025C6C() {
     b_active_side = get_battle_side_of(b_move_cursor[1]);
-    dp01_build_cmdbuf_x31_31_31_31(0);
+    bt_31_emit(TARGET_BUFFER_A);
     dp01_bitfield_set_flag_for_side(b_active_side);
     b_move_cursor += 2;
 }
@@ -321,7 +326,7 @@ void atkD3_copy_ability() {
     }
 }
 
-uint8 get_battle_side_of(uint8 whom) {
+u8 get_battle_side_of(uint8 whom) {
     switch (whom) {
     case 0: return b_defender_side_hl;
     case 1: return b_attacker_side_hl;

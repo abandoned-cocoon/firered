@@ -2,8 +2,9 @@
 #include "continuegame.h"
 #include "npc.h"
 #include "pokemon.h"
-#include "types.h"
 #include "roaming_pokemon.h"
+#include "types.h"
+#include "uncategorized.h"
 
 typedef char string9[9];
 typedef char string12[12];
@@ -27,7 +28,7 @@ struct sav1
   u16 mapdata_idx_plus_1;
   u8  num_party_pokemon;
   u8  unknown_35[3];
-  struct pokemon party_pokemon[6];
+  struct pokemon_boxed party_pokemon[6];
   u32 money_maybe;
   u8  pcitems[124];
   u32 bag_probably[42];
@@ -115,8 +116,7 @@ struct sav2
   u8  last_byte_in_sav2;
 };
 
-struct sav3
-{
+struct sav3 {
   u8  preferred_box;
   u8  unknown_1[3];
   u8  unknown_4[33600];
@@ -124,9 +124,9 @@ struct sav3
   u8  box_background[14];
 };
 
-extern struct sav1 *sav1;
-extern struct sav2 *sav2;
-extern struct sav3 *sav3;
+extern struct sav1 *sav1i;
+extern struct sav2 *sav2i;
+extern struct sav3 *sav3i;
 
 void save_serialize_pokemon();
 void save_deserialize_pokemon();

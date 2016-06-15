@@ -1,7 +1,15 @@
+#include "battle.h"
+#include "battle_config.h"
+#include "battle_intro.h"
+#include "engine_scripts.h"
+#include "save.h"
+#include "task.h"
+#include "vars.h"
+
 // 0807F690
 void task_add_01_battle_start(u8 priv1, u16 music_id) {
 	u8 tid = task_add(&task01_battle_start, 0x01);
-	tasks[tid].priv[1] = priv1;
+	task[tid].priv[1] = priv1;
 	current_map_music_set__default_for_battle(music_id);
 }
 
@@ -18,7 +26,7 @@ void task_add_01_battle_start_with_music_and_stats() {
 	bool s5E_jump_to_script_scheduled_after_battle(struct script_env *);
 */
 
-struct {
+struct battle_config_entry {
 	void *target;
 	enum {
 		LOAD_8,
@@ -28,8 +36,34 @@ struct {
 		ZERO_16,
 		ZERO_32,
 		END
-	} target_type
-} battle_config_entry;
+	} target_type;
+};
+
+u8 *battle_load_arguments(struct battle_config_entry *bce, u8 *cursor);
+
+// using db names
+//extern u16 trainerbattle_battle_type;         // 020386AC
+//extern u16 trainerbattle_flag_id;             // 020386AE
+//extern u16 trainerbattle_arg2;                // 020386B0
+//extern u32 trainerbattle_message_intro;       // 020386B4
+//extern u32 trainerbattle_message_defeat;      // 020386B8
+//extern u32 trainerbattle_message_2;           // 020386BC
+//extern u32 trainerbattle_message_need_2_poke; // 020386C0
+//extern u32 trainerbattle_next_scr_cmd;        // 020386C4
+//extern u32 trainerbattle_message_4;           // 020386C8
+//extern u16 trainerbattle_unknown;             // 020386CC
+
+// using c names
+extern u16 battle_type;                // 020386AC
+extern u16 battle_trainer_flag;        // 020386AE
+extern u16 battle_arg2;                // 020386B0
+extern u32 battle_message_intro;       // 020386B4
+extern u32 battle_message_defeat;      // 020386B8
+extern u32 battle_message_2;           // 020386BC
+extern u32 battle_message_need_two;    // 020386C0
+extern u32 battle_after_script;        // 020386C4
+extern u32 battle_message_4;           // 020386C8
+extern u16 battle_unknown;             // 020386CC
 
 // 083C6900
 struct battle_config_entry tb_format_5_other[] = {
@@ -127,31 +161,31 @@ char *battle_configure_by_script(char *cursor) {
 	battle_init();
 	u8 battle_type = cursor[0];
 	struct battle_config_entry *bce[] = {
-		/*0*/ &tb_format_5_other,
-		/*1*/ &tb_format_1_2,
-		/*2*/ &tb_format_1_2,
-		/*3*/ &tb_format_3,
-		/*4*/ &tb_format_4_7,
-		/*5*/ &tb_format_5_other,
-		/*6*/ &tb_format_6_8,
-		/*7*/ &tb_format_4_7,
-		/*8*/ &tb_format_6_8,
-		/*9*/ &tb_format_9
+		/*0*/ tb_format_5_other,
+		/*1*/ tb_format_1_2,
+		/*2*/ tb_format_1_2,
+		/*3*/ tb_format_3,
+		/*4*/ tb_format_4_7,
+		/*5*/ tb_format_5_other,
+		/*6*/ tb_format_6_8,
+		/*7*/ tb_format_4_7,
+		/*8*/ tb_format_6_8,
+		/*9*/ tb_format_9
 	};
 	u8 *scr_continue[] = {
-		/*0*/ &scr_battle_1_2_other,
-		/*1*/ &scr_battle_1_2_other,
-		/*2*/ &scr_battle_1_2_other,
-		/*3*/ &scr_battle_3_9,
-		/*4*/ &scr_battle_4_6_8,
-		/*5*/ &scr_battle_5,
-		/*6*/ &scr_battle_4_6_8,
-		/*7*/ &scr_battle_7,
-		/*8*/ &scr_battle_4_6_8,
-		/*9*/ &scr_battle_3_9
+		/*0*/ scr_battle_1_2_other,
+		/*1*/ scr_battle_1_2_other,
+		/*2*/ scr_battle_1_2_other,
+		/*3*/ scr_battle_3_9,
+		/*4*/ scr_battle_4_6_8,
+		/*5*/ scr_battle_5,
+		/*6*/ scr_battle_4_6_8,
+		/*7*/ scr_battle_7,
+		/*8*/ scr_battle_4_6_8,
+		/*9*/ scr_battle_3_9
 	};
 
-	battle_load_arguments(bce[battle_type], cursor);
+	battle_load_arguments(&bce[battle_type], cursor);
 
 	if (battle_type != 3 && battle_type != 9)
 		battle_80801F0();
@@ -168,7 +202,7 @@ char *battle_configure_by_script(char *cursor) {
 void battle_80801F0() {
 	if (!battle_arg2) return;
 	var_800F = battle_arg2;
-	scripting_npc = npc_id_by_local_id(sav1->location.bank, sav1->location.map);
+	context_npc = npc_id_by_local_id(sav1->location.bank, sav1->location.map);
 }
 
 // 08080168
@@ -181,9 +215,10 @@ u8 *battle_load_arguments(struct battle_config_entry *bce, u8 *cursor) {
 			case ZERO_8:  *(u8 *)bce->target = 0;              cursor += 1; break;
 			case ZERO_16: *(u16*)bce->target = 0;              cursor += 2; break;
 			case ZERO_32: *(u32*)bce->target = 0;              cursor += 4; break;
-			default:      *(u32*)bce->target = cursor;         return cursor;
+			case END:     *(u32*)bce->target = (u32)cursor;    return cursor;
+			default: break;
 		}
-		bce++:
+		bce++;
 	}
 }
 
@@ -206,7 +241,7 @@ void trainer_flag_clear(u16 trainer_id) {
 void trainer_battle_start() {
 	battle_type_flags = BATTLE_TRAINER;
 
-	if (trainerbattle_get_type == 9)
+	if (trainerbattle_get_type() == 9)
 		if (trainerbattle_get_unknown() & 0x3)
 			battle_type_flags |= BATTLE_OAK_COMMENTS;
 
@@ -275,11 +310,11 @@ void battle_intro_launch(u8 environment_id) {
 		funcptr = battle_intro_task_by_env[environment_id];
 	}
 	u8 tid = task_add(funcptr, 0);
-	tasks[tid].priv[0] = 0;
-	tasks[tid].priv[1] = environment_id;
-	tasks[tid].priv[2] = 0;
-	tasks[tid].priv[3] = 0;
-	tasks[tid].priv[4] = 0;
-	tasks[tid].priv[5] = 0;
-	tasks[tid].priv[6] = 0;
+	task[tid].priv[0] = 0;
+	task[tid].priv[1] = environment_id;
+	task[tid].priv[2] = 0;
+	task[tid].priv[3] = 0;
+	task[tid].priv[4] = 0;
+	task[tid].priv[5] = 0;
+	task[tid].priv[6] = 0;
 }

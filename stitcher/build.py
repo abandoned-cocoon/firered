@@ -1,3 +1,4 @@
+
 import json
 from ast import literal_eval as leval
 
@@ -253,6 +254,7 @@ def main():
 	with open("info.json") as infofile:
 		info = json.load(infofile)
 
+	unknowns = []
 	funcs = {}
 	for fj in info["functions"]:
 		addr = leval(fj["range"][0])
@@ -272,6 +274,7 @@ def main():
 			if funcname not in funcs:
 				# allow all unknowns
 				func = Function(funcname, None, None)
+				unknowns.append(func)
 			else:
 				func = funcs[funcname]
 			patches.append(Patch(func, section["size"]))
@@ -283,6 +286,11 @@ def main():
 	with open(p_asmfile, "w") as asmfile:
 		with open(p_ldscript, "w") as ldscript:
 			write(info, patches, symbols_thumb, symbols_ram, p_rom, asmfile, ldscript)
+
+	if not unknowns: return
+	print("Unknowns (put into pool)")
+	for f in unknowns:
+		print(" ", f.name)
 
 if __name__ == '__main__':
 	main()

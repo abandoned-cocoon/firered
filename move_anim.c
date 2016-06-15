@@ -1,3 +1,5 @@
+#include "move_anim.h"
+
 // 02037ED4
 u8 *ma_cursor;
 // 02037ED8

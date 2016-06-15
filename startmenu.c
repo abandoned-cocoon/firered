@@ -1,4 +1,9 @@
-typedef void (*vvptr)();
+#include "flags.h"
+#include "main.h"
+#include "save.h"
+#include "startmenu.h"
+
+typedef void (*vvptr)(void);
 
 struct startmenuentry {
     char *label;
@@ -30,14 +35,20 @@ const char* sm_descr[] = {
     "Check your money and other game data."
 };
 
+#ifndef NO_RAM
 // 020370F0
-void *start_menu_active_contex;
+void *start_menu_active_context;
 // 020370F4
 u8 start_menu_cursor;
 // 020370F5
 u8 start_menu_item_indices_cursor;
 // 020370F6
 u8 start_menu_item_indices[9];
+// 020370FF
+u8 start_menu_state_tracker;
+#endif
+
+void append_byte(u8 *buffer, u8 *cursor, u8 elem);
 
 // 0806ED54
 void start_menu_compose() {
@@ -105,10 +116,10 @@ bool start_menu_handle_input() {
 
     // modified for readability
 
-    if (super.button_state & KEYPAD_UP) {
+    if (super.buttons_new_remapped & KEYPAD_UP) {
         music_play(5);
         start_menu_cursor = start_menu_cursor_move(-1);
-    } else if (super.button_state & KEYPAD_DOWN) {
+    } else if (super.buttons_new_remapped & KEYPAD_DOWN) {
         music_play(5);
         start_menu_cursor = start_menu_cursor_move(1);
     } else {
@@ -116,23 +127,23 @@ bool start_menu_handle_input() {
     }
 
     if (sub_80BF708() == 0 && in_trade_center() != 1 && saveblock2_trainerdata->options_button_style == 0) {
-        u8 selected_entry = start_menu_entry_indices[start_menu_cursor];
-        char *entry_descr = start_menu_entry_descr[selected_entry];
+        u8 selected_entry = start_menu_item_indices[start_menu_cursor];
+        const char *entry_descr = sm_descr[selected_entry];
         start_menu_entry_descr_show(entry_descr, 2);
     }
 
 no_descr_update:
-    if (super.button_state & KEYPAD_A)
+    if (super.buttons_new_remapped & KEYPAD_A) {
         music_play(5);
         if (start_menu_is_selected_entry_valid()) {
-            u8 selected_entry = start_menu_entry_indices[start_menu_cursor];
-            start_menu_active_context = menu_start[selected_entry].action;
+            u8 selected_entry = start_menu_item_indices[start_menu_cursor];
+            start_menu_active_context = sm_entries[selected_entry].action;
             sub_806F394();
         }
         return 0;
     }
 
-    if (super.button_state & (KEYPAD_B | KEYPAD_START) == 0)
+    if (super.buttons_new_remapped & (KEYPAD_B | KEYPAD_START) == 0)
         return 0;
 
     sub_806EF18();
@@ -142,6 +153,6 @@ no_descr_update:
 }
 
 // 0806FEC8
-void append_byte(u8 *buffer, u32 *cursor, u8 elem) {
+void append_byte(u8 *buffer, u8 *cursor, u8 elem) {
     buffer[(*cursor)++] = elem;
 }

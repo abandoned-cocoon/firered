@@ -1,19 +1,18 @@
+#include "overworld_navigation.h"
 #include "uncategorized.h"
 
 u16 ptx1[] = { 0x1101, 0x1101, 0x1101, 0x1101, 0x1111, 0x1111, 0x1111, 0x1111 };
 u16 ptx2[] = { 0x1116, 0x1116, 0x1116, 0x1116 };
 
-struct bla {
+struct bla { // Rename?
     u32 tag;
     u16 *ptx;
 };
 
-// nevermind
-
-struct dp06 dp06_1[] = {
-    {0x1100, &ptx1},
-    {0x1110, &ptx1},
-    {0x1116, &ptx2},
+struct bla dp06_1[] = {
+    {0x1100, ptx1},
+    {0x1110, ptx1},
+    {0x1116, ptx2},
     {0x11FF, 0}
 };
 
@@ -27,9 +26,9 @@ void sub_805F5E8(u16 tag, u8 pal_slot) {
     // pal_slot = 0..15
     pal_patch_for_npc (tag, pal_slot);
     u16 second_slot = npc_pal_second_slot_by_first_slot[pal_slot];
-    for (u32 c=0; dp01_1[c].tag != 0x11FF; c++) {
-        if (dp01_1[c].tag == tag) {
-            pal_patch_for_npc (dp01_1[c].ptx[byte_2037098], second_slot);
+    for (u32 c=0; dp06_1[c].tag != 0x11FF; c++) {
+        if (dp06_1[c].tag == tag) {
+            pal_patch_for_npc (dp06_1[c].ptx[npc_palette_mode], second_slot);
             return;
         }
     }

@@ -1,3 +1,5 @@
+#include "battle_rpc.h"
+
 // from battle_interp.c
 // u8 b_buffer_A[4][0x200]; // 02022BC4
 // u8 b_buffer_B[4][0x200]; // 020233C4
@@ -152,8 +154,8 @@ void bt_0F_emit(u8 target, u16 moveid, u8 b, u16 c, u32 damage, u8 happiness, st
 	u8 mlc = b_move_loop_counter;
 
 	if (
-		ability_check(0xE, 0, AB_CLOUD_NINE, 0) ||
-		ability_check(0xE, 0, AB_AIR_LOCK, 0)
+		ability_check(as_update_bits_for_mud_and_water_sport, 0, ab_cloud_nine, 0) ||
+		ability_check(as_update_bits_for_mud_and_water_sport, 0, ab_air_lock, 0)
 	)
 		weather = 0;
 	else
@@ -169,7 +171,7 @@ void bt_0F_emit(u8 target, u16 moveid, u8 b, u16 c, u32 damage, u8 happiness, st
 	b_codegen_buffer[6] = damage;
 	b_codegen_buffer[7] = damage >> 8;
 	b_codegen_buffer[8] = damage >> 16;
-	b_codegen_buffer[9] = damage >> 32;
+	b_codegen_buffer[9] = damage >> 24;
 	b_codegen_buffer[10] = happiness;
 	b_codegen_buffer[11] = mlc;
 	b_codegen_buffer[12] = weather;
@@ -257,7 +259,7 @@ void bt_18_emit(u8 target, u8 a) {
 }
 
 // 0800E624
-void bt_19_emit(u8 target, u8 a, u16 bb) {
+void bt_19_emit(u8 target, u8 a, u16 b) {
 	b_codegen_buffer[0] = 0x19;
 	b_codegen_buffer[1] = a;
 	b_codegen_buffer[2] = b;
@@ -412,8 +414,8 @@ void bt_33_emit(u8 target, u8 a) {
 void bt_34_emit(u8 target, u8 a, u16 bb) {
 	b_codegen_buffer[0] = 0x34;
 	b_codegen_buffer[1] = a;
-	b_codegen_buffer[2] = b;
-	b_codegen_buffer[3] = b >> 8;
+	b_codegen_buffer[2] = bb;
+	b_codegen_buffer[3] = bb >> 8;
 	b_prepare_buffer(target, b_codegen_buffer, 4);
 }
 

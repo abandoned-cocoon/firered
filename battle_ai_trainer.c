@@ -1,59 +1,21 @@
-#define TAI_PHASE_NEXT_MOVE     0
-#define TAI_PHASE_EVALUATE_MOVE 1
-#define TAI_PHASE_QUIT          2
+#include "battle.h"
+#include "battle_ai_trainer.h"
 
-#define TAI_FLAG_EVAL_COMPLETE 1
-#define TAI_FLAG_USE_MOVE_4    2
-#define TAI_FLAG_USE_MOVE_5    4
-#define TAI_FLAG_QUIT          8
+#ifndef NO_RAM
+struct b_resources_t *b_resources;
+void (*tai_move_consideration_cmds[0x5E])();
 
-struct br18 {
-	u16 movehistory_1[8];
-	u16 movehistory_2[8];
-	u8  abilites_used[2];
-	u8  item_x12[2];
-	u16 t24[4];
-	u8  t24count;
-	u8  field_2D;
-	u8  field_2E;
-	u8  field_2F;
-};
-
-struct trainer_ai {
-	u8  phase;
-	u8  moveset_index;
-	u16 move_id;
-	u8  viabilities[4];
-	u32 field_8;
-	u32 script_usage_mask;
-	u8  flags;
-	u8  script_id;
-	u16 field_12;
-	u8  field_14;
-	u8  field_15;
-	u8  field_16;
-	u8  field_17;
-	u8  move_damage_multipliers[4];
-};
-
-struct b_resources_t {
-	br00 *field_0;
-	br04 *field_4;
-	br08 *_8_move_script_stack;
-	br0C *_C_bc_stack;
-	br10 *field_10;
-	trainer_ai *tai_state;
-	br18 *history;
-	br1C *_1C_move_consider_stack;
-};
+//02039A00
+u8 *tai_cursor;
+#endif
 
 // 080C6F44
 u8 tai_pick_move() {
-	trainer_ai *t = b_resources->tai_state;
+	struct trainer_ai *t = b_resources->tai_state;
 	b_movehistory_add_defenders_move();
 
 	while (t->script_usage_mask) {
-		t->moveset_index = 0
+		t->moveset_index = 0;
 
 		if ( t->script_usage_mask & 1 ) {
 			t->phase = 0;
@@ -90,9 +52,9 @@ u8 tai_pick_move() {
 }
 
 // 080C7038
-void tai_run_script() {
+void tai_run_script(void) {
 
-	trainer_ai *t = b_resources->tai_state;
+	struct trainer_ai *t = b_resources->tai_state;
 
 	while (t->phase != TAI_PHASE_QUIT) {
 
@@ -169,7 +131,7 @@ int b_movehistory_clear(int a1) {
 // 080C71D0
 void b_history__record_ability_usage_of_player(u8 a1, char a2) {
 	if ( !(battle_side_get_owner(a1) << 24) )
-		b_resources->movehistory->abilites_used[battle_get_per_side_status(a1) & 1] = a2;
+		b_resources->history->abilites_used[battle_get_per_side_status(a1) & 1] = a2;
 }
 
 // 080C7208
@@ -191,7 +153,7 @@ u32 unaligned32(u8 *p) {
 
 // nowhere
 #define TAI_COND_JUMP(cond, skip) \
-	if (cond) { tai_cursor = unaligned32(tai_cursor+skip-4); } \
+	if (cond) { tai_cursor = (u8*)unaligned32(tai_cursor+skip-4); } \
 	else { tai_cursor += (skip); }
 
 // 080C7240
@@ -224,9 +186,9 @@ void tai_cmd_random_goto__255_in_256_chance() {
 
 // 080C7340
 void tai_cmd_viability_score() {
-	trainer_ai *t = b_resources->tai_state;
-	i8 *viability = &t->viabilities[t->moveset_index]
-	i8 delta = tai_cursor[1]
+	struct trainer_ai *t = b_resources->tai_state;
+	i8 *viability = &t->viabilities[t->moveset_index];
+	i8 delta = tai_cursor[1];
 
 	*viability = max(0, *viability + delta);
 
@@ -237,7 +199,7 @@ void tai_cmd_viability_score() {
 void tai_cmd_jump_if_health_percentage_lt() {
 	u8 who = tai_cursor[1] ? b_attacker : b_defender;
 	u8 cutoff = tai_cursor[2];
-	u8 perc = 100 * b_data[who].current_hp / b_data[who].max_hp
+	u8 perc = 100 * b_data[who].current_hp / b_data[who].max_hp;
 	TAI_COND_JUMP (perc < cutoff, 7)
 }
 
@@ -245,7 +207,7 @@ void tai_cmd_jump_if_health_percentage_lt() {
 void tai_cmd_jump_if_health_percentage_ge() {
 	u8 who = tai_cursor[1] ? b_attacker : b_defender;
 	u8 cutoff = tai_cursor[2];
-	u8 perc = 100 * b_data[who].current_hp / b_data[who].max_hp
+	u8 perc = 100 * b_data[who].current_hp / b_data[who].max_hp;
 	TAI_COND_JUMP (perc >= cutoff, 7)
 }
 
@@ -253,7 +215,7 @@ void tai_cmd_jump_if_health_percentage_ge() {
 void tai_cmd_jump_if_health_percentage_eq() {
 	u8 who = tai_cursor[1] ? b_attacker : b_defender;
 	u8 cutoff = tai_cursor[2];
-	u8 perc = 100 * b_data[who].current_hp / b_data[who].max_hp
+	u8 perc = 100 * b_data[who].current_hp / b_data[who].max_hp;
 	TAI_COND_JUMP (perc == cutoff, 7)
 }
 
@@ -261,7 +223,7 @@ void tai_cmd_jump_if_health_percentage_eq() {
 void tai_cmd_jump_if_health_percentage_ne() {
 	u8 who = tai_cursor[1] ? b_attacker : b_defender;
 	u8 cutoff = tai_cursor[2];
-	u8 perc = 100 * b_data[who].current_hp / b_data[who].max_hp
+	u8 perc = 100 * b_data[who].current_hp / b_data[who].max_hp;
 	TAI_COND_JUMP (perc != cutoff, 7)
 }
 
@@ -276,3 +238,27 @@ void tai_cmd_jump_if_no_status1_bit() {
 	u8 who = tai_cursor[1] ? b_attacker : b_defender;
 	TAI_COND_JUMP (~b_data[who].status1 & unaligned32(tai_cursor+2), 6)
 }
+
+extern u8 tai0[];
+extern u8 tai1[];
+extern u8 tai2[];
+extern u8 tai3[];
+extern u8 tai4[];
+extern u8 tai5[];
+extern u8 tai6[];
+extern u8 tai7[];
+extern u8 tai8[];
+extern u8 tai9[];
+extern u8 taiA[];
+
+extern u8 tai1D[];
+extern u8 tai1E[];
+extern u8 tai1F[];
+
+// 081D9BF4
+u8 *tai_scripts[32] = {
+	tai0, tai1, tai2, tai3, tai4, tai5, tai6, tai7,
+	tai8, tai9, taiA, taiA, taiA, taiA, taiA, taiA,
+	taiA, taiA, taiA, taiA, taiA, taiA, taiA, taiA,
+	taiA, taiA, taiA, taiA, taiA, tai1D, tai1E, tai1F
+};
