@@ -128,6 +128,18 @@ extern struct sav1 *sav1i;
 extern struct sav2 *sav2i;
 extern struct sav3 *sav3i;
 
+// TODO: Correct signatures (instead of (void))
+extern u8 flash_timeout_reached_zero; // 03007410
+extern void (*flash_read_byte_funcptr)(void); // 03007414
+extern void (*flash_c_verify)(void); // 03007418
+extern void (*flash_c_write_block)(void); // 0300741C
+extern void (*flash_c_ptr_metrics)(void); // 03007420
+extern void (*flash_c_fp0)(void); // 03007424
+extern u16 word_3007428; // 03007428
+extern void (*flash_c_erase_all)(void); // 0300742C
+extern void (*flash_c_erase_block)(u8); // 03007430
+extern void (*flash_c_f14)(void); // 03007434
+
 void save_serialize_pokemon();
 void save_deserialize_pokemon();
 void save_serialize_npcs();

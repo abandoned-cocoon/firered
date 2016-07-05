@@ -1,4 +1,7 @@
 #include "engine_scripts.h"
+#include "overworld_effects.h"
+
+void oei_cut_finish(void);
 
 // 08097874
 /* ... */
@@ -6,7 +9,7 @@
 // 080979A0
 bool oei_cut() {
 	u8 tid = oei_task_add();
-	TASK_PRIV_ASSIGN32(task[tid], 8, &oei_cut_finish);
+	TASK_PRIV_ASSIGN32(task[tid], 8, (uintptr_t)&oei_cut_finish);
 	sav_xor_incr(0x12);
 	return false;
 }
@@ -21,7 +24,7 @@ void hm_cut_run_scr() {
 // 080979F0
 bool oei_cut2() {
 	u8 tid = oei_task_add();
-	TASK_PRIV_ASSIGN32(task[tid], 8, &oei_cut2_finish);
+	TASK_PRIV_ASSIGN32(task[tid], 8, (uintptr_t)&oei_cut2_finish);
 	sav_xor_incr(0x12);
 	return false;
 }
@@ -47,7 +50,7 @@ bool oei_3A_08097A48() {
 	}
 
 	cur_mapdata_full_redraw();
-	dword_2039870 = malloc(8);
+	dword_2039870 = mem_alloc(8);
 
 	/* ... */
 

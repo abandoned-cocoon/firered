@@ -65,7 +65,7 @@ void obj_anim_image_continue(struct obj *o) {
 			o->anim_frame++;
 			i16 data = IMAGE_FRAME(o).data;
 			u16 cmd = (data < 0) ? data+3 : 3;
-			animcmds[cmd](o);
+			(*animcmds[cmd])9g(o);
 		}
 	} else {
 		obj_anim_delay_progress(o);
@@ -178,7 +178,7 @@ void obj_anim_rotscale_continue(struct obj *o) {
 
 // 08007DBC
 void sub_08007DBC(u8 affidx, struct obj *o) {
-	if (obj_anim_rotscale_delay_progress(obj, affidx)) // if paused
+	if (obj_anim_rotscale_delay_progress(o, affidx)) // if paused
 		return;
 
 	struct rotscale_frame frame;
@@ -277,7 +277,7 @@ void obj_anim_image_delay_progress(struct obj *o) {
 // obj_anim_rotscale_delay_progress
 
 // 08008230
-void rotscale_frame_apply_relative_and_sync(u8 affidx, struct rotscale_frame *r) {
+void rotscale_frame_apply_relative_and_sync(u8 affidx, struct rotscale_frame *f) {
 	struct rotscale_state *c = &rotscale_states[affidx];
 	u16 coeff[4];
 
@@ -301,7 +301,7 @@ void rotscale_frame_apply_relative_and_sync(u8 affidx, struct rotscale_frame *r)
 }
 
 // 080082E0
-void rotscale_load_frame(u8 affidx, struct obj *o, struct rotscale_frame *r) {
+void rotscale_load_frame(u8 affidx, struct obj *o, struct rotscale_frame *f) {
 	struct rotscale_state *c = &rotscale_states[affidx];
 	struct rotscale_frame *f = &o.rotscale_table[c->index][c->subindex];
 	r->scale_x_delta  = f->scale_x_delta;

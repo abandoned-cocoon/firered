@@ -44,6 +44,13 @@
 #define B_S2_NEXT_ATTACK_WILL_HIT 0x20000000
 #define B_S2_DEFENSE_CURL_USED 0x40000000
 
+#define B_F_DESTINY_BOND                0x00000040
+#define B_F_SKIP_MOVE_ANIMATIONS        0x00000080
+#define B_F_INHIBIT_X_USED_Y_MESSAGE    0x00000200
+#define B_F_COMPLETED_X_USED_Y_MESSAGE  0x00000400
+#define B_F_PP_DEDUCTION_OUTSTANDING    0x00000800
+#define B_F_DEFLECT_DESTINY_BOND        0x01000000 // among other things
+
 // not used anywhere because changing this doesn't trivially allow more pokemon to fight
 #define NUM_BATTLE_SIDES 4
 

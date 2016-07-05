@@ -53,12 +53,12 @@ struct dialogsub {
 };
 
 struct dialog {
-	struct typesetter ty;
+	struct typesetter tys;
 	u32 field_10;
 	struct dialogsub sub;
 	u8 mode;
 	u8 text_speed_inv; // lower is faster
-	u8 field_1E;
+	u8 wait_frames;
 	u8 remaining_scroll_lines;
 	u8 field_20;
 	u8 japanese;

@@ -52,6 +52,7 @@ $(PATCH_O): \
 	../battle_interface.c \
 	../battle_rpc_recv.c \
 	../battle_rpc_send.c \
+	../choice.c \
 	../continuegame.c \
 	../ctxmenu.c \
 	../dialog.c \
@@ -107,6 +108,7 @@ $(PATCH_O): \
 	../battle_intro.h \
 	../battle_rpc.h \
 	../battle_rpc_recv.impl.h \
+	../choice.h \
 	../continuegame.h \
 	../ctxmenu.h \
 	../dialog.h \
@@ -128,6 +130,7 @@ $(PATCH_O): \
 	../object_anim.h \
 	../object.h \
 	../overworld.h \
+	../overworld_effects.h \
 	../overworld_navigation.h \
 	../pokedude.h \
 	../pokemon.h \

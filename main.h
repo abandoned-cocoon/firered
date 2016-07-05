@@ -31,6 +31,7 @@ enum keypad {
     KEYPAD_DOWN = 0x80,
     KEYPAD_SHOULDER_RIGHT = 0x100,
     KEYPAD_SHOULDER_LEFT = 0x200,
+    KEYPAD_ANYDIR = 0x3C,
 
     // TODO: Cleanup
     BUTTON_A = 0x1,

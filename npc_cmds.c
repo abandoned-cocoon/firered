@@ -500,8 +500,8 @@ bool s51_waitmove(struct script_env *s) {
     u16 local_id = var_load(script_read_half(s));
     if (local_id) script_last_npc_localid = local_id;
 
-    waitmove_mapbank = sav1i.location.bank;
-    waitmove_mapnr   = sav1i.location.map;
+    waitmove_mapbank = sav1i->location.bank;
+    waitmove_mapnr   = sav1i->location.map;
 
     script_enter_asm_mode(s, &s51a_0806B288);
 

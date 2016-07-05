@@ -147,3 +147,7 @@ enum audio {
 	song_pallet_town_remix = 0x159,
 	song_teachy_tv = 0x15A,
 };
+
+// TODO
+void audio_play(enum audio);
+void sound_play(enum audio);

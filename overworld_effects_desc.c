@@ -1,3 +1,5 @@
+#include "overworld_effects.h"
+
 enum OEC {
 	OEC_LOAD_GFX = 0,
 	OEC_LOAD_PAL1 = 1,
@@ -40,4 +42,4 @@ u8 *oe_table[] = {
 	&oe_cut2,
 	&oe_081D97D6
 	/* ... */
-}
+};

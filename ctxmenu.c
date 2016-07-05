@@ -1,4 +1,6 @@
 #include "ctxmenu.h"
+#include "audio.h"
+#include "vars.h"
 
 typedef void (*cvptr)(task_id);
 

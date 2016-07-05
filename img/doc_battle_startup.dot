@@ -18,7 +18,7 @@ digraph {
 	bc_801333C [color="#a4e839" style="filled"];
 	bc_8013514 [color="#a4e839" style="filled" label="bc_silph_scope (8013514)"];
 	bc_80134DC [color="#a4e839" style="filled" label="bc_battle_begin_message (80134DC)"];
-	bc_8013568 [color="#a4e839" style="filled"];
+	bc_8013568 [color="#a4e839" style="filled" label="bc_std_message_1_for_state_1 (8013568)"];
 	bc_801359C [color="#a4e839" style="filled"];
 	bc_801362C [color="#a4e839" style="filled"];
 	bc_send_out_pokemon_probably [color="#a4e839" style="filled"];

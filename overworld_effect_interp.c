@@ -124,8 +124,8 @@ void oec03_call_asm_impl(u8 **cursor, u32 *retval) {
 
 // 080836B4
 void oe_stop2(struct obj *o) {
-	u8  pal  = o->attr2 >> 12;
-	u32 ado = o->anim_data_offset
+	u8  pal  = o->sprite.attr2 >> 12;
+	u32 ado = o->anim_data_offset;
 	obj_delete_and_free_vram(o);
 	gpu_tile_obj_free_by_ado_when_unused(ado);
 	gpu_pal_free_by_index_when_unused(pal);
@@ -188,7 +188,7 @@ bool oe_active_list_contains(u8 num) {
 }
 
 // 083CBE30
-bool (*oe_cmds)(u8 **, u32 *) = {
+bool (*oe_cmds[])(u8 **, u32 *) = {
 	&oec00_load_gfx,
 	&oec01_load_pal,
 	&oec02_load_pal,

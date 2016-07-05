@@ -5,7 +5,7 @@ m_re = re.compile("// ([0-9A-Fa-f]{8})")
 z = []
 
 for fname in os.listdir():
-	if not fname.endswith(".c"): continue
+	if not (fname.endswith(".c") or fname.endswith(".h")): continue
 	for line in open(fname):
 		m = m_re.match(line)
 		if m:
@@ -13,7 +13,7 @@ for fname in os.listdir():
 
 z.sort()
 
-codeonly = True
+codeonly = False
 
 for addr, line in z:
 	if codeonly and not ((0x08000000 <= addr < 0x0815F9B4) or (0x081DBD34 <= addr < 0x081E9F08)):

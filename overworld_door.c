@@ -1,6 +1,5 @@
 struct door_frame_t {
 	u8 field_0;
-	u8 field_1;
 	u16 byteoffset_in_gfx;
 };
 
@@ -12,12 +11,35 @@ struct door_t {
 	u8 *palindices;
 };
 
+extern u8 unk_8353088[];
+extern u8 unk_8353228[];
+extern u8 unk_83533C8[];
+extern u8 unk_835B4D8[];
+extern u8 unk_835B4E0[];
+extern u8 unk_835B4E8[];
+
 // 0835B5D8
 struct door_t door_blocks[] = {
 	{ 0x03D, 0, 0, &unk_8353088, &unk_835B4D8 }, // house door
 	{ 0x062, 1, 0, &unk_8353228, &unk_835B4E0 }, // pokecenter door
 	{ 0x15B, 1, 0, &unk_83533C8, &unk_835B4E8 }  // gym door
 	/* ... */
+};
+
+struct door_frame_t door_frames_open_singletile[] = {
+	{4, 0xffff}, {4, 0x0}, {4, 0x80}, {4, 0x100}, {0}
+};
+
+struct door_frame_t door_frames_open_twotiled[] = {
+	{4, 0xffff}, {4, 0x0}, {4, 0x100}, {4, 0x200}, {0}
+};
+
+struct door_frame_t door_frames_close_singletile[] = {
+	{4, 0x100}, {4, 0x80}, {4, 0x0}, {4, 0xffff}, {0}
+};
+
+struct door_frame_t door_frames_close_twotiled[] = {
+	{4, 0x200}, {4, 0x100}, {4, 0x0}, {4, 0xffff}, {0}
 };
 
 // 0805AF14
@@ -85,7 +107,7 @@ task_id task_overworld_door_add_for_opening_door_at(struct door_t *doors, s16 x,
 	struct door_frame_t *frames;
 	if (!door) return -1;
 	frames = door->twotiled
-	       ? door_frames_open_twotiled;
+	       ? door_frames_open_twotiled
 	       : door_frames_open_singletile;
 	return task_overworld_door_add_if_inactive(door, frames x, y);
 }

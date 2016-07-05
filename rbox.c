@@ -29,7 +29,7 @@ void rboxid_vertical_scroll(u8 rboxid, u8 direction, u8 delta, u8 background_dou
 	#define SAFE_RROW(index) (((index)*sizeof(u32) >= size) ? background_row : rrows[index])
 	#define REBASE(o) (((o)/8*rbxw)+((o)&7))
 
-	if (reversed == 0) {
+	if (direction == 0) {
 		for (u32 c=0; c<size/4; c+=8) {
 			rrows[c+0] = SAFE_RROW(c+REBASE(delta+0));
 			rrows[c+1] = SAFE_RROW(c+REBASE(delta+1));
@@ -40,7 +40,8 @@ void rboxid_vertical_scroll(u8 rboxid, u8 direction, u8 delta, u8 background_dou
 			rrows[c+6] = SAFE_RROW(c+REBASE(delta+6));
 			rrows[c+7] = SAFE_RROW(c+REBASE(delta+7));
 		}
-	} else if (reversed == 1) {
+	} else if (direction == 1) {
+		// TODO
 		// same as above, but with reverse memory access order
 	}
 }
@@ -85,7 +86,7 @@ u32 rbox_num_active_on_bgid_a(u8 bgid) {
 	u32 count = 0;
 
 	for (u32 i=0; i<4; i++)
-		if (rboxes[i].bgid == bgid)
+		if (rboxes[i].bg_id == bgid)
 			count++;
 
 	return count;
@@ -95,7 +96,7 @@ u32 rbox_num_active_on_bgid_a(u8 bgid) {
 // (08003F20)
 void rboxid_upload_b(u8 rboxid, u8 mode) {
 	// see also 08003F20
-	struct rbox *r = rboxes[rboxid];
+	struct rbox *r = &rboxes[rboxid];
 	static u16 pixelbytes = r->w * r->h * (8*8) / 4;
 	if (mode & 2) gpu_copy_to_tileset(r->bg_id, r->pixels, pixelbytes, r->vram_tileset_offset);
 	if (mode & 1) bgid_send_tilemap(r->bg_id);

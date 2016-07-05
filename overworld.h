@@ -137,6 +137,7 @@ extern u32 context_npc; // the npc currently executing a script (context_npc ins
 extern u32 overworld_bg_setup_data[];
 
 void mapdata_load_assets_to_gpu_and_full_redraw();
+struct map *mapheader_by_mapnumbers(u8 mapbank, u8 mapnr);
 void mliX_load_map(u8 mapbank, u8 mapnr);
 void mli0_load_map();
 void sub_80559A8();

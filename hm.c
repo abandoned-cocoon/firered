@@ -1,3 +1,4 @@
+#include "hm.h"
 #include "overworld.h"
 #include "save.h"
 #include "vars.h"
@@ -19,6 +20,7 @@ bool hm_prepare_cut() {
 		return 1;
 	}
 
+	struct coords16 in_front_of_player;
 	player_get_pos_to(
 		&in_front_of_player.pos.x,
 		&in_front_of_player.pos.y);
@@ -112,7 +114,7 @@ bool ruin_valley_trigger() {
 }
 
 // 080D07EC
-signed int hm_prepare_strength() {
+bool hm_prepare_strength() {
 	if ( walkrun_bitfield_and_r0(8) << 24 || npc_before_player_of_type(97) != 1 ) {
 		return false;
 	} else {
@@ -125,7 +127,7 @@ signed int hm_prepare_strength() {
 }
 
 // 080DE0C8
-bool hm_prepare_sweet_scent() 	{
+bool hm_prepare_sweet_scent() {
 	hm_phase_1 = hm_add_c3_launch_phase_2;
 	hm_phase_2 = hm2_sweet_scent;
 	return true;
@@ -151,15 +153,17 @@ bool hm_prepare_teleport() {
 }
 
 // 08124998
-signed int hm_prepare_surf()
-{
+bool hm_prepare_surf() {
 	coords16 target;
 
 	player_get_pos_to_plus_one_step_in_direction_player_is_facing(
 		&target.x,
 		&target.y);
 
-	u8 role = cur_mapdata_block_role_at(v2, *(&v2 + 1));
+	u8 role = cur_mapdata_block_role_at(
+		&target.x,
+		&target.y);
+
 	if (sub_8059CC8(role))
 		return false;
 	if (!party_has_pokemon_with_surf())

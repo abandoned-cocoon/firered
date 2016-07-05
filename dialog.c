@@ -1,4 +1,6 @@
+#include "audio.h"
 #include "dialog.h"
+#include "rbox.h"
 
 #ifndef NO_RAM
 // 03003E50
@@ -18,15 +20,16 @@ bool text_is_it_time_to_continue() {
 	return false;
 }
 
+// 08005790
 uint dialog_update(struct dialog *dialog) {
 
-	typesetter *tys  = &dialog->tys;
-	dialogsub *dsub = &dialog->sub;
+	struct typesetter *tys  = &dialog->tys;
+	struct dialogsub *dsub = &dialog->sub;
 	
 	switch (dialog->mode) {
 		// Parse mode
 		case 0u:
-			if (super.buttons2_held_remapped & (keypad_b|keypad_a)) {
+			if (super.buttons_held_remapped & (KEYPAD_B|KEYPAD_A)) {
 				if (dsub->user_can_skip)
 					dialog->wait_frames = 0;
 			}
@@ -84,23 +87,26 @@ uint dialog_update(struct dialog *dialog) {
 								return 2;
 							case 9:     // Wait for key
 								dialog->mode = 1;
-								if ( textflags & 4 )
-									LOBYTE(dsub->frames_visible_counter) = 0;
+								if ( textflags & 4 ) {
+									dsub->frames_visible_counter &= 0xff00;
+								}
 								return 3;
 							case 0xA:   // Wait for audio
 								dialog->mode = 5;
 								return 3;
-							case 0xB:   // Play song
+							case 0xB: { // Play song
 								u8 lo = *tys->ccursor++;
 								u8 hi = *tys->ccursor++;
 								if (prev_quest_mode < 2 || prev_quest_mode >= 4)
 									song_play_for_text((hi << 8) | lo);
 								return 2;
-							case 0x10:  // Play sound
+							}
+							case 0x10: { // Play sound
 								u8 lo = *tys->ccursor++;
 								u8 hi = *tys->ccursor++;
 								audio_play((hi << 8) | lo);
 								return 2;
+							}
 							case 0xC:   // Escape
 								c = *tys->ccursor++;
 								break;
@@ -121,22 +127,24 @@ uint dialog_update(struct dialog *dialog) {
 							case 0x18:  // Resume music
 								m4aMPlayContinue(&stru_3007300);
 								return 2;
-							case 0x11:  // ???
+							case 0x11: { // ???
 								int t = *tys->ccursor++;
 								if ( t <= 0 )
 									return 2;
 								tys->cursor_x += t;
 								return 0;
+							}
 							case 0x12:  // ???
 								tys->cursor_x = tys->reset_x + *tys->ccursor++;
 								return 2;
-							case 0x13:  // ???
+							case 0x13: { // ???
 								int t = tys->reset_x + *tys->ccursor++;
 								t = t - tys->cursor_x;
 								if ( t <= 0 )
 									return 2;
 								tys->cursor_x += t;
 								return 0;
+							}
 							case 0x14:  // ???
 								dialog->field_20 = *tys->ccursor++;
 								return 2;
@@ -219,7 +227,7 @@ uint dialog_update(struct dialog *dialog) {
 			}
 			--dialog->wait_frames;
 			if ( textflags & 1 ) {
-				if ( super.buttons3_new_remapped & 3 ) {
+				if ( super.buttons_new_remapped & 3 ) {
 					dsub->user_can_skip = 0;
 					dialog->wait_frames = 0;
 				}

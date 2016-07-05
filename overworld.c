@@ -1,3 +1,4 @@
+#include "continuegame.h"
 #include "fade.h"
 #include "flags.h"
 #include "main.h"
@@ -5,6 +6,7 @@
 #include "npc_cmds.h"
 #include "npc_interp.h"
 #include "overworld.h"
+#include "overworld_effects.h"
 #include "overworld_navigation.h"
 #include "save.h"
 #include "task.h"
@@ -83,6 +85,10 @@ void cur_mapdata_load_assets_to_gpu_and_full_redraw() {
     cur_mapdata_draw_all_blocks();
     cur_mapheader_run_tileset_funcs_after_some_cpuset();
 }
+
+// struct map *mapheader_by_mapnumbers(u8 mapbank, u8 mapnr) {
+//     // TODO
+// }
 
 // 08055864
 void mliX_load_map(u8 mapbank, u8 mapnr) {
@@ -368,9 +374,6 @@ bool is_c1_link_related_active() {
     return super.callback1 == &c1_link_related;
 }
 
-//* 0203AE8C
-void (*funcptr_203AE8C)();
-
 //* 0811092C
 void call_203AE8C() {
     if (funcptr_203AE8C)
@@ -422,8 +425,8 @@ void c1_overworld() {
     if (sub_8112CAC() == 1 || prev_quest_mode == 2)
         c1_overworld_prev_quest();
     else
-        c1_overworld_normal(super.buttons3_new_remapped,
-                            super.buttons2_held_remapped);
+        c1_overworld_normal(super.buttons_new_remapped,
+                            super.buttons_held_remapped);
 }
 
 // 08056578

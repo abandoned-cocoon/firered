@@ -1,6 +1,11 @@
 #include "continuegame.h"
+#include "overworld.h"
 #include "save.h"
+#include "task.h"
 
+#ifndef NO_RAM
+// 0203ADF8
+u8 flashback_cursor;
 // 0203ADF9
 u8 prev_quest_display_number;
 // 0203ADFA
@@ -10,6 +15,7 @@ u8 prev_quest_mode; // 0: normal
 					// 3: fade flashback to normal
 // 03005E90
 u32 dword_3005E90;
+#endif
 
 // 08056938
 void c2_8056938() {
@@ -29,6 +35,16 @@ void prev_quest_mode_set(u8 mode) {
 	   ? &j5_prev_quest_mode_1
 	   : &j5_08110A3C;
 }
+
+// 08110A00
+// void j5_prev_quest_mode_1() {
+// 	if (sub_8110E68(&unk_203AE98) != 1) {
+// 		pq_npc_recording = 0;
+// 		sub_8110E3C(&pq_npc_recording);
+// 		prev_quest_mode = 0;
+// 		j5 = 0;
+// 	}
+// }
 
 // 08110AC8
 bool questlog_active_at_cursor() {
@@ -67,7 +83,7 @@ void flashback() {
 }
 
 // 08111000
-void hmp1_8111000() {
+bool hmp1_8111000() {
 	pal_bg_patch(stdpal_get(4), 0xF0, 0x20);
 	prev_quest_mode_set(2);
 	mapldr_default();
@@ -75,11 +91,11 @@ void hmp1_8111000() {
 	// dword_203AE94 &= 0xF0;
 	// dword_203AE94 |= 0x02;
 	dword_203AE94 = 2;
-	return 1;
+	return true;
 }
 
 // 08111038
-void hmp1_8111038() {
+bool hmp1_8111038() {
 	pal_bg_patch(stdpal_get(4), 0xF0, 0x20);
 	prev_quest_mode_set(2);
 	mapldr_for_new_game();
@@ -87,7 +103,7 @@ void hmp1_8111038() {
 	// dword_203AE94 &= 0xF0;
 	// dword_203AE94 |= 0x02;
 	dword_203AE94 = 2;
-	return 1;
+	return true;
 }
 
 // 08111368
@@ -118,7 +134,7 @@ void render_prev_quest_text_if_appropriate() {
 extern u16 pq_npc_cursor;
 
 // 08114710
-void prev_quest_write_x10_union_room(u8 *cursor) {
+u8 *prev_quest_write_x10_union_room(u8 *cursor) {
 	cursor[0] = 0x10;
 	cursor[2] = pq_npc_cursor & 0xFF;
 	cursor[3] = pq_npc_cursor >> 8;
@@ -126,13 +142,13 @@ void prev_quest_write_x10_union_room(u8 *cursor) {
 }
 
 // 08114724
-void prev_quest_read_x10_union_room(u8 *cursor) {
+u8 *prev_quest_read_x10_union_room(u8 *cursor) {
 	fdecoder(displayed_string, "Mingled with other TRAINERS in the UNION ROOM.");
 	return cursor + 4;
 }
 
 // 08114744
-void prev_quest_write_x11_chat_with_trainers(u8 *cursor) {
+u8 *prev_quest_write_x11_chat_with_trainers(u8 *cursor) {
 	cursor[0] = 0x11;
 	cursor[2] = pq_npc_cursor & 0xFF;
 	cursor[3] = pq_npc_cursor >> 8;
@@ -140,7 +156,7 @@ void prev_quest_write_x11_chat_with_trainers(u8 *cursor) {
 }
 
 // 08114758
-void prev_quest_read_x11_chat_with_trainers(u8 *cursor) {
+u8 *prev_quest_read_x11_chat_with_trainers(u8 *cursor) {
 	fdecoder(displayed_string, "Chatted with many TRAINERS.");
 	return cursor + 4;
 }

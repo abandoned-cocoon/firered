@@ -5,7 +5,7 @@ bool map_post_load_hook_exec() {
             return false;
     } else {
         if (map_post_load_hook)
-            map_post_load_hook());
+            map_post_load_hook();
         else
             map_post_load_hook_default();
     }

@@ -1,3 +1,19 @@
+#include "save.h"
+
+#ifndef NO_RAM
+// TODO: Correct signatures (instead of (void))
+u8 flash_timeout_reached_zero; // 03007410
+void (*flash_read_byte_funcptr)(void); // 03007414
+void (*flash_c_verify)(void); // 03007418
+void (*flash_c_write_block)(void); // 0300741C
+void (*flash_c_ptr_metrics)(void); // 03007420
+void (*flash_c_fp0)(void); // 03007424
+u16 word_3007428; // 03007428
+void (*flash_c_erase_all)(void); // 0300742C
+void (*flash_c_erase_block)(u8); // 03007430
+void (*flash_c_f14)(void); // 03007434
+#endif
+
 // 0804C1F0
 void save_serialize_pokemon() {
 	struct pokemon_extended *dst = sav1i->party_pokemon;

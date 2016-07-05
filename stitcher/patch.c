@@ -20,6 +20,7 @@
 //#include "../battle_interface.c"
 //#include "../battle_rpc_recv.c"
 //#include "../battle_rpc_send.c"
+#include "../choice.c"
 #include "../continuegame.c"
 #include "../ctxmenu.c"
 #include "../dialog.c"

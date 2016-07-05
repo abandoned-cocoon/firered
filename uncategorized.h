@@ -21,6 +21,13 @@ struct warpdata {
 	u16 enter_y;
 };
 
+struct rotscale_coeff {
+	u16 a;
+	u16 b;
+	u16 c;
+	u16 d;
+};
+
 // TODO: Move away
 struct easy_chat_quote {
 	int word0;

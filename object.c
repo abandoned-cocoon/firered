@@ -1,4 +1,5 @@
 #include "object.h"
+#include "uncategorized.h"
 
 #ifndef NO_RAM
 // 0202063C
@@ -25,7 +26,7 @@ void obj_and_aux_reset_all() {
 // 08006B5C
 void objc_exec() {
 	for (u8 i = 0; i<NUM_OBJS; i++) {
-		obj_t *o = &objects[i];
+		struct obj *o = &objects[i];
 
 		if (o->bitfield2 & OBJ_BIT2_IN_USE) o->callback(o);
 		if (o->bitfield2 & OBJ_BIT2_IN_USE) obj_anim_step(o);
@@ -69,10 +70,10 @@ void sub_08006CF8() {
 void write_rotscale_coefficients() {
 	for (u8 i = 0; i<NUM_ROTSCALE_OBJS; i++) {
 		obj *o = &objects[i];
-		super.sprites[i*4+0].rotscale = rotscale_coefficients[i].a;
-		super.sprites[i*4+1].rotscale = rotscale_coefficients[i].b;
-		super.sprites[i*4+2].rotscale = rotscale_coefficients[i].c;
-		super.sprites[i*4+3].rotscale = rotscale_coefficients[i].d;
+		super.sprites[i*4+0].rotscaleinfo = rotscale_coefficients[i].a;
+		super.sprites[i*4+1].rotscaleinfo = rotscale_coefficients[i].b;
+		super.sprites[i*4+2].rotscaleinfo = rotscale_coefficients[i].c;
+		super.sprites[i*4+3].rotscaleinfo = rotscale_coefficients[i].d;
 	}
 }
 
@@ -123,14 +124,14 @@ u8 obj_instanciate_empty_with_callback(void (*func)(u8)) {
 	if (objid == NUM_OBJS)
 		return objid;
 
-	obj *o = &objects[i];
+	struct obj *o = &objects[i];
 	o->bitfield2 |= OBJ_BIT2_INVISIBLE;
 	o->callback = func;
 }
 
 // 08007094
 u8 template_read(u8 oid, struct proto_t *proto, u16 x, u16 y, u8 arg4) {
-	struct obj_t *o = objects[oid];
+	struct obj *o = objects[oid];
 	obj_delete(o);
 	o.bitfield2 |= OBJ_BIT2_IN_USE;
 	// TODO
@@ -145,7 +146,7 @@ u8 template_read(u8 oid, struct proto_t *proto, u16 x, u16 y, u8 arg4) {
 u8 template_instanciate_and_run_once(struct proto_t *proto, u16 x, u16 y, u8 arg3) {
 
 	for (u8 i = 0; i<NUM_OBJS; i++) {
-		obj_t *o = &objects[i];
+		struct obj *o = &objects[i];
 
 		if (o->bitfield2 & OBJ_BIT2_IN_USE)
 			continue;
@@ -165,7 +166,7 @@ u8 template_instanciate_and_run_once(struct proto_t *proto, u16 x, u16 y, u8 arg
 }
 
 // 08007280 
-void obj_delete_and_free_tiles(struct obj_t *o) {
+void obj_delete_and_free_tiles(struct obj *o) {
 	if (o->bitfield2 & OBJ_BIT2_IN_USE == 0)
 		return;
 
@@ -208,7 +209,7 @@ void copy_queue_clear() {
 
 // 08007390
 void rotscale_reset_all() {
-	struct rotscale default_element = { 0x100, 0, 0, 0x100 };
+	struct rotscale_coeff default_element = { 0x100, 0, 0, 0x100 };
 
 	for (u8 i = 0; i<NUM_ROTSCALE_OBJS; i++)
 		rotscale_coefficients[i] = default_element;
@@ -220,7 +221,7 @@ void rotscale_set(u8 i, u16 a, u16 b, u16 c, u16 d) {
 }
 
 // 080073DC
-void obj_delete(struct obj_t *o) {
+void obj_delete(struct obj *o) {
 	memcpy(o, obj_empty, sizeof(struct obj));
 }
 
@@ -243,7 +244,7 @@ coords8 negative_half_oam_size[] = {
 };
 
 // 080073F0
-void obj_center(struct obj_t *o, u8 shape, u8 size, u32 oamflags) {
+void obj_center(struct obj *o, u8 shape, u8 size, u32 oamflags) {
 	coords8 *c = &negative_half_oam_size[shape*4+size];
 	if(oamflags & DOUBLESIZE) {
 		o->pos_neg_center.x = c->x*2;
@@ -300,7 +301,7 @@ void copy_queue_add_oamframe(u16 idx, u16 oam_attr2, struct gfxentry_t *gfx_tabl
 // obj_free_rotscale_entry
 
 // 08007804
-void obj_delete_and_free_associated_resources(struct obj_t *o) {
+void obj_delete_and_free_associated_resources(struct obj *o) {
 	obj_free_tiles_by_tag(o);
 	obj_free_pal_by_tag(o);
 	obj_free_rotscale_entry(o);

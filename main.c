@@ -1,4 +1,5 @@
 #include "main.h"
+#include "object.h"
 
 // 080003A4
 void mainloop() {

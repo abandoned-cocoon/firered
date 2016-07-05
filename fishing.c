@@ -1,5 +1,6 @@
 #include "object.h"
 #include "overworld_navigation.h"
+#include "task.h"
 
 /*
 Assumptions: 
@@ -128,9 +129,9 @@ bool fishing7(struct task_t *t) {
 	t->priv[1]++;
 	if (t->priv[1] >= rod_something[t->priv[15]]) {
 		t->priv[0] = 12;
-		return false
+		return false;
 	}
-	if (super.buttons3_new_remapped & 1) {
+	if (super.buttons_new_remapped & 1) {
 		t->priv[0]++;
 	}
 	return false;

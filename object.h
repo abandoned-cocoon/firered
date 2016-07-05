@@ -25,7 +25,7 @@ typedef struct coords16 coords16;
 #define OBJ_ANIM_ROTSCALE_PAUSED  0x80
 #define OBJ_ANIM_ANY_PAUSED       0xC0
 
-typedef struct {
+typedef struct gfxentry_t {
 	void *data;
 	u16 size;
 	u16 tag;
@@ -145,3 +145,27 @@ struct obj {
 
 // 0202063C
 extern struct obj objects[NUM_OBJS];
+
+void obj_and_aux_reset_all();
+void objc_exec();
+void obj_sync_something();
+void write_oam_coords();
+void sub_08006CB8();
+void sub_08006CF8();
+void write_rotscale_coefficients();
+void super_sprites_fill();
+u8 template_instanciate_forward_search(struct proto_t *proto, u16 x, u16 y, u8 f43);
+u8 template_instanciate_reverse_search(struct proto_t *proto, u16 x, u16 y, u8 f43);
+u8 obj_instanciate_empty_with_callback(void (*func)(u8));
+u8 template_read(u8 oid, struct proto_t *proto, u16 x, u16 y, u8 arg4);
+u8 template_instanciate_and_run_once(struct proto_t *proto, u16 x, u16 y, u8 arg3);
+void obj_delete_and_free_tiles(struct obj *o);
+void super_sprites_delete_all(u8 start, u8 end);
+void gpu_sprites_upload();
+void copy_queue_clear();
+void rotscale_reset_all();
+void rotscale_set(u8 i, u16 a, u16 b, u16 c, u16 d);
+void obj_delete(struct obj *o);
+void obj_center(struct obj *o, u8 shape, u8 size, u32 oamflags);
+void copy_queue_add_oamframe(u16 idx, u16 oam_attr2, struct gfxentry_t *gfx_table);
+void obj_delete_and_free_associated_resources(struct obj *o);

@@ -24,3 +24,7 @@ struct rbox {
 };
 
 extern struct rbox rboxes[32]; // 020204B4
+
+// TODO: List all
+void rboxid_upload_a(u8 rboxid, u8 op);
+void rboxid_vertical_scroll(u8 rboxid, u8 direction, u8 delta, u8 background_doublepixel);

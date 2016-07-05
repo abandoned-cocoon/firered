@@ -1,4 +1,5 @@
 #include "battle.h"
+#include "engine_scripts.h"
 #include "move_interp.h"
 
 /* 

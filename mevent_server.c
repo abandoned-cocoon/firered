@@ -1,4 +1,5 @@
 #define ME_SEND_BUF_SIZE 0x400
+#include "memory.h"
 
 struct mevent_srv_sub {
 	u32 field_0;
@@ -76,13 +77,13 @@ void sub_08144888(struct mevent_srv_sub *sub, u16 arg1, u32 arg2, u32 size) {
 
 // 08144F1C
 void mevent_srv_init_A() { // wonder news probably
-	mevent_srv_ptr = malloc(sizeof(struct mevent_srv));
+	mevent_srv_ptr = mem_alloc(sizeof(struct mevent_srv));
 	mevent_srv_init_common(mevent_srv_ptr, &mevent_srv_init_data_A, 0, 1);
 }
 
 // 08144F40
 void mevent_srv_init_B() { // wonder cards probably
-	mevent_srv_ptr = malloc(sizeof(struct mevent_srv));
+	mevent_srv_ptr = mem_alloc(sizeof(struct mevent_srv));
 	mevent_srv_init_common(mevent_srv_ptr, &mevent_srv_init_data_B, 0, 1);
 }
 
@@ -90,10 +91,10 @@ void mevent_srv_init_B() { // wonder cards probably
 void mevent_srv_init_common(struct mevent_srv *srv, void *init_data, u32 arg2, u32 arg3) {
 	srv->field_0 = 0;
 	srv->field_8 = 0;
-	srv->field_18 = malloc_and_clear(0x14C);
-	srv->field_1C = malloc_and_clear(0x1BC);
-	srv->field_14 = malloc_and_clear(0x400);
-	srv->field_20 = malloc_and_clear(0x64);
+	srv->field_18 = mem_alloc_cleared(0x14C);
+	srv->field_1C = mem_alloc_cleared(0x1BC);
+	srv->field_14 = mem_alloc_cleared(0x400);
+	srv->field_20 = mem_alloc_cleared(0x64);
 	srv->field_10 = init_data;
 	srv->field_C = 0;
 	mevent_srv_sub_init(&srv->sub, arg2, arg3);
