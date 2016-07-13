@@ -45,7 +45,7 @@ void mainloop() {
 			byte_030030E4 = 0;
 		} else {
 			// again, something about link connection
-			byte_030030E4 = 0
+			byte_030030E4 = 0;
 			callback_wrapper();
 			if (sub_08058274() == 1) {
 				super.buttons_new_remapped = 0;
@@ -87,7 +87,7 @@ void load_keys() {
 		super.keypad_countdown = keypad_followup_countdown;
 	}
 
-	if (sav2->options_button_style == L_IS_A) {
+	if (sav2i->options_button_style == L_IS_A) {
 		if (super.buttons_new_remapped & BUTTON_L)
 			super.buttons_new_remapped |= BUTTON_A;
 
@@ -99,7 +99,7 @@ void load_keys() {
 
 // 08000890
 void wait_for_superbit_eg_vmatch() {
-	volatile u16 *bits = &super.bits_to_wait_for;
+	volatile u16 *bits = (u16*)&super.bits_to_wait_for;
 	*bits &= ~1;
 	while (*bits & 1 == 0);
 }

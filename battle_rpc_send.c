@@ -1,4 +1,6 @@
+#include "battle.h"
 #include "battle_rpc.h"
+#include "move_etc.h"
 
 // from battle_interp.c
 // u8 b_buffer_A[4][0x200]; // 02022BC4
@@ -8,7 +10,7 @@ u8 b_codegen_buffer[0x100];
 
 // 0800D8B0
 void b_prepare_buffer(u8 dst_id, u8 *src, u16 length) {
-	if (battle_type_bits & BATTLE_WIRELESS)
+	if (b_type_flags & BATTLE_LINK)
 		return b_prepare_buffer_wireless(dst_id, src, length);
 
 	if (dst_id >= 2) return;
@@ -16,6 +18,11 @@ void b_prepare_buffer(u8 dst_id, u8 *src, u16 length) {
 	u8 *dst = &dst[b_active_side];
 	memcpy(dst, src, length);
 }
+
+// 0800D9EC
+// void b_prepare_buffer_wireless(u8 dst_id, u8 *src, u16 length) {
+// 	// TODO
+// }
 
 // 0800DFA4 (getattr)
 void bt_00_emit(u8 target, u8 a, u8 b) {
@@ -212,7 +219,7 @@ void bt_13_emit(u8 target, u8 a) {
 void bt_14_emit(u8 target, u8 a, u8 b, void *c) {
 	b_codegen_buffer[0] = 0x14;
 	b_codegen_buffer[1] = a;
-	b_codegen_buffer[2] = c;
+	b_codegen_buffer[2] = b;
 	b_codegen_buffer[3] = 0;
 	memcpy(b_codegen_buffer+4, c, 0x14);
 	b_prepare_buffer(target, b_codegen_buffer, 0x18);

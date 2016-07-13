@@ -97,7 +97,7 @@ u32 rbox_num_active_on_bgid_a(u8 bgid) {
 void rboxid_upload_b(u8 rboxid, u8 mode) {
 	// see also 08003F20
 	struct rbox *r = &rboxes[rboxid];
-	static u16 pixelbytes = r->w * r->h * (8*8) / 4;
+	u16 pixelbytes = r->w * r->h * (8*8) / 4;
 	if (mode & 2) gpu_copy_to_tileset(r->bg_id, r->pixels, pixelbytes, r->vram_tileset_offset);
 	if (mode & 1) bgid_send_tilemap(r->bg_id);
 }

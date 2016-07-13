@@ -19,3 +19,9 @@ extern u8 movescr_081D694E_common[];
 extern u8 movescr_no_pp_left[];
 extern u8 movescr_081D8FAA[];
 extern u8 movescr_after_atk_up_if_hit[];
+
+extern u8 *move_scripts[];
+extern u8 *std_scripts[];
+extern u8 *std_scripts_end; // 08160478
+extern u32 (*specials[])(void);   // some of them return void instead
+extern u32 (*specials_end)(void); // but under arm eabi it doesn't matter

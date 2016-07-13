@@ -79,7 +79,7 @@
 	u8 b_critical_multiplier; // 02023D71
 	u8 b_move_loop_counter; // 02023D72
 	// ?
-	u32 b_movescr_cursor; // 02023D74
+	u8 *b_movescr_cursor; // 02023D74
 	// ?
 	u8 battle_top_menu_chosen_item; // 02023D7C
 		// 0xFF = show menu
@@ -163,7 +163,7 @@
 	u8 bc_bs_followup_bc_func_index; // 02023E8A
 	struct protect_struct protect_structs[4]; // 02023E8C
 	struct dp16 dp16_array[4]; // 02023ECC
-	u16 weather; // 02023F1C
+	u16 b_weather; // 02023F1C
 	u8 byte_2023F44[4]; // 02023F44
 	u8 unk_2023F48; // 02023F48
 	u8 byte_2023F49[3]; // 02023F49
@@ -173,6 +173,7 @@
 	u16 b_move_power_override; // 02023F50
 	u16 word_2023F52; // 02023F52
 	struct berry_info sav1_copied_berries_pbs[4]; // 02023F54
+	u16 word_02023F4C; // 02023F4C
 	u8 byte_2023FC4; // 02023FC4
 	u8 byte_2023FC5; // 02023FC5
 	u8 byte_2023FC6; // 02023FC6

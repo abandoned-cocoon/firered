@@ -5,15 +5,15 @@ struct mevent_srv_sub {
 	u32 field_0;
 	u8  field_4;
 	u8  field_5;
-	u16 _padding_1;
+	u16 field_6;
 	u16 field_8;
 	u16 field_A;
 	u16 field_C;
-	u16 _padding_2;
+	u16 field_E;
 	u16 field_10;
 	u16 field_12;
+	u16 size;
 	u16 field_14;
-	u16 _padding_3;
 	u32 field_18;
 	u32 field_1C;
 	void (*funcptr_20)(void);
@@ -48,6 +48,12 @@ struct mevent_srv {
 // 0203F3C4
 struct mevent_srv *mevent_srv_ptr;
 
+extern struct mevent_cmd mevent_srv_init_data_A[];
+extern struct mevent_cmd mevent_srv_init_data_B[];
+void mevent_srv_init_common(struct mevent_srv *srv, struct mevent_cmd *init_data, u32 sub_arg1, u32 sub_arg2);
+void sub_0814490C();
+void sub_081449E0();
+
 // 0814485C
 void mevent_srv_sub_init(struct mevent_srv_sub *sub, u32 arg1, u32 arg2) {
 	sub->field_4 = arg1;
@@ -71,33 +77,40 @@ void sub_08144888(struct mevent_srv_sub *sub, u16 arg1, u32 arg2, u32 size) {
 	sub->field_E = arg1;
 	sub->field_10 = (u16)0;
 	sub->field_12 = (u16)0;
-	sub->field_14 = size ? size : ME_SEND_BUF_SIZE;
+	sub->size = size ? size : ME_SEND_BUF_SIZE;
 	sub->field_1C = arg2;
 }
+
+// 0814490C
+//void sub_0814490C() {}
+
+// 081449E0
+//void sub_081449E0() {}
+
 
 // 08144F1C
 void mevent_srv_init_A() { // wonder news probably
 	mevent_srv_ptr = mem_alloc(sizeof(struct mevent_srv));
-	mevent_srv_init_common(mevent_srv_ptr, &mevent_srv_init_data_A, 0, 1);
+	mevent_srv_init_common(mevent_srv_ptr, mevent_srv_init_data_A, 0, 1);
 }
 
 // 08144F40
 void mevent_srv_init_B() { // wonder cards probably
 	mevent_srv_ptr = mem_alloc(sizeof(struct mevent_srv));
-	mevent_srv_init_common(mevent_srv_ptr, &mevent_srv_init_data_B, 0, 1);
+	mevent_srv_init_common(mevent_srv_ptr, mevent_srv_init_data_B, 0, 1);
 }
 
 // 08144FA0
-void mevent_srv_init_common(struct mevent_srv *srv, void *init_data, u32 arg2, u32 arg3) {
+void mevent_srv_init_common(struct mevent_srv *srv, struct mevent_cmd *init_data, u32 sub_arg1, u32 sub_arg2) {
 	srv->field_0 = 0;
-	srv->field_8 = 0;
-	srv->field_18 = mem_alloc_cleared(0x14C);
-	srv->field_1C = mem_alloc_cleared(0x1BC);
+	srv->mainseqno = 0;
+	srv->dstbuffer_1 = mem_alloc_cleared(0x14C);
+	srv->dstbuffer_2 = mem_alloc_cleared(0x1BC);
 	srv->field_14 = mem_alloc_cleared(0x400);
 	srv->field_20 = mem_alloc_cleared(0x64);
-	srv->field_10 = init_data;
-	srv->field_C = 0;
-	mevent_srv_sub_init(&srv->sub, arg2, arg3);
+	srv->cmdbuffer = init_data;
+	srv->cmdindex = 0;
+	mevent_srv_sub_init(&srv->sub, sub_arg1, sub_arg2);
 }
 
 // 0814501C

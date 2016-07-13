@@ -2494,7 +2494,7 @@
 		{"range": ["0x0805CC38", "0x00000002"], "name": "nullsub_13"},
 		{"range": ["0x0805CC40", "0x00000090"], "name": "sub_805CC40"},
 		{"range": ["0x0805CCD0", "0x00000034"], "name": "task_add_bump_boulder"},
-		{"range": ["0x0805CD0C", "0x00000048"], "name": "taskFF_bump_boulder"},
+		{"range": ["0x0805CD0C", "0x00000048"], "name": "task_bump_boulder"},
 		{"range": ["0x0805CD64", "0x0000001C"], "name": "sub_805CD64"},
 		{"range": ["0x0805CD84", "0x00000092"], "name": "sub_805CD84"},
 		{"range": ["0x0805CE20", "0x00000058"], "name": "sub_805CE20"},

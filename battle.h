@@ -51,10 +51,16 @@
 #define B_F_PP_DEDUCTION_OUTSTANDING    0x00000800
 #define B_F_DEFLECT_DESTINY_BOND        0x01000000 // among other things
 
+#define B_AE_MISSED       0x01
+#define B_AE_NOT_AFFECTED 0x08
+#define B_AE_FAILED       0x20
+
+#define B_PR1_DO_STRUGGLE         0x04
+#define B_PR1_FIFTY_PERC_MORE_DMG 0x08
+#define B_PR1_MAGIC_COAT          0x10
+
 // not used anywhere because changing this doesn't trivially allow more pokemon to fight
 #define NUM_BATTLE_SIDES 4
-
-struct b_resources_t;
 
 enum bd_status_1 {
 	sleep_turns = 0x7,
@@ -64,6 +70,15 @@ enum bd_status_1 {
 	paralyze_ = 0x40,
 	badly_poisoned_ = 0x80,
 };
+
+#define STAT_HP      0
+#define STAT_ATK     1
+#define STAT_DEF     2
+#define STAT_SPD     3
+#define STAT_SPATK   4
+#define STAT_SPDEF   5
+#define STAT_ACC     6
+#define STAT_EVASION 7
 
 struct battle_data {
 	u16  species;
@@ -133,8 +148,8 @@ struct pokemon_summary {
 
 static_assert_sizeof(struct pokemon_summary, 0x20);
 
-struct dp16 { // = protect_struct?
-	u8 flags; // __m_____ m = magic_coat (bit is off by one vs protect_struct (confirm))
+struct dp16 { // distinct from protect__struct
+	u8 flags; // __m_____ m = magic_coat
 	u8 gap_1[3];
 	u32 field_4;
 	u32 some_damage_amount__phys_damage_only_maybe;
@@ -262,6 +277,56 @@ struct dp08 {
 };
 
 
+struct br00 {
+	u32 field_0[40];
+};
+
+struct br04 {
+	u32 field_0;
+	u32 field_4;
+	u32 field_8;
+	u32 field_C;
+};
+
+struct br_stack {
+	u32 values[8];
+	u8 height;
+};
+
+struct br10 {
+	u16 field_0;
+	u16 field_2;
+	u16 field_4;
+	u16 field_6;
+	u16 field_8;
+	u16 field_A;
+};
+
+struct br18 {
+	u16 movehistory_1[8];
+	u16 movehistory_2[8];
+	u8 abilites_used[2];
+	u8 item_x12[2];
+	u16 t24[4];
+	u8 t24count;
+	u8 field_2D;
+	u8 field_2E;
+	u8 field_2F;
+};
+
+struct trainer_ai;
+
+struct b_resources_t {
+	struct br00 *field_0;
+	struct br04 *field_4;
+	struct br_stack *move_script_stack;
+	struct br_stack *bc_stack;
+	struct br10 *field_10;
+	struct trainer_ai *tai_state;
+	struct br18 *history;
+	struct br_stack *_1C_move_consider_stack;
+};
+
 #define b_bitfield b_buffers_awaiting_execution_bitfield
 
 extern u8 b_rpc_scratchpad[0x100]; // 02022874
@@ -342,7 +407,7 @@ extern u8 b_critical_multiplier; // 02023D71
 extern u8 b_move_loop_counter; // 02023D72
 // ?
 #define b_move_cursor b_movescr_cursor // TODO
-extern u32 b_movescr_cursor; // 02023D74
+extern u8 *b_movescr_cursor; // 02023D74
 // ?
 extern u8 battle_top_menu_chosen_item; // 02023D7C
 	// 0xFF = show menu
@@ -418,6 +483,8 @@ extern u8 byte_2023E84; // 02023E84
 
 	// 0xe6 -> volt tackle
 
+#define b_weather weather
+
 extern u8 effect_to_apply; // 02023E85
 extern u8 bc_menu_quit_phase; // 02023E86
 extern u8 byte_2023E87; // 02023E87
@@ -426,7 +493,7 @@ extern u8 b_buffers_awaiting_execution_bitfield__copied_after_displaying_x_used_
 extern u8 bc_bs_followup_bc_func_index; // 02023E8A
 extern struct protect_struct protect_structs[4]; // 02023E8C
 extern struct dp16 dp16_array[4]; // 02023ECC
-extern u16 weather; // 02023F1C
+extern u16 b_weather; // 02023F1C
 extern u8 byte_2023F44[4]; // 02023F44
 extern u8 unk_2023F48; // 02023F48
 extern u8 byte_2023F49[3]; // 02023F49
@@ -436,7 +503,8 @@ extern u8 byte_2023F4F; // 02023F4F
 extern u16 b_move_power_override; // 02023F50
 extern u16 word_2023F52; // 02023F52
 extern struct berry_info sav1_copied_berries_pbs[4]; // 02023F54
-extern u8 byte_2023FC4; // 02023FC4
+extern u16 word_02023F4C; // 02023F4C
+extern u8 byte_2023FC4; // 02023FC4 struct {
 extern u8 byte_2023FC5; // 02023FC5
 extern u8 byte_2023FC6; // 02023FC6
 extern u8 byte_2023FC7; // 02023FC7
@@ -454,7 +522,7 @@ extern u8 byte_2023FD5; // 02023FD5
 extern u8 byte_2023FD8; // 02023FD8
 extern u8 byte_2023FD9; // 02023FD9
 extern u8 byte_2023FDA; // 02023FDA
-extern u8 b_side_unknown; // 02023FDB
+extern u8 b_side_unknown; // 02023FDB }?
 extern u8 byte_2023FDC; // 02023FDC
 extern u8 byte_2023FDD; // 02023FDD
 extern u8 stat_modification_spec; // 02023FDE
@@ -482,7 +550,7 @@ extern u8 unk_2024022; // 02024022
 extern u8 unk_2024024[4]; // 02024024
 extern u8 unk_2024027; // 02024027
 extern u8 byte_2024028; // 02024028
-// end
+// end (continue in pokemon.h)
 
 extern void (*b_callback1_backup)(void); // 03004F80
 extern void (*bc)(void); // 03004F84

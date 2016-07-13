@@ -1,4 +1,12 @@
 #pragma once
+#include "types.h"
+
+extern u8 *ma_cursor;
+extern u8 *ma_return_addr;
+extern u8 ma_active_tasks;
+
+extern u8 b_anim_attacker;
+extern u8 b_anim_defender;
 
 void ma00_load_graphics(void);
 void ma01_080728D0(void);

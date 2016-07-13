@@ -3,6 +3,23 @@
 #include "save.h"
 #include "vars.h"
 
+// 02039A04
+struct {
+	coords16 pos;
+	u8 height;
+} in_front_of_player;
+
+// missing hm2 functions
+void hm2_ruin_valley();
+void hm2_cut();
+void hm_rocksmash_run_scr();
+void hm2_flash();
+void hm_strenght_run_scr();
+void hm2_sweet_scent();
+void hm_teleport_run_dp02scr();
+void hm_surf_run_dp02scr();
+void sub_8124ADC();
+
 // 08097898
 bool hm_prepare_cut() {
 	if (ruin_valley_trigger()) {
@@ -20,7 +37,6 @@ bool hm_prepare_cut() {
 		return 1;
 	}
 
-	struct coords16 in_front_of_player;
 	player_get_pos_to(
 		&in_front_of_player.pos.x,
 		&in_front_of_player.pos.y);
@@ -45,12 +61,6 @@ bool hm_prepare_cut() {
 	}
 	return false;
 }
-
-// 02039A04
-struct {
-	coords16 pos;
-	u8 height;
-} in_front_of_player;
 
 // 080C97A8
 bool npc_before_player_of_type(u8 npc_type) {
@@ -83,6 +93,11 @@ bool hm_prepare_rocksmash() {
 	return false;
 }
 
+// 080C9A10
+// void hm_rocksmash_run_scr() {
+// 	
+// }
+
 // 080C9A78
 bool hm_prepare_dig() {
 	if (cur_map_can_dig()) {
@@ -92,6 +107,11 @@ bool hm_prepare_dig() {
 	}
 	return false;
 }
+
+// 080C9AAC
+// void hm2_dig() {
+// 	
+// }
 
 // 080C9B2C
 bool hm_prepare_flash() {
@@ -106,7 +126,7 @@ bool hm_prepare_flash() {
 // 080CCD84
 bool ruin_valley_trigger() {
 	return flag_check(739) != 1
-		&& saveblock1_mapdata->location.bank == 0x03
+		&& saveblock1_mapdata->location.group == 0x03
 		&& saveblock1_mapdata->location.map  == 0x3D
 		&& saveblock1_mapdata->camera_position.x == 24
 		&& saveblock1_mapdata->camera_position.y == 25
@@ -118,8 +138,7 @@ bool hm_prepare_strength() {
 	if ( walkrun_bitfield_and_r0(8) << 24 || npc_before_player_of_type(97) != 1 ) {
 		return false;
 	} else {
-		LOBYTE(var_800D) = brm_get_pokemon_selection();
-		var_800D = var_800D;
+		var_800D = brm_get_pokemon_selection();
 		hm_phase_1 = hm_add_c3_launch_phase_2;
 		hm_phase_2 = hm_strenght_run_scr;
 		return true;
@@ -135,11 +154,11 @@ bool hm_prepare_sweet_scent() {
 
 // 080E5684
 bool hm_prepare_dive_probably() {
-	struct pokemon *pkmn = &party_player[brm_get_pokemon_selection()];
+	struct pokemon_extended *pkmn = &party_player[brm_get_pokemon_selection()];
 
-	u16   total_hp = pokemon_getattr(pkmn, req_total_hp);
+	u16   total_hp = pokemon_getattr(pkmn, req_max_hp);
 	u16 current_hp = pokemon_getattr(pkmn, req_current_hp);
-	return current_hp > (total / 5);
+	return current_hp > (total_hp / 5);
 }
 
 // 080F66F0
@@ -152,6 +171,23 @@ bool hm_prepare_teleport() {
 	return false;
 }
 
+// 081248B0
+bool hm_add_c3_launch_phase_2() {
+	pal_fill_black();
+	task_add(&task_launch_hm_phase_2, 8);
+	return 1;
+}
+
+// 081248C8
+void task_launch_hm_phase_2(task_id c) {
+//	if (sub_807AA70() == 1) {
+//		LOWORD(oe_state.to_x___local_id) = brm_get_selected_species();
+//		oe_state.to_x___local_id = (unsigned __int16)oe_state.to_x___local_id;
+//		call_via_r0(hm_phase_2);
+//		task_del(v1);
+//	}
+}
+
 // 08124998
 bool hm_prepare_surf() {
 	coords16 target;
@@ -161,8 +197,8 @@ bool hm_prepare_surf() {
 		&target.y);
 
 	u8 role = cur_mapdata_block_role_at(
-		&target.x,
-		&target.y);
+		target.x,
+		target.y);
 
 	if (sub_8059CC8(role))
 		return false;
@@ -217,5 +253,5 @@ struct hm_overworld {
 	{hm_prepare_dig, 0xD},
 	{hm_prepare_dive_probably, 0x10},
 	{hm_prepare_dive_probably, 0x10},
-	{hm_prepare_sweetscent_maybe, 0xD}
+	{hm_prepare_sweet_scent, 0xD}
 };

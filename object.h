@@ -66,6 +66,8 @@ struct rotscale_state {
 typedef struct image_frame    *image_seq;
 typedef struct rotscale_frame *rotscale_seq;
 
+struct obj;
+
 struct proto_t {
 	u16 tile_tag;
 	u16 pal_tag;
@@ -73,7 +75,8 @@ struct proto_t {
 	image_seq    *image_anims;
 	gfxentry     *gfx_table;
 	rotscale_seq *rotscale_anims;
-	void *callback;
+	void        (*callback)(struct obj*);
+	//void *callback;
 };
 
 struct obj_oversize_piece {
@@ -145,6 +148,14 @@ struct obj {
 
 // 0202063C
 extern struct obj objects[NUM_OBJS];
+// more important stuff
+
+// 02021BC8
+extern struct coords16 global_sprite_displace;
+
+// 02021BCC
+#define affine_coefficients rotscale_coefficients
+extern struct rotscale_coeff affine_coefficients[32];
 
 void obj_and_aux_reset_all();
 void objc_exec();
@@ -156,7 +167,7 @@ void write_rotscale_coefficients();
 void super_sprites_fill();
 u8 template_instanciate_forward_search(struct proto_t *proto, u16 x, u16 y, u8 f43);
 u8 template_instanciate_reverse_search(struct proto_t *proto, u16 x, u16 y, u8 f43);
-u8 obj_instanciate_empty_with_callback(void (*func)(u8));
+u8 obj_instanciate_empty_with_callback(void (*func)(struct obj*));
 u8 template_read(u8 oid, struct proto_t *proto, u16 x, u16 y, u8 arg4);
 u8 template_instanciate_and_run_once(struct proto_t *proto, u16 x, u16 y, u8 arg3);
 void obj_delete_and_free_tiles(struct obj *o);
@@ -167,5 +178,6 @@ void rotscale_reset_all();
 void rotscale_set(u8 i, u16 a, u16 b, u16 c, u16 d);
 void obj_delete(struct obj *o);
 void obj_center(struct obj *o, u8 shape, u8 size, u32 oamflags);
+void objc_nullsub(struct obj *o);
 void copy_queue_add_oamframe(u16 idx, u16 oam_attr2, struct gfxentry_t *gfx_table);
 void obj_delete_and_free_associated_resources(struct obj *o);

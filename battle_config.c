@@ -2,9 +2,39 @@
 #include "battle_config.h"
 #include "battle_intro.h"
 #include "engine_scripts.h"
+#include "overworld.h" // for context_npc and c2_whiteout
 #include "save.h"
 #include "task.h"
 #include "vars.h"
+
+#ifndef NO_RAM
+// using db names
+//u16 trainerbattle_battle_type;         // 020386AC
+//u16 trainerbattle_flag_id;             // 020386AE
+//u16 trainerbattle_arg2;                // 020386B0
+//u8* trainerbattle_message_intro;       // 020386B4
+//u8* trainerbattle_message_defeat;      // 020386B8
+//u8* trainerbattle_message_2;           // 020386BC
+//u8* trainerbattle_message_need_2_poke; // 020386C0
+//u8* trainerbattle_next_scr_cmd;        // 020386C4
+//u8* trainerbattle_message_4;           // 020386C8
+//u16 trainerbattle_unknown;             // 020386CC
+
+// using c names
+u16 battle_type;                // 020386AC
+u16 battle_trainer_flag;        // 020386AE
+u16 battle_arg2;                // 020386B0
+u8* battle_message_intro;       // 020386B4
+u8* battle_message_defeat;      // 020386B8
+u8* battle_message_2;           // 020386BC
+u8* battle_message_need_two;    // 020386C0
+u8* battle_after_script;        // 020386C4
+u8* battle_message_4;           // 020386C8
+u16 battle_unknown;             // 020386CC
+#endif
+
+// 0807F620
+void task01_battle_start(task_id c);
 
 // 0807F690
 void task_add_01_battle_start(u8 priv1, u16 music_id) {
@@ -40,30 +70,6 @@ struct battle_config_entry {
 };
 
 u8 *battle_load_arguments(struct battle_config_entry *bce, u8 *cursor);
-
-// using db names
-//extern u16 trainerbattle_battle_type;         // 020386AC
-//extern u16 trainerbattle_flag_id;             // 020386AE
-//extern u16 trainerbattle_arg2;                // 020386B0
-//extern u32 trainerbattle_message_intro;       // 020386B4
-//extern u32 trainerbattle_message_defeat;      // 020386B8
-//extern u32 trainerbattle_message_2;           // 020386BC
-//extern u32 trainerbattle_message_need_2_poke; // 020386C0
-//extern u32 trainerbattle_next_scr_cmd;        // 020386C4
-//extern u32 trainerbattle_message_4;           // 020386C8
-//extern u16 trainerbattle_unknown;             // 020386CC
-
-// using c names
-extern u16 battle_type;                // 020386AC
-extern u16 battle_trainer_flag;        // 020386AE
-extern u16 battle_arg2;                // 020386B0
-extern u32 battle_message_intro;       // 020386B4
-extern u32 battle_message_defeat;      // 020386B8
-extern u32 battle_message_2;           // 020386BC
-extern u32 battle_message_need_two;    // 020386C0
-extern u32 battle_after_script;        // 020386C4
-extern u32 battle_message_4;           // 020386C8
-extern u16 battle_unknown;             // 020386CC
 
 // 083C6900
 struct battle_config_entry tb_format_5_other[] = {
@@ -185,7 +191,7 @@ char *battle_configure_by_script(char *cursor) {
 		/*9*/ scr_battle_3_9
 	};
 
-	battle_load_arguments(&bce[battle_type], cursor);
+	battle_load_arguments(bce[battle_type], cursor);
 
 	if (battle_type != 3 && battle_type != 9)
 		battle_80801F0();
@@ -202,7 +208,7 @@ char *battle_configure_by_script(char *cursor) {
 void battle_80801F0() {
 	if (!battle_arg2) return;
 	var_800F = battle_arg2;
-	context_npc = npc_id_by_local_id(sav1->location.bank, sav1->location.map);
+	context_npc = npc_id_by_local_id(battle_arg2, sav1i->location.group, sav1i->location.map);
 }
 
 // 08080168
@@ -254,7 +260,7 @@ void trainer_battle_start() {
 void c2_exit_battle_switch() {
 
 	if (trainerbattle_battle_type == 9) {
-		if ((var_800D = battle_exit_is_player_defeat(battle_exit_type))) {
+		if ((var_800D = battle_exit_is_player_defeat(bc_bs_followup_bc_func_index))) {
 			if (battle_unknown & 1 == 0) { // this is not a mock battle
 				sp000_heal_pokemon();
 			} else {
@@ -280,12 +286,12 @@ u8 scr_default_after_battle_script[] = {
 
 // 080805E8
 u8 *battle_get_continuation_script() {
-	u8 *scr = battle_next_script;
+	u8 *scr = trainerbattle_next_scr_cmd;
 	return scr ? scr : scr_default_after_battle_script;
 }
 
 // 083E7CD4
-void (*battle_intro_task_by_env[])() = {
+void (*battle_intro_task_by_env[])(u8) = {
 	task_battle_intro_080BC47C,
 	task_battle_intro_080BC47C,
 	task_battle_intro_080BC6C8,
@@ -301,11 +307,11 @@ void (*battle_intro_task_by_env[])() = {
 // 080BC3A0
 void battle_intro_launch(u8 environment_id) {
 	void (*funcptr)(u8);
-	if (battle_type_flags & BATTLE_WIRELESS)
-		funcptr = task_battle_intro_wireless;
-	else if ((battle_type_flags & 0x1000) && (byte_081E9F10 == 2)) {
+	if (battle_type_flags & BATTLE_LINK)
+		funcptr = &task_battle_intro_wireless;
+	else if ((battle_type_flags & 0x1000) && (build_edition_identifier == 2)) {
 		environment_id = 3;
-		funcptr = task_battle_intro_080BC6C8;
+		funcptr = &task_battle_intro_080BC6C8;
 	} else {
 		funcptr = battle_intro_task_by_env[environment_id];
 	}

@@ -1,6 +1,7 @@
 #include "save.h"
 
 #ifndef NO_RAM
+u32 dword_030053B0; // 030053B0
 // TODO: Correct signatures (instead of (void))
 u8 flash_timeout_reached_zero; // 03007410
 void (*flash_read_byte_funcptr)(void); // 03007414
@@ -12,6 +13,8 @@ u16 word_3007428; // 03007428
 void (*flash_c_erase_all)(void); // 0300742C
 void (*flash_c_erase_block)(u8); // 03007430
 void (*flash_c_f14)(void); // 03007434
+#else
+extern u32 dword_030053B0; // 030053B0
 #endif
 
 // 0804C1F0

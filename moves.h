@@ -1,4 +1,35 @@
 #pragma once
+#include "types.h"
+#include "pokemon.h"
+
+#define MOVE_TARGET_SELECTED              0x00 // sure?
+#define MOVE_TARGET_DEPENDS               0x01
+#define MOVE_TARGET_UNKNOWN               0x02 // not unused (possible effects on trainer ai)
+#define MOVE_TARGET_RANDOM                0x04
+#define MOVE_TARGET_BOTH_FOES             0x08
+#define MOVE_TARGET_USER                  0x10
+#define MOVE_TARGET_BOTH_FOES_AND_PARTNER 0x20
+#define MOVE_TARGET_OPPONENT_FIELD        0x40
+
+#define MOVE_FLAG_MAKES_CONTACT          0x01
+#define MOVE_FLAG_AFFECTED_BY_PROTECT    0x02
+#define MOVE_FLAG_AFFECTED_BY_MAGIC_COAT 0x04
+#define MOVE_FLAG_AFFECTED_BY_SNATCH     0x08 // mutually exclusive with magic coat
+#define MOVE_FLAG_MIRROR_MOVE_ELIGIBLE   0x10
+#define MOVE_FLAG_AFFECTED_BY_KINGS_ROCK 0x20
+
+struct move {
+	u8 move_script_id;
+	u8 power;
+	enum pokemon_type type;
+	u8 accuracy;
+	u8 pp;
+	u8 effect_accuracy;
+	u8 target;
+	u8 priority;
+	u8 flags;
+	u8 padding[3];
+};
 
 enum move_id {
 	mve_null = 0x0,
@@ -357,3 +388,6 @@ enum move_id {
 	mve_doom_desire = 0x161,
 	mve_pyscho_boost = 0x162,
 };
+
+// 08250C04 
+extern struct move move_data[];

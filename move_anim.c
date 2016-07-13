@@ -1,5 +1,6 @@
 #include "move_anim.h"
 
+#ifndef NO_RAM
 // 02037ED4
 u8 *ma_cursor;
 // 02037ED8
@@ -7,12 +8,18 @@ u8 *ma_return_addr;
 // 02037EE2
 u8 ma_active_tasks;
 
+// 02037F1A
+u8 b_anim_attacker;
+// 02037F1B
+u8 b_anim_defender;
+#endif
+
 // 02037F02
 u16 ma_argument_buffer[4];
 
 void maXX_transfer_arguments() {
 	u8 n = ma_read_byte(&ma_cursor);
-	u16 *target = &ma_argument_buffer;	
+	u16 *target = ma_argument_buffer;	
 	while(n--)
 		*target++ = ma_read_half(&ma_cursor);
 }
@@ -20,36 +27,40 @@ void maXX_transfer_arguments() {
 // 0807291C
 void ma02_instanciate_template() {
 	u8 skip        = ma_read_byte(&ma_cursor);
-	void *template = ma_read_word(&ma_cursor);
+	u32 proto_addr = ma_read_word(&ma_cursor);
 	u8 ctrl        = ma_read_byte(&ma_cursor);
+	struct proto_t *proto = (struct proto_t *)proto_addr;
+
 	maXX_transfer_arguments();
 
 	u8 battle_side = (ctrl & 0x80)
-		? b_attacker_side_ll
-		: b_defender_side_ll;
+		? b_anim_attacker
+		: b_anim_defender;
 
 	ctrl &= ~80;
 
 	s8 iv = ((ctrl >= 0x40) ? (ctrl-0x40) : (-ctrl)) + sub_0807685C(battle_side);
 	if (iv >= 3) iv = 3;
 
-	u8 t1 = sub_08074480(b_defender_side_ll, 2);
-	u8 t2 = sub_08074480(b_defender_side_ll, 3);
+	u8 t1 = sub_08074480(b_anim_defender, 2);
+	u8 t2 = sub_08074480(b_anim_defender, 3);
 
-	template_instanciate(template, t1, t2, iv);
+	template_instanciate_and_run_once(proto, t1, t2, iv);
 
 	ma_active_tasks++;
 }
 
 // 08072A10
 void ma03_launch_task() {
-	u8 skip       = ma_read_byte(&ma_cursor);
-	void *funcptr = ma_read_word(&ma_cursor);
-	u8 prio       = ma_read_byte(&ma_cursor);
+	u8  skip     = ma_read_byte(&ma_cursor);
+	u32 funcaddr = ma_read_word(&ma_cursor);
+	u8  prio     = ma_read_byte(&ma_cursor);
+
 	maXX_transfer_arguments();
 
+	void (*funcptr)(u8) = (void(*)(u8))funcaddr;
 	u8 cid = task_add(funcptr, prio);
-	funcptr(cid);
+	(*funcptr)(cid);
 
 	ma_active_tasks++;
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include "types.h"
 
+struct script_env;
+
 typedef bool (*vbptr)();
 typedef bool (*sbptr)(struct script_env *s);
 
@@ -25,8 +27,8 @@ void script_env_init(struct script_env *s, sbptr *cmd_table, sbptr *cmd_table_ma
 bool script_mode_normal(struct script_env *s, u8 *target);
 void script_mode_asm(struct script_env *s, vbptr target);
 void script_mode_stop(struct script_env *s);
-bool script_stack_push(struct script_env *s, u32 value);
-u32  script_stack_pop(struct script_env *s);
+bool script_stack_push(struct script_env *s, u8 *value);
+u8*  script_stack_pop(struct script_env *s);
 void script_jump(struct script_env *s, u8 *target);
 void script_call(struct script_env *s, u8 *target);
 void script_return(struct script_env *s);

@@ -1,3 +1,5 @@
+#include "helpsystem.h"
+
 struct help_top_item {
 	char *label;
 	u32 number;

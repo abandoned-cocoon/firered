@@ -1,37 +1,45 @@
+#include "battle.h" // dependency removable?
 #include "move_interp.h"
 
-struct stack {
-	void *values[8];
-	u8 height;
-};
-
-static inline void stack_push(struct stack *s, void *value) {
-	s->value[s->height++] = value;
+static inline void stack_push(struct br_stack *s, u8 *value) {
+	s->values[s->height++] = (u32)value;
 }
 
-static inline void *stack_pop(struct stack *s) {
-	return s->value[--s->height];
+static inline u8 *stack_pop(struct br_stack *s) {
+	return (u8*)s->values[--s->height];
+}
+
+static inline b_stack_push_bc(void *value) {
+	stack_push(b_resources->bc_stack, value);
+}
+
+
+// 08015C74
+void bc_move_exec_toplevel() {
+    if (b_buffers_awaiting_execution_bitfield == 0)
+        (*move_cmds[*b_movescr_cursor])();
 }
 
 // 08017520
-void b_stack8_push(void *values) {
-	stack_push(brb->stack8, values);
+void b_stack_push_move_addr(u8 *value) {
+	stack_push(b_resources->move_script_stack, value);
 }
 
 // 08017544
 void b_stack_push_move_cursor() {
-	stack_push(brb->stack8, b_move_cursor);
+	stack_push(b_resources->move_script_stack, b_move_cursor);
 }
 
 // 0801756C
 void b_stack_pop_move_cursor() {
-	b_move_cursor = stack_pop(brb->stack8);
+	b_move_cursor = stack_pop(b_resources->move_script_stack);
 }
 
 // 0801BC24
-void sub_0801BC24(u8 *target) {
-	b_stack1_push(b_move_cursor);
+void b_push_move_exec(u8 *target) {
+	b_stack_push_move_cursor(b_move_cursor);
 	b_move_cursor = target;
-	b_stack2_push(bc_func);
-	bc_func = &bc_move_exec;
+
+	b_stack_push_bc(bc);
+	bc = &bc_move_exec_toplevel;
 }

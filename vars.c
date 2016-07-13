@@ -1,5 +1,6 @@
-#include "vars.h"
+#include "continuegame.h"
 #include "save.h"
+#include "vars.h"
 
 #ifndef NO_RAM
 u16 var_8000; // 020370B8
@@ -37,7 +38,7 @@ u16 *var_80xx[] = {
 u16 *var_access(u16 nr) {
     if (nr <  0x4000) return (u16*)0;
     if (nr >= 0x8000) return var_80xx[nr-0x8000];
-    u8 m = *(u8*)0x03005E88;
+    u8 m = pq_npc_recording;
     if (m == 1) {
         u16 *z;
         if (z = (u16*)sub_08112D40(0, nr))

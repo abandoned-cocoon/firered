@@ -1,6 +1,28 @@
-#include "vars.h"
 #include "npc_interp.h"
+#include "overworld.h" // for context_npc
 #include "save.h"
+#include "vars.h"
+
+#ifndef NO_RAM
+#define STORAGE static
+#else
+#define STORAGE extern
+#endif
+
+// 020370A8
+STORAGE u32 script_rebase;
+// 020370AC
+STORAGE u16 script_player_lock_passed_frames;
+// 020370AE
+STORAGE u16 sa_pause_remaining_frames;
+// 020370B0
+STORAGE u16 script_last_npc_localid;
+// 020370B2
+STORAGE u16 script_last_waitmove_mapgroup;
+// 020370B4
+STORAGE u16 script_last_waitmove_mapnr;
+// 020370B6
+STORAGE u16 script_last_x9C_cmd;
 
 // 08069ED0
 bool s00_nop(struct script_env *s) {
@@ -26,13 +48,13 @@ bool s03_return(struct script_env *s) {
 
 // 08069FD4
 bool s04_call(struct script_env *s) {
-    script_call(s, script_read_u32(s));
+    script_call(s, (u8*)script_read_u32(s));
     return false;
 }
 
 // 08069FB0
 bool s05_goto(struct script_env *s) {
-    script_jump(s, script_read_u32(s));
+    script_jump(s, (u8*)script_read_u32(s));
     return false;
 }
 
@@ -49,7 +71,7 @@ bool s06_if_jump(struct script_env *s) {
     u8 condition = script_read_u8(s);
     u32 target = script_read_u32(s);
     if (compare_mode[condition*3 + s->cmp_result])
-        script_jump(s, target);
+        script_jump(s, (u8*)target);
     return false;
 }
 
@@ -58,23 +80,23 @@ bool s07_if_call(struct script_env *s) {
     u8 condition = script_read_u8(s);
     u32 target = script_read_u32(s);
     if (compare_mode[condition*3 + s->cmp_result])
-        script_call(s, target);
+        script_call(s, (u8*)target);
     return false;
 }
 
 // 0806A150
 bool s08_jump_std(struct script_env *s) {
     u32 nr = script_read_u8(s);
-    if (nr < sizeof(std_scrips)/4)
-        script_jump(s, std_scrips[nr]);
+    if (nr < (&std_scripts_end - std_scripts))
+        script_jump(s, std_scripts[nr]);
     return false;
 }
 
 // 0806A180
 bool s09_call_std(struct script_env *s) {
     u32 nr = script_read_u8(s);
-    if (nr < sizeof(std_scrips)/4)
-        script_call(s, std_scrips[nr]);
+    if (nr < (&std_scripts_end - std_scripts))
+        script_call(s, std_scripts[nr]);
     return false;
 }
 
@@ -83,8 +105,8 @@ bool s0A_jump_std_if(struct script_env *s) {
     u8 condition = script_read_u8(s);
     u32 nr = script_read_u8(s);
     if (compare_mode[condition*3 + s->cmp_result])
-        if (nr < sizeof(std_scrips)/4)
-            script_jump(s, std_scrips[nr]);
+        if (nr < (&std_scripts_end - std_scripts))
+            script_jump(s, std_scripts[nr]);
     return false;
 }
 
@@ -93,13 +115,13 @@ bool s0B_call_std_if(struct script_env *s) {
     u8 condition = script_read_u8(s);
     u32 nr = script_read_u8(s);
     if (compare_mode[condition*3 + s->cmp_result])
-        if (nr < sizeof(std_scrips)/sizeof(u8*))
-            script_jump(s, std_scrips[nr]);
+        if (nr < (&std_scripts_end - std_scripts))
+            script_jump(s, std_scripts[nr]);
     return false;
 }
 
 // 020370A4
-void *script_pointer_backup_for_sCF;
+u8 *script_pointer_backup_for_sCF;
 
 // 0806A248
 bool s0C_restore_execution_after_sCF(struct script_env *s) {
@@ -168,21 +190,21 @@ bool s15_u8_ptr_to_ptr(struct script_env *s) {
 // 0806A390
 bool s16_u16_gvar_to_const(struct script_env *s) {
     u16 *target = var_access(script_read_half(s));
-    *target = *(u8*)script_read_half(s);
+    *target = script_read_half(s);
     return false;
 }
 
 // 0806A584
 bool s17_u16_gvar_add_const(struct script_env *s) {
     u16 *target = var_access(script_read_half(s));
-    *target += *(u8*)script_read_half(s);
+    *target += script_read_half(s);
     return false;
 }
 
 // 0806A5AC
 bool s18_u16_gvar_sub_const(struct script_env *s) {
     u16 *target = (u16*)var_access(script_read_half(s));
-    *target -= *(u8*)script_read_half(s);
+    *target -= script_read_half(s);
     return false;
 }
 
@@ -275,7 +297,7 @@ bool s22_cmp_u16_gvar_gvar(struct script_env *s) {
 // 08069F94
 bool s23_asm_blocking(struct script_env *s) {
     typedef void (*vvptr)();
-    ((vvptr)script_read_half(s))();
+    ((vvptr)script_read_word(s))();
     return false;
 }
 
@@ -288,7 +310,7 @@ bool s24_asm_nonblocking(struct script_env *s) {
 // 08069EFC
 bool s25_extended_command_discard_return_value(struct script_env *s) {
     u16 nr = script_read_u16(s);
-    assert(nr < sizeof(specials)/4); // C:/WORK/POKeFRLG/src/pm_lgfr_ose/source/scrcmd.c
+    assert(nr < (&specials_end - specials)); // C:/WORK/POKeFRLG/src/pm_lgfr_ose/source/scrcmd.c
     specials[nr]();
     return false;
 }
@@ -297,7 +319,7 @@ bool s25_extended_command_discard_return_value(struct script_env *s) {
 bool s26_extended_command_save_return_value(struct script_env *s) {
     u16 *ret = var_access(script_read_half(s));
     u16 nr = script_read_u16(s);
-    assert(nr < sizeof(specials)/4); // C:/WORK/POKeFRLG/src/pm_lgfr_ose/source/scrcmd.c
+    assert(nr < (&specials_end - specials)); // C:/WORK/POKeFRLG/src/pm_lgfr_ose/source/scrcmd.c
     *ret = specials[nr]();
     return false;
 }
@@ -308,11 +330,8 @@ bool s27_set_to_waitstate(struct script_env *s) {
     return false;
 }
 
-// 020370AE
-static u16 sa_pause_remaining_frames;
-
 // 0806A990
-static void sa_pause() {
+static bool sa_pause() {
     return --sa_pause_remaining_frames == 0;
 }
 
@@ -336,7 +355,7 @@ bool s2A_flag_clear(struct script_env *s) {
 }
 
 // 0806A854
-bool s2B_flag_check() {
+bool s2B_flag_check(struct script_env *s) {
     s->cmp_result = flag_check(script_read_half(s));
     return false;
 }
@@ -478,8 +497,8 @@ bool s4E_nop_para_u16(struct script_env *s) {
 // 0806B200
 bool s4F_execute_movement(struct script_env *s) {
     u16 local_id = var_load(script_read_half(s));
-    u8* movement = script_read_word(s);
-    execute_movement(local_id, sav1i.location.map, sav1i.location.bank, movement);
+    u8* movement = (u8*)script_read_word(s);
+    execute_movement(local_id, sav1i->location.map, sav1i->location.group, movement);
     script_last_npc_localid = local_id;
     return false;
 }
@@ -487,7 +506,7 @@ bool s4F_execute_movement(struct script_env *s) {
 // 0806B244
 bool s50_execute_movement_remote(struct script_env *s) {
     u16 local_id = var_load(script_read_half(s));
-    u8* movement = script_read_word(s);
+    u8* movement = (u8*)script_read_word(s);
     u8 bank = script_read_byte(s);
     u8 map  = script_read_byte(s);
     execute_movement(local_id, map, bank, movement);
@@ -495,13 +514,18 @@ bool s50_execute_movement_remote(struct script_env *s) {
     return false;
 }
 
+// 0806B288
+bool s51a_0806B288() {
+    // TODO
+}
+
 // 0806B2B0
 bool s51_waitmove(struct script_env *s) {
     u16 local_id = var_load(script_read_half(s));
     if (local_id) script_last_npc_localid = local_id;
 
-    waitmove_mapbank = sav1i->location.bank;
-    waitmove_mapnr   = sav1i->location.map;
+    script_last_waitmove_mapgroup = sav1i->location.group;
+    script_last_waitmove_mapnr   = sav1i->location.map;
 
     script_enter_asm_mode(s, &s51a_0806B288);
 
@@ -513,8 +537,8 @@ bool s52_waitmove_remote(struct script_env *s) {
     u16 local_id = var_load(script_read_half(s));
     if (local_id) script_last_npc_localid = local_id;
 
-    waitmove_mapbank = script_read_byte(s);
-    waitmove_mapnr   = script_read_byte(s);
+    script_last_waitmove_mapgroup = script_read_byte(s);
+    script_last_waitmove_mapnr   = script_read_byte(s);
 
     script_enter_asm_mode(s, &s51a_0806B288);
 
@@ -526,7 +550,7 @@ bool s52_waitmove_remote(struct script_env *s) {
 // 0806B5BC
 bool s5A_face_player(struct script_env *s) {
     struct npc_state *npc = &npc_states[context_npc];
-    if (npc->bits & 1)
+    if (npc->bitfield1 & NPC_BIT_ACTIVE)
         npc_reciprocate_look(npc, player_get_direction());
 }
 
@@ -534,7 +558,7 @@ bool s5A_face_player(struct script_env *s) {
 bool s5B_npc_set_direction(struct script_env *s) {
     u16 local_id = var_load(script_read_half(s));
     u8 direction = script_read_byte(s);
-    npc_set_direction_by_local_id_and_map(local_id, sav1i.location.map, sav1i.location.bank, direction);
+    npc_set_direction_by_local_id_and_map(local_id, sav1i->location.map, sav1i->location.group, direction);
     return false;
 }
 
@@ -561,8 +585,13 @@ bool s5E_jump_to_script_scheduled_after_battle(struct script_env *s) {
 
 // Many commands missing
 
+// TODO
+extern u8 fcode_buffer2[];
+extern u8 fcode_buffer3[];
+extern u8 fcode_buffer4[];
+
 // 083A7294
-char **fcode_buffers[] = {
+char *fcode_buffers[] = {
     fcode_buffer2,
     fcode_buffer3,
     fcode_buffer4

@@ -15,6 +15,9 @@
 #include "whiteout.h"
 #include "uncategorized.h"
 
+// to overworld_loading.h
+void map_loading_loop_1(u8*);
+
 #ifndef NO_RAM
 //* 02031DB4
 struct warpdata warp0;
@@ -34,6 +37,12 @@ u16 wild_pokemon_index;
 u8 wild_pokemon_from_water_category;
 //* 02036DFC
 struct map current_mapheader;
+//* 02036E18
+struct npc_translate_info translate_info;
+//* 02036E24
+u32 adjacent_maps_presence_bitfield;
+//* 02036E27
+u8 color_filter;
 //* 03000FAE
 u32 bs1_time;
 //* 03000FB0
@@ -55,7 +64,7 @@ u16 *overworld_bg3_tilemap;
 //* 03005020
 void (*map_post_load_hook)(void);
 //* 03005024
-void (*hm_phase_1)(void); // type ok?
+bool (*hm_phase_1)(void);
 //* 03005028
 u16 c1_link_related_func_retvl;
 //* 0300502C
@@ -71,7 +80,7 @@ u16 nu_x;
 //* 03005070
 u32 script_env_locking_player;
 //* 03005074
-u32 context_npc; // the npc currently executing a script (context_npc instead?)
+u32 context_npc; // the npc currently executing a script
 #endif
 
 // TODO: Place somewhere
@@ -86,14 +95,14 @@ void cur_mapdata_load_assets_to_gpu_and_full_redraw() {
     cur_mapheader_run_tileset_funcs_after_some_cpuset();
 }
 
-// struct map *mapheader_by_mapnumbers(u8 mapbank, u8 mapnr) {
+// struct map *mapheader_by_mapnumbers(u8 mapgroup, u8 mapnr) {
 //     // TODO
 // }
 
 // 08055864
-void mliX_load_map(u8 mapbank, u8 mapnr) {
+void mliX_load_map(u8 mapgroup, u8 mapnr) {
 
-    warp0_set(mapbank, mapnr, -1);
+    warp0_set(mapgroup, mapnr, -1);
     sub_8055E94();
     warp_shift();
     // mli0
@@ -103,7 +112,7 @@ void mliX_load_map(u8 mapbank, u8 mapnr) {
     sub_806E110();
     nullsub_50();
     sub_806D7E8();
-    sub_810C578(mapbank, mapnr);
+    sub_810C578(mapgroup, mapnr);
     weather_807B140();
     wild_pokemon_reroll();
     sav1_write_flash_status();
@@ -140,7 +149,7 @@ void mli0_load_map() {
     sub_806E110();
     nullsub_50();
     sub_806D7E8();
-    sub_810C578(saveblock1_mapdata->location.bank & 0xFFFF, saveblock1_mapdata->location.map & 0xFFFF);
+    sub_810C578(saveblock1_mapdata->location.group & 0xFFFF, saveblock1_mapdata->location.map & 0xFFFF);
     weather_807B140();
     wild_pokemon_reroll();
     if (light)
@@ -199,12 +208,12 @@ void walkrun_find_lowest_active_bit_in_bitfield() {
 // 08055ACC
 
 // 08055B38
-void is_tile_grass_on_seafoam_island_maybe(u8 a1) {
+bool is_tile_grass_on_seafoam_island_maybe(u8 a1) {
     struct warpdata *w = &saveblock1_mapdata->location;
     return (is_tile_grass_maybe(a1) == 1) && (
         // Seafoam Island
-        w->bank == 1 && w->map == 86 ||
-        w->bank == 1 && w->map == 87
+        w->group == 1 && w->map == 86 ||
+        w->group == 1 && w->map == 87
     );
 }
 
@@ -267,7 +276,7 @@ u8 mapnumbers_get_light_level(i8 bank, i8 map) {
 
 // 08056170
 u8 warp_get_light_level(struct warpdata *w) {
-    return mapnumbers_get_light_level(w->bank, w->map);
+    return mapnumbers_get_light_level(w->group, w->map);
 }
 
 // 08056188
@@ -282,7 +291,7 @@ u8 warp0_get_light_level() {
 
 // 080561B4
 u8 warp0_get_name() {
-    struct map *m = mapheader_by_mapnumbers(warp0.bank, warp0.map);
+    struct map *m = mapheader_by_mapnumbers(warp0.group, warp0.map);
     return m->name;
 }
 
@@ -305,21 +314,21 @@ bool is_light_level_8_or_9(u8 light) {
 u8 sav1_x14_get_name() {
     // unused
     struct warpdata *l = &sav1i->field_14;
-    struct map *m = mapheader_by_mapnumbers(l->bank, l->map);
+    struct map *m = mapheader_by_mapnumbers(l->group, l->map);
     return m->name;
 }
 
 // 08056260
 u8 sav1_map_get_name() {
     struct warpdata *l = &sav1i->location;
-    struct map *m = mapheader_by_mapnumbers(l->bank, l->map);
+    struct map *m = mapheader_by_mapnumbers(l->group, l->map);
     return m->name;
 }
 
 // 08056288
 u8 sav1_map_get_battletype() {
     struct warpdata *l = &sav1i->location;
-    struct map *m = mapheader_by_mapnumbers(l->bank, l->map);
+    struct map *m = mapheader_by_mapnumbers(l->group, l->map);
     return m->battletype;
 }
 
@@ -394,7 +403,7 @@ void c1_overworld_normal(u16 keypad_new, u16 keypad_held) {
             script_env_2_enable();
             task_show_mapname_clamp_arg0_low_6();
         } else
-            player_step(walkrun.running2, keypad_new, keypad_held);
+            player_step(walkrun_state.running2, keypad_new, keypad_held);
     }
     call_203AE8C();
 }
@@ -452,7 +461,7 @@ void c2_ov_to_battle_anim() {
 void c2_overworld() {
     u8 *trs = (u8*)0x02037AB8;
     bool t = trs[7] >> 7;
-    if (!t) super.callback5_vblank = NULL;
+    if (!t) super.vblank_callback = NULL;
     c2_ov_basic();
     if (!t) sub_8056A04();
 }
@@ -481,7 +490,7 @@ void c2_new_game() {
 }
 
 // 080566A4
-void c2_whiteout_maybe() {
+void c2_whiteout() {
     if (super.multi_purpose_state_tracker++ < 120) return;
     sub_80569BC();
     sub_8071A94();
@@ -499,7 +508,49 @@ void c2_whiteout_maybe() {
     set_callback2(&c2_overworld);
 }
 
-////
+//// 0805671C
+//void c2_temp_teleport_after_maybe() {
+//}
+
+//// 0805674C
+//void c2_0805674C() {
+//}
+
+//// 08056788
+//void sub_8056788() {
+//}
+
+//// 080567AC
+//void c2_80567AC() {
+//}
+
+//// 080567DC
+//void c2_exit_to_overworld_2_switch() {
+//}
+
+//// 08056808
+//void c2_exit_to_overworld_2_local() {
+//}
+
+//// 0805682C
+//void c2_exit_to_overworld_2_link() {
+//}
+
+//// 08056854
+//void c2_8056854() {
+//}
+
+//// 080568A8
+//void c2_c5_trainer_card() {
+//}
+
+//// 080568C4
+//void c2_exit_to_overworld_1_continue_scripts_and_music() {
+//}
+
+//// 080568E0
+//void c2_exit_to_overworld_1_continue_scripts_restart_music() {
+//}
 
 // 08056F08
 void sub_8056F08() {
@@ -508,7 +559,17 @@ void sub_8056F08() {
     mapdata_load_assets_to_gpu_and_full_redraw();
 }
 
-// 08057650
+// 0805726C
+// void c2_0805726C() {
+// 
+// }
+
+// 080572A8
+// void c2_080572A8() {
+// 
+// }
+
+// 08057650 (-> map_loading.c ?)
 bool map_loading_iteration_5() {
     switch (super.multi_purpose_state_tracker) {
         case 0:
@@ -871,7 +932,7 @@ void script_env_12_start_and_stuff(u8 *scr) {
     keypad_override_through_script_env_2_disable();
 
     // XXX: It's 1, not 2!
-    script_env_init(&script_env_1, npc_cmds, npc_cmd_max);
+    script_env_init(&script_env_1, npc_cmds, npc_cmds+npc_cmd_max);
     script_mode_set_bytecode_and_goto(&script_env_1, scr);
 
     script_env_2_enable();

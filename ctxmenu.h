@@ -1,6 +1,7 @@
 #pragma once
 #include "task.h"
 
+void task_0811FAB4(task_id);
 void ctxmenu_summary(task_id);
 void ctxmenu_switch(task_id);
 void ctxmenu_cancel_1(task_id);
@@ -12,9 +13,10 @@ void ctxmenu_take_2(task_id);
 void ctxmenu_read(task_id);
 void ctxmenu_cancel_2(task_id);
 void ctxmenu_shift_send(task_id);
-void ctxmenu_shift_send(task_id);
 void ctxmenu_enter(task_id);
 void ctxmenu_no_entry(task_id);
 void ctxmenu_store(task_id);
 void ctxmenu_register(task_id);
 void ctxmenu_trade_1(task_id);
+void ctxmenu_trade_nop(task_id);
+void ctxmenu_hm(task_id);

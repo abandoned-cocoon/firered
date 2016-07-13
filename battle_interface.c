@@ -4,12 +4,12 @@
 #include "task.h"
 
 // 08010508
-void c2_pre_battle_2_single() {
+/* void c2_pre_battle_2_single() {
 	task_exec();
 	objc_exec();
 	obj_sync_something();
 	u8 mid = link_get_multiplayer_id();
-	dword_2023FE8->fieldB5 = mid;
+	b_dp08_ptr->multiplayer_id_B5 = mid;
 
 	switch (b_preparation_phase) {
 
@@ -54,7 +54,7 @@ void c2_pre_battle_2_single() {
 
 	case 16:
 		b_preparation_subphase++;
-		if (!battle_load_something())
+		if (!battle_load_something(/* TODO * /))
 			break;
 
 		b_callback1_backup = super.callback1;
@@ -66,7 +66,7 @@ void c2_pre_battle_2_single() {
 		break;
 
 	}
-}
+} */
 
 // 02022974
 u16 vblank_cb_battle_BG0HOFS;

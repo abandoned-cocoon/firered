@@ -1,5 +1,32 @@
 #include "engine_scripts.h"
 #include "overworld_effects.h"
+#include "hm.h" // for cut_ruin_valley
+
+struct oe_state_t {
+	union {
+		struct {
+			u32 to_x;
+			u32 to_y;
+			u32 height_lsr_4;
+		};
+		struct {
+			u32 local_id;
+			u32 local_mapnumber;
+			u32 local_mapgroup2;
+		};
+		struct {
+			u8 byte0;
+		};
+	};
+	u32 field_C;
+	u32 local_id_and_mapnumber;
+	u32 local_mapgroup;
+	u32 sav1_location;
+	u32 field_1C;
+};
+
+// 020386E0
+struct oe_state_t oe_state;
 
 void oei_cut_finish(void);
 
@@ -17,8 +44,8 @@ bool oei_cut() {
 // 080979D0
 void hm_cut_run_scr() {
 	u8 index = brm_get_pokemon_selection();
-	*(u32*)&dp03 = index;
-	sub_08069AE4(&scr_cut2);
+	oe_state.byte0 = index;
+	script_env_12_start_and_stuff(scr_cut2);
 }
 
 // 080979F0
@@ -31,18 +58,21 @@ bool oei_cut2() {
 
 void oei_cut_finish() {
 	oe_active_list_remove(1);
-	if (byte_2039874 == 1)
+	if (cut_ruin_valley == 1)
 		cut();
 	else
 		oe_exec(0x3A);
 }
 
+// 02039A04
+extern struct coords16 coords16_in_front_of_player;
+
 // 08097A48
 bool oei_3A_08097A48() {
 	audio_play(0x79);
 	player_get_pos_to(
-		&coords16_02039A04.x,
-		&coords16_02039A04.y
+		&coords16_in_front_of_player.x,
+		&coords16_in_front_of_player.y
 	);
 
 	for (u8 i=0; i<2; i++) {
@@ -59,6 +89,9 @@ bool oei_3A_08097A48() {
 
 // 08097B50
 /* ... */
+
+// TODO
+void objc_08097BBC(struct obj *obj);
 
 // 08097BA8
 void objc_08097BA8(struct obj *obj) {

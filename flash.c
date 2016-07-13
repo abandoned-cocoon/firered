@@ -13,13 +13,22 @@ struct flash_chip_metrics {
 
 struct flash_chip_interface {
 	void (*unknown_func)();
-	void (*write_block)();
-	void (*erase_all)();
-	void (*erase_block)();
-	void (*verify)();
+	void (*write_block)(); // Wrong signature
+	void (*erase_all)(); // Wrong signature
+	void (*erase_block)(); // Wrong signature
+	void (*verify)(); // Wrong signature
 	void *unknown;
 	struct flash_chip_metrics metrics;
 };
+
+// TODO
+void sub_81DEFA4(); // Wrong signature
+void flash_write_block(); // Wrong signature
+void flash_erase_all(); // Wrong signature
+void flash_erase_block(); // Wrong signature
+void flash_verify_write_or_timeout(); // Wrong signature
+void unk_86FBF58(); // Wrong signature
+void unk_86FBFF4(); // Wrong signature
 
 // 081DE820
 void flash_bank_switch(u8 bank) {
@@ -30,7 +39,7 @@ void flash_bank_switch(u8 bank) {
 }
 
 // 081DE844
-void flash_get_manufacturer_and_device_type() {
+u16 flash_get_manufacturer_and_device_type() {
 	// GBATEK#gbacartbackupflashrom
 	// > Also, reading anything (data or status/busy information) can be done <only> by opcodes
 	// > executed in WRAM (not from opcodes in ROM) (there's no such restriction for writing).
@@ -43,8 +52,8 @@ void flash_get_manufacturer_and_device_type() {
 	*(u8*)0x0E005555 = 0x90;
 	{ volatile u16 cycles = 20000; while (cycles--); } // wait for chip
 
-	u8 device       = flash_read_byte(0xE000001);
-	u8 manufacturer = flash_read_byte(0xE000000);
+	u8 device       = flash_read_byte((void*)0xE000001);
+	u8 manufacturer = flash_read_byte((void*)0xE000000);
 	u16 chip_id = (device<<8) + manufacturer;
 
 	*(u8*)0x0E005555 = 0xAA; // exit chip identification mode
@@ -55,8 +64,12 @@ void flash_get_manufacturer_and_device_type() {
 	return chip_id;
 }
 
+extern struct flash_chip_interface flash_chip_macronix_128k;
+extern struct flash_chip_interface flash_chip_fallback;
+extern struct flash_chip_interface flash_chip_sanyo_128k;
+
 // 086FBF24
-struct flash_chip_interface flash_chip_list[] = {
+struct flash_chip_interface *flash_chip_list[] = {
 	&flash_chip_macronix_128k,
 	&flash_chip_sanyo_128k,
 	&flash_chip_fallback
@@ -64,11 +77,11 @@ struct flash_chip_interface flash_chip_list[] = {
 
 // 086FBF70
 struct flash_chip_interface flash_chip_macronix_128k = {
-	sub_81DEFA4,
-	flash_write_block,
-	flash_erase_all,
-	flash_erase_block,
-	flash_verify_write_or_timeout,
+	&sub_81DEFA4,
+	&flash_write_block,
+	&flash_erase_all,
+	&flash_erase_block,
+	&flash_verify_write_or_timeout,
 	&unk_86FBF58, {
 		0x20000,
 		0x1000,
@@ -81,11 +94,11 @@ struct flash_chip_interface flash_chip_macronix_128k = {
 
 // 086FBFA0
 struct flash_chip_interface flash_chip_fallback = {
-	sub_81DEFA4,
-	flash_write_block,
-	flash_erase_all,
-	flash_erase_block,
-	flash_verify_write_or_timeout,
+	&sub_81DEFA4,
+	&flash_write_block,
+	&flash_erase_all,
+	&flash_erase_block,
+	&flash_verify_write_or_timeout,
 	&unk_86FBF58, {
 		0x20000,
 		0x1000,
@@ -98,11 +111,11 @@ struct flash_chip_interface flash_chip_fallback = {
 
 // 086FC00C
 struct flash_chip_interface flash_chip_sanyo_128k = {
-	sub_81DEFA4,
-	flash_write_block,
-	flash_erase_all,
-	flash_erase_block,
-	flash_verify_write_or_timeout,
+	&sub_81DEFA4,
+	&flash_write_block,
+	&flash_erase_all,
+	&flash_erase_block,
+	&flash_verify_write_or_timeout,
 	&unk_86FBFF4, {
 		0x20000,
 		0x1000,

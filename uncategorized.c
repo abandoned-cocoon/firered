@@ -16,6 +16,7 @@ struct bla dp06_1[] = {
     {0x11FF, 0}
 };
 
+// 0835B934
 u16 npc_pal_second_slot_by_first_slot[] = {
     1, 1, 6, 7, 8, 9, 6, 7, 8, 9, 0xB, 0xB, 0, 0, 0, 0
 };
@@ -66,7 +67,7 @@ void dma3_transfer_queue_clear() {
 }
 
 // 08000EAC
-u16 dma3_queue_add_transfer(u32 *loc_a, u32 *loc_b, u16 size, u8 zz) {
+u16 dma3_queue_add_transfer(void *loc_a, void *loc_b, u16 size, u8 zz) {
 
     // modified for readability
 

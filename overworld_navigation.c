@@ -1,4 +1,5 @@
 #include "engine_scripts.h"
+#include "overworld.h"
 #include "overworld_navigation.h"
 #include "task.h"
 #include "wild_pokemon_encounter.h" // for repel_per_step signature
@@ -79,47 +80,57 @@ u8 player_get_direction() {
 u8 player_get_height() {
     return npc_states[walkrun_state.npc_id].height >> 4;
 }
+
+/* this verison is possibly nicer
 // 0805CCD0
-void sub_805CCD0(u8 npc_id, u8 direction) {
-    u8 task_id = task_add(taskFF_805CD0C, 0xFF);
-    task[task_id].priv[1] = npc_id;
-    task[task_id].priv[2] = direction;
-    taskFF_805CD0C(task_id);
+void task_add_bump_boulder(u8 npc_id, u8 direction) {
+    task_id c = task_add(task_bump_boulder, 0xFF);
+    task[c].priv[1] = npc_id;
+    task[c].priv[2] = direction;
+    task_bump_boulder(c);
 }
+*/
 
 struct task_args_0805CD0C {
-    enum mode_0805CD0C {
-        ZERO = 0,
-        ONE = 1,
-        TWO = 2
-    } mode;
-    u8 npc_id;
-    u8 direction;
+    u16 mode;
+    u16 npc_id;
+    u16 direction;
 };
 
 // 0805CCD0
-void sub_805CCD0(u8 npc_id, u8 direction) {
-    u8 task_id = task_add(&taskFF_805CD0C, 0xFF);
-    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &task[task_id].priv;
+void task_add_bump_boulder(u8 npc_id, u8 direction) {
+    task_id c = task_add(&task_bump_boulder, 0xFF);
+    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &task[c].priv;
     args->npc_id = npc_id;
     args->direction = direction;
-    task_805CD0C(&task[task_id]);
+    task_bump_boulder(c);
 }
 
+bool sub_805CD64_mode_0(struct task_t *t, struct npc_state* player_npc, struct npc_state* other_npc);
+bool sub_805CD84_mode_1(struct task_t *t, struct npc_state* player_npc, struct npc_state* other_npc);
+bool sub_805CE20_mode_2(struct task_t *t, struct npc_state* player_npc, struct npc_state* other_npc);
+
+// 0835B8A0
+bool (*boulder_bump_phases[])(struct task_t *t, struct npc_state* player_npc, struct npc_state* other_npc) = {
+    sub_805CD64_mode_0,
+    sub_805CD84_mode_1,
+    sub_805CE20_mode_2,
+};
+
 // 0805CD0C
-void taskFF_805CD0C(u8 task_id) {
+void task_bump_boulder(task_id c) {
     struct npc_state *player_npc, *other_npc;
-    struct task_t *c = &task[task_id];
-    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &c->priv;
+    struct task_t *t = &task[c];
+    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &t->priv;
     do {
         player_npc = &npc_states[walkrun_state.npc_id];
-         other_npc = &npc_states[  args->npc_id];
-    } while(off_835B8A0[args->mode](c, player_npc, other_npc));
+        other_npc = &npc_states[args->npc_id];
+    } while(boulder_bump_phases[args->mode](t, player_npc, other_npc));
 }
 
 // 0805CD64
-bool sub_805CD64_mode_0(struct task_t *c, struct npc_state* player_npc, struct npc_state* other_npc) {
-    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &c->priv;
+bool sub_805CD64_mode_0(struct task_t *t, struct npc_state* player_npc, struct npc_state* other_npc) {
+    struct task_args_0805CD0C *args = (struct task_args_0805CD0C *) &t->priv;
 
     script_env_2_enable();
     walkrun_state.lock = 1;
@@ -128,14 +139,14 @@ bool sub_805CD64_mode_0(struct task_t *c, struct npc_state* player_npc, struct n
 }
 
 // 0805CD84
-bool sub_805CD84_mode_1(struct task_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+bool sub_805CD84_mode_1(struct task_t *t, struct npc_state* player_npc, struct npc_state* other_npc) {
     // TODO
     // args->mode++; // from 1 to 2
     return 0;
 }
 
 // 0805CE20
-bool sub_805CE20_mode_2(struct task_t* c, struct npc_state* player_npc, struct npc_state* other_npc) {
+bool sub_805CE20_mode_2(struct task_t *t, struct npc_state* player_npc, struct npc_state* other_npc) {
     if (npc_get_bit7_or_const_x10_when_inactive(player_npc) == 0) return 0;
     if (npc_get_bit7_or_const_x10_when_inactive(other_npc) == 0) return 0;
     npc_destruct_when_bit7_is_set(player_npc);
@@ -146,8 +157,8 @@ bool sub_805CE20_mode_2(struct task_t* c, struct npc_state* player_npc, struct n
 
     walkrun_state.lock = 0;
     script_env_2_disable();
-    u8 task_id = task_find_id_by_funcptr(&task_805CD0C);
-    task_del(task_id);
+    task_id c = task_find_id_by_funcptr(&task_bump_boulder);
+    task_del(c);
 
     return 0;
 }
@@ -206,8 +217,13 @@ void script_env_2_apply_keypad_override(u8 *ignored, u16 *keypad_new, u16 *keypa
         *keypad_new = *keypad_held = q[i-1];
 }
 
+// 03005078
+extern struct dp20 dp20;
+
 // 0806CAC8
-bool sub_806CAC8(u8 *d) {
+bool sub_806CAC8(u8 *ud) {
+    struct dp20 *d = (struct dp20*)ud;
+
     context_npc_set_0_and_set_msg_normal_design();
 
     struct npc_position n;
@@ -216,8 +232,8 @@ bool sub_806CAC8(u8 *d) {
     block b = cur_mapdata_block_get_field_at(n.x, n.y, 0xFF);
     u8 role = cur_mapdata_block_role_at(n.x, n.y);
 
-    sub_806C888(&byte_3005078);
-    byte_3005078[2] = d[2];
+    sub_806C888((u8*)&dp20); // TODO: No cast
+    dp20.f2 = d->f2;
     if (sub_8081B30()) return 1;
 
     if (mapheader_run_first_tag2_script_list_match_conditionally()) return 1;
@@ -232,17 +248,17 @@ bool sub_806CAC8(u8 *d) {
         sub_80CB054();
         increment_var_x4026_on_birth_island_modulo_100();
         if (per_step_2(&n, role, ndir)) {
-            byte_3005078[0] |= 0x40;
+            dp20.f0 |= 0x40;
             return 1;
         }
     }
 
-    if (d[0] & 0x2) { // set in sub_806C8BC when !override && running1 == 2
-        if (d[2] == 0 || d[2] == ndir) {
+    if (d->f0 & 0x2) { // set in sub_806C8BC when !override && running1 == 2
+        if (d->f2 == 0 || d->f2 == ndir) {
             player_get_next_pos_and_height(&n);
             role = cur_mapdata_block_role_at(n.x, n.y);
             if (launch_signpost_script(&n, role, ndir)) {
-                byte_3005078 |= 2;
+                dp20.f0 |= 2;
                 return 0;
             }
             // restore old values
@@ -251,15 +267,15 @@ bool sub_806CAC8(u8 *d) {
         }
         //if (d[0] & 0x2) { // always true
         if (trigger_battle(b)) {
-            byte_3005078 |= 2;
+            dp20.f0 |= 2;
             return 0;
         }
         //}
     }
 
-    if ((d[0] & 0x10) && d[2] == ndir) {
+    if ((d->f0 & 0x10) && d->f2 == ndir) {
         if (map_warp_consider(&n, role, ndir)) {
-            byte_3005078 |= 0x10;
+            dp20.f0 |= 0x10;
             return 0;
         }
     }
@@ -267,6 +283,9 @@ bool sub_806CAC8(u8 *d) {
     // TODO
 
 }
+
+// 020370A0
+extern u8 script_env_2_keypad_sync_lock_countdown; // TODO
 
 // 0806CD30
 void sub_806CD30(u8 *d) {
@@ -313,6 +332,15 @@ void sub_806CD30(u8 *d) {
     }
 }
 
+// 0806CDF8
+void task_0806CDF8(task_id c) {
+    if (script_env_2_is_enabled() == false) {
+        audio_play((enum audio)6);
+        sub_806F258();
+        task_del(c);
+    }
+}
+
 // 0806CE20
 void player_get_pos_to_and_height(struct npc_position *n) {
     player_get_pos_to(&n->x, &n->y);
@@ -338,8 +366,10 @@ bool onpress_a(struct npc_position *n, u8 role, u8 direction) {
 }
 
 // TODO: Remove
+ow_script npc_get_script_by_npc_id(u8 npc_id);
 ow_script onpress_a_get_script_signpost(struct npc_position *n, u8 role, u8 direction);
 ow_script surf(struct npc_position *n, u8 role, u8 direction);
+ow_script sub_08069D8C(u16 var, ow_script script);
 
 // 0806CEE0
 ow_script onpress_a_get_script(struct npc_position *n, u8 role, u8 direction) {
@@ -435,11 +465,11 @@ ow_script onpress_a_get_script_block(struct npc_position *n, u8 role, u8 d) {
 }
 
 // 0806D5E8
-bool per_step_2(struct npc_state *npc, u16 role, u8 direction) {
+bool per_step_2(struct npc_position *n, u16 role, u8 direction) {
     // role = player_pos_to_block_role
-    if (sub_806D660(npc) == 1)
+    if (mapheader_trigger_activate_at__run_now(n) == 1)
         return 1;
-    if (sub_806DA10(npc, role) == 1)
+    if (sub_806DA10(n, role) == 1)
         return 1;
     if (is_tile_XX_prevent_per_step_scripts(role) == 1)
         return 1;

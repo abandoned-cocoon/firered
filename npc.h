@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include "object.h"
 
 #define MAX_NPCS 0x10
 
@@ -53,9 +54,9 @@ struct npc_state {
         // 0x20: enables 08067F2C
         // 0x40: refuse pause bit overriding
         // 0x80: ?
-    u8 bitfield2;
+    u8 bitfield2; // a.k.a. anim and vis control
         // 0x01: anim_delay_countdown backuped because of override
-        // 0x02: affects whether npc_Set_direction affects the upper or both nibbles of npc->direction
+        // 0x02: affects whether npc_set_direction affects the upper or both nibbles of npc->direction
         // 0x04: pending image anim pausing (set and cleared based on "tile_to" at 08063E80 (read at 080679AC))
         // 0x08: pending image anim unpausing
         // 0x10: ?
@@ -94,19 +95,24 @@ struct npc_state {
 };
 
 struct npc_type {
-    u16 field_0;
-    u16 pal_num;
+    u16 tile_tag;
+    u16 pal_tag;
     u16 pal_tag_2;
     u16 field_6;
     coords pos_neg_center;
     u8 pal_slot; // stored in lower 4 bits
     u8 field_D;
     u16 _unused;
-    struct obj *obj;
-    void *field_14;
-    animtable_t *animtable1;
-    gfxtable_t  *gfxtable;
-    animtable_t *animtable2;
+//    struct obj *obj;
+//    void *field_14;
+//    animtable_t *animtable1;
+//    gfxtable_t  *gfxtable;
+//    animtable_t *animtable2;
+    gpu_sprite   *sprite; // a.k.a. OAM
+    obj_oversize_formation *formation;
+    image_seq    *image_anims;
+    gfxentry     *gfx_table;
+    rotscale_seq *rotscale_anims;
 };
 
 // TODO: Move away
@@ -123,13 +129,14 @@ struct rom_npc {
     u8  field_B;
     u8  trainer_or_mapnumber;
     u8  field_D;
-    u16 sight_distance_or_mapbank;
+    u16 sight_distance_or_mapgroup;
     void *script;
     u16 id_in_script;
     u16 field_16;
 };
 
-extern struct npc_state npc_states[16];
+extern struct npc_state npc_states[];
+extern struct npc_type npc_types[];
 
 u8 npc_id_by_local_id(u8 local_id, u8 mapnr, u8 mapgroup);
 bool npc_id_by_local_id_and_map_ret_success(u8 local_id, u8 mapnr, u8 mapgroup, u8 *result);
@@ -138,8 +145,8 @@ u8 rom_npc_to_npc_state(struct rom_npc *rnpc, u8, u8);
 u8 npc_id_by_local_id_ignore_map(u8 local_id);
 void npc_hide(struct npc_state *npc);
 void hide_sprite(u8 local_id, u8 mapnr, u8 mapgroup);
-void *npc_spawn_with_provided_template(u8, void*, u8, u8, short, short);
-void npc_to_template(u8 npc_type_id, void *objcallback, struct proto_t *p, u32 *npc_type_14);
+void *npc_spawn_with_provided_template(struct rom_npc *rnpc, struct proto_t *p, u8 mapnr, u8 mapgroup, short x, short y);
+void npc_to_template(u8 npc_type_id, void *objcallback, struct proto_t *p, struct obj_oversize_formation **npc_type_14);
 void npc_turn(struct npc_state *npc, u8 direction);
 void npc_turn_by_local_id_and_map(u16 local_id, u8 map, u8 bank, u8 direction);
 struct npc_type *npc_get_type(u8 type_id);

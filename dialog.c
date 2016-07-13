@@ -1,6 +1,13 @@
 #include "audio.h"
+#include "continuegame.h"
 #include "dialog.h"
+#include "fbox.h"
+#include "main.h"
+#include "mplay_stuff.h"
 #include "rbox.h"
+#include "save.h"
+#include "text.h"
+#include "uncategorized.h"
 
 #ifndef NO_RAM
 // 03003E50
@@ -77,7 +84,7 @@ uint dialog_update(struct dialog *dialog) {
 								tys->ccursor++;
 								return 2;
 							case 6:     // Select font
-								dsub->font = *tys->ccursor++;
+								dsub->ft_lo = *tys->ccursor++;
 								return 2;
 							case 7:     // Nop (but stay)
 								return 2;
@@ -122,10 +129,10 @@ uint dialog_update(struct dialog *dialog) {
 									(tys->color2 << 4) | tys->color2);
 								return 2;
 							case 0x17:  // Pause music
-								MPlayStop_rev01(&stru_3007300);
+								MPlayStop_rev01(&mplay_te_03007300);
 								return 2;
 							case 0x18:  // Resume music
-								m4aMPlayContinue(&stru_3007300);
+								m4aMPlayContinue(&mplay_te_03007300);
 								return 2;
 							case 0x11: { // ???
 								int t = *tys->ccursor++;
@@ -169,7 +176,7 @@ uint dialog_update(struct dialog *dialog) {
 					case 0xF9:              // Allows you to select characters from a second page
 						c = *tys->ccursor++ | 0x100;
 						break;
-					case 0xF8:
+					case 0xF8: {
 						int t = *tys->ccursor++;
 						byte_3003E20 = font_render_F8(
 										   tys->rbox_id,
@@ -179,12 +186,13 @@ uint dialog_update(struct dialog *dialog) {
 
 						tys->cursor_x += byte_3003E20 + tys->stride_x;
 						return 0;
+					}
 					case 0xFF:              // End
 						return 1;
 					default:
 						break;
 				}
-				switch (dsub->font)
+				switch (dsub->ft_lo)
 				{
 					case 0:
 						font_render_tiny_en_jp(c, dialog->japanese);
@@ -211,7 +219,7 @@ uint dialog_update(struct dialog *dialog) {
 				char new_x = tys->cursor_x;
 				if ( dialog->field_20 ) {
 					tys->cursor_x += byte_3003E20;
-					int t = dialog->field_20 - (unsigned __int8)byte_3003E20;
+					int t = dialog->field_20 - byte_3003E20;
 					if ( t <= 0 )
 						return 0;
 					nullsub_2();
@@ -219,7 +227,7 @@ uint dialog_update(struct dialog *dialog) {
 				} else {
 					new_x += byte_3003E20;
 					if (dialog->japanese) {
-						new_x += = tys->stride_x
+						new_x += tys->stride_x;
 					}
 				}
 				tys->cursor_x = new_x;
@@ -255,7 +263,7 @@ uint dialog_update(struct dialog *dialog) {
 				dialog->mode = 4;
 			}
 			return 3;
-		case 4u:
+		case 4u: {
 			uint rlines = dialog->remaining_scroll_lines;
 			u8 speed_index = saveblock2_trainerdata->options_text_speed_maybe & 7;
 			if (rlines > 0) {
@@ -279,6 +287,7 @@ uint dialog_update(struct dialog *dialog) {
 				dialog->mode = 0;
 			}
 			return 3;
+		}
 		case 5u:
 			if ( !mplay_has_finished_maybe() )
 				dialog->mode = 0;

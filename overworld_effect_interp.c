@@ -1,4 +1,5 @@
 #include "object.h"
+#include "overworld_effects.h"
 
 // 03000FC8
 u8 oe_active_list[32];
@@ -78,7 +79,7 @@ u32 oe_read_word(u8 **cursor) {
 
 // 08083568
 void oec00_load_gfx_impl(u8 **cursor) {
-	gfxentry *bl = oe_read_word(cursor);
+	gfxentry *bl = (gfxentry *)oe_read_word(cursor);
 	u16 unk1 = sub_08008804(bl->size);
 	if (unk1 == 0xFFFF)
 		sub_080086DC(bl);
@@ -86,18 +87,18 @@ void oec00_load_gfx_impl(u8 **cursor) {
 }
 
 // 08083598
-void tint_palette() {
+void pal_tint(u8 num) {
 	// TODO
 }
 
 // 08083614
 void oec01_load_pal_impl(u8 **cursor) {
-	gfxentry *bl = oe_read_word(cursor);
+	gfxentry *bl = (gfxentry *)oe_read_word(cursor);
 	u16 pal_tag = gpu_pal_tags_index_of(bl->size);
 	load_palette_1(bl->data);
 	if (pal_tag == 0xFF) {
-		u16 pal_tag = gpu_pal_tags_index_of(bl->size);
-		sub_08083598(unk2);
+		u16 pal_num = gpu_pal_tags_index_of(bl->size);
+		pal_tint(pal_num);
 	}
 	u16 unk3 = gpu_pal_tags_index_of(bl->size);
 	sub_0807AA8C(unk3);
@@ -106,19 +107,19 @@ void oec01_load_pal_impl(u8 **cursor) {
 
 // 0808365C
 void oec02_load_pal_impl(u8 **cursor) {
-	gfxentry *bl = oe_read_word(cursor);
+	gfxentry *bl = (gfxentry *)oe_read_word(cursor);
 	u16 unk1 = gpu_pal_tags_index_of(bl->size);
 	load_palette_1(bl->data);
 	if (unk1 == 0xFF) {
 		u16 unk2 = gpu_pal_tags_index_of(bl->size);
-		sub_08083598(unk2);
+		pal_tint(unk2);
 	}
 	cursor += 4;
 }
 
 // 08083698
 void oec03_call_asm_impl(u8 **cursor, u32 *retval) {
-	*retval = oe_read_word(cursor)();
+	*retval = ((u32(*)(void))oe_read_word(cursor))();
 	cursor += 4;
 }
 
@@ -138,7 +139,7 @@ void oe_stop(struct obj *o, u8 num) {
 }
 
 // 080836F0
-void gpu_tile_obj_free_by_ado_when_unused_maybe(...) {
+void gpu_tile_obj_free_by_ado_when_unused_maybe(u16 tag) {
 	// TODO
 }
 
@@ -146,8 +147,8 @@ void gpu_tile_obj_free_by_ado_when_unused_maybe(...) {
 void gpu_pal_free_by_index_when_unused(u8 pal) {
 	u16 tag = gpu_pal_tag_by_index(pal);
 	for (u32 i=0; i<NUM_OBJS; i++) {
-		struct obj *o = objects[i];
-		if (o->bitfield2 & OBJ_BIT2_IS_ACTIVE == 0)
+		struct obj *o = &objects[i];
+		if (o->bitfield2 & OBJ_BIT2_IN_USE == 0)
 			continue;
 		if ((o->sprite.attr2 >> 12) == pal)
 			return;

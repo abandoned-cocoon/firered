@@ -1,4 +1,5 @@
 #pragma once
+#include "types.h"
 
 #define TAI_PHASE_NEXT_MOVE     0
 #define TAI_PHASE_EVALUATE_MOVE 1
@@ -26,68 +27,6 @@ struct trainer_ai {
 	u8  move_damage_multipliers[4];
 };
 
-struct br00 {
-	u32 field_0[40];
-};
-
-struct br04 {
-	u32 field_0;
-	u32 field_4;
-	u32 field_8;
-	u32 field_C;
-};
-
-struct br08 {
-	u32 stack_data[8];
-	u32 stack_height;
-};
-
-struct br0C {
-	u32 stack_data[8];
-	u32 stack_height;
-};
-
-struct br10 {
-	u16 field_0;
-	u16 field_2;
-	u16 field_4;
-	u16 field_6;
-	u16 field_8;
-	u16 field_A;
-};
-
-struct br18 {
-	u16 movehistory_1[8];
-	u16 movehistory_2[8];
-	u8 abilites_used[2];
-	u8 item_x12[2];
-	u16 t24[4];
-	u8 t24count;
-	u8 field_2D;
-	u8 field_2E;
-	u8 field_2F;
-};
-
-struct br1C {
-	int stack_data[8];
-	int stack_height;
-};
-
-struct brb; // v
-
-struct b_resources_t {
-	struct br00 *field_0;
-	struct br04 *field_4;
-	struct br08 *_8_move_script_stack;
-	struct br0C *_C_bc_stack;
-	struct br10 *field_10;
-	struct trainer_ai *tai_state;
-	struct br18 *history;
-	struct br1C *_1C_move_consider_stack;
-};
-
-
-extern struct b_resources_t *b_resources;
 extern void (*tai_move_consideration_cmds[0x5E])();
 
 // 02039A00

@@ -4,6 +4,7 @@
 #define TARGET_BUFFER_B 1
 
 void b_prepare_buffer(u8 dst_id, u8 *src, u16 length);
+void b_prepare_buffer_wireless(u8 dst_id, u8 *src, u16 length);
 void bt_00_emit(u8 target, u8 a, u8 b);
 void bt_01_emit(u8 target, u8 a, u8 b);
 void bt_02_emit(u8 target, u8 a, u8 b, u8 len, u8 *data);

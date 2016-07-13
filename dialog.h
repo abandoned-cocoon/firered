@@ -41,9 +41,16 @@ static_assert_sizeof(struct typesetter, 16);
 	int field_4;
 };*/
 
+#define ft_hi user_can_skip
+
 struct dialogsub {
-	u8  font : 4;
-	u8  user_can_skip : 1; // set to 0 after skipping, set to 1 after releasing buttons
+	union {
+		char fontbyte;
+		struct {
+			u8 ft_lo : 4;
+			u8 ft_hi : 4; // set to 0 after skipping, set to 1 after releasing buttons
+		};
+	};
 	u8  field_1;
 	u16 frames_visible_counter;
 	u8  field_4;

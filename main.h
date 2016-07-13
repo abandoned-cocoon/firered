@@ -47,12 +47,20 @@ enum keypad {
 };
 
 struct sprite {
-    u8 y;
-    u8 flags1;
-    u8 x;
-    u8 msb_of_x_and_flags2;
-    u16 attr2;
-    u16 rotscaleinfo;
+    union {
+        struct {
+            u16 attr0;
+            u16 attr1;
+            u16 attr2;
+            u16 rotscaleinfo;
+        };
+        struct {
+            u8 y;
+            u8 flags1;
+            u8 x;
+            u8 msb_of_x_and_flags2;
+        };
+    };
 };
 
 struct superstate {
@@ -78,7 +86,21 @@ struct superstate {
     u8  gpu_sprites_upload_skip;
 };
 
+extern u16 WAITCNT;
+extern u16 KEYINPUT;
+
+// 030030E0
+extern u32 keypad_initial_countdown;
+// 030030E4
+extern u8 byte_030030E4;
+
+// 030030F0
 extern struct superstate super;
+
+// 0300352C
+extern u32 keypad_followup_countdown;
+// 03003530
+extern u8 byte_03003530;
 
 void mainloop();
 void exec_c1_and_c2();

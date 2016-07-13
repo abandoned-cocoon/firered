@@ -9,6 +9,8 @@ struct pal_spec {
 u16 gpu_pal_tags[16]; // 03000DE8
 u8 gpu_pal_tag_search_lower_boundary; // 03003E58
 
+u8 gpu_pal_tags_index_of(u16 tag); // TODO
+
 // 08008928
 u8 gpu_pal_alloc_and_load(struct pal_spec* ps) {
 	u8 index;

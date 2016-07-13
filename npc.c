@@ -1,12 +1,7 @@
 #include "npc.h"
 #include "object.h"
-
-// 0835B8A0
-bool (off_835B8A0[])(struct task_t*, struct npc_state*, struct npc_state*) = {
-    &sub_805CD64_mode_0,
-    &sub_805CD84_mode_1,
-    &sub_805CE20_mode_2
-};
+#include "object_anim.h"
+#include "continuegame.h" // for objc_npc_alternative
 
 // 0805DF60
 u8 npc_id_by_local_id(u8 local_id, u8 mapnr, u8 mapgroup) {
@@ -25,17 +20,17 @@ bool npc_id_by_local_id_and_map_ret_success(u8 local_id, u8 mapnr, u8 mapgroup, 
 u8 npc_id_by_local_id_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
     u8 i=0;
     while (i<MAX_NPCS) {
-        if (npc_states[i].bits & 1 && \
+        if (npc_states[i].bitfield1 & NPC_BIT_ACTIVE && \
             npc_states[i].local_id       == local_id && \
-            npc_states[i].local_mapnr    == local_mapnr && \
-            npc_states[i].local_mapgroup == local_mapgroup) break;
+            npc_states[i].local_mapnr    == mapnr && \
+            npc_states[i].local_mapgroup == mapgroup) break;
         i++;
     }
     return i;
 }
 
 // 0805E080
-u8 rom_npc_to_npc_state(struct rom_npc *rnpc, u8, u8) {
+u8 rom_npc_to_npc_state(struct rom_npc *rnpc, u8 mapnr, u8 mapgroup) {
     // TODO
 }
 
@@ -52,7 +47,7 @@ u8 npc_id_by_local_id_ignore_map(u8 local_id) {
 
 // 0805E4B4
 void npc_hide(struct npc_state *npc) {
-    npc->bits &= ~2; // clear bit 2
+    npc->bitfield1 &= ~npc_nopause_1; // clear bit 2
     sub_0805E510(npc); // TODO
 }
 
@@ -67,19 +62,19 @@ void hide_sprite(u8 local_id, u8 mapnr, u8 mapgroup) {
 }
 
 // 0805E590
-void *npc_spawn_with_provided_template(u8, void*, u8, u8, short, short) {
+void *npc_spawn_with_provided_template(struct rom_npc *rnpc, struct proto_t *p, u8 mapnr, u8 mapgroup, short x, short y) {
     // TODO
     return 0;
 }
 
 // 0805E8E8
-void npc_to_template(u8 npc_type_id, void *objcallback, struct proto_t *p, u32 *npc_type_14) {
+void npc_to_template(u8 npc_type_id, void *objcallback, struct proto_t *p, struct obj_oversize_formation **npc_type_obj_formation) {
     struct npc_type *nt;
     nt = npc_get_type(npc_type_id);
 
     p->tile_tag       = nt->tile_tag;
-    p->pal_num        = nt->pal_num;
-    p->oam            = nt->oam;
+    p->pal_tag        = nt->pal_tag; // tag or num?
+    p->sprite         = nt->sprite;
     p->image_anims    = nt->image_anims;
     p->gfx_table      = nt->gfx_table;
     p->rotscale_anims = nt->rotscale_anims;
@@ -90,7 +85,7 @@ void npc_to_template(u8 npc_type_id, void *objcallback, struct proto_t *p, u32 *
         p->callback = &objc_npc_alternative;
     }
 
-    *npc_type_14 = nt->field_14;
+    *npc_type_obj_formation = nt->formation;
 }
 
 // 0805F218
@@ -100,6 +95,7 @@ void npc_turn(struct npc_state *npc, u8 direction) {
     if (npc->bitfield2 & (npc_invisble >> 8))
         return;
 
+    struct obj *o = &objects[npc->oam_id];
     obj_anim_image_start(o, npc_direction_to_obj_anim_image_number(npc->direction & 4));
     obj_anim_image_seek(o, 0);
 }
@@ -117,7 +113,7 @@ struct npc_type *npc_get_type(u8 type_id) {
         type_id = var_load_x4010_plus(type_id-0xF0);
     if (type_id >= 152)
         type_id = 10;
-    return npc_types[type_id];
+    return &npc_types[type_id];
 }
 
 // 0805F574
@@ -156,7 +152,7 @@ void npcs_rebase() {
 
     for (u8 i=0; i<MAX_NPCS; i++) {
         struct npc_state *npc = npc_states + i;
-        if (!(npc->bits & 1))
+        if (!(npc->bitfield1 & NPC_BIT_ACTIVE))
             continue;
 
         npc->stay_around.x -= dx;
@@ -179,16 +175,18 @@ bool npc_does_height_match(struct npc_state *npc, u8 height) {
 
 // 0805F218
 void npc_set_direction(struct npc_state *npc, u8 direction) {
-    npc->unknown = npc->direction.low;
+    direction &= 0xf;
+    npc->field_20 = npc->direction & 0xf;
     if (npc->bitfield2 & (npc_use_upper_direction_nibble >> 8) == 0)
-        npc->direction.low = direction;
-    npc->direction.high = direction;
+        npc->direction = direction | (npc->direction & 0xf0);
+    else
+        npc->direction = direction * 0x11;
 }
 
 // 0805FC5C
 u16 trainerid_by_local_id_and_map(u8 local_id, u8 mapnr, u8 mapgroup) {
     struct rom_npc *rnpc = (rom_npc_by_nr_and_map(local_id, mapnr, mapgroup));
-    return rnpc->trainerid;
+    return rnpc->id_in_script; // TODO: Function has wrong name? Field has wrong name?
 }
 
 // 0805FC74
@@ -488,8 +486,8 @@ bool npc_obj_ministep_stop_on_arrival(struct npc_state *npc, struct obj *o) {
     // step done, npc is on it's target position
     npc->from.x = npc->to.x;
     npc->from.y = npc->to.y;
-    npc->bitfield |= NPC_BIT_ONGRID;
-    obj->anim_delay_countdown |= OBJ_ANIM_PAUSE;
+    npc->bitfield1 |= npc_ground_analysis_3__on_grid; //NPC_BIT_ONGRID;
+    o->anim_delay_countdown |= OBJ_ANIM_IMAGE_PAUSED;
     return true;
 }
 
@@ -501,7 +499,7 @@ bool npc_ministep(struct npc_state *npc, struct obj *o) {
     // step done, npc is on it's target position
     npc->from.x = npc->to.x;
     npc->from.y = npc->to.y;
-    npc->bitfield |= 0x8; // flag for 'on grid' maybe?
+    npc->bitfield1 |= npc_ground_analysis_3__on_grid; //NPC_BIT_ONGRID;
     return true;
 }
 
@@ -569,6 +567,12 @@ void (*stepspeed2[])(struct obj*, u8) = {
     step2, step2, step2, step2
 };
 
+// 083A716C
+void (*stepspeed3[])(struct obj*, u8) = {
+    step2, step3, step3,
+    step2, step3, step3
+};
+
 // 083A7184
 void (*stepspeed4[])(struct obj*, u8) = {
     step4, step4, step4, step4
@@ -617,11 +621,14 @@ struct npc_image_anim_looping_info {
     struct loopingpoint { u8 trigger; u8 target; } l1, l2;
 };
 
+// 08063530
+struct npc_image_anim_looping_info *animtable_get_tp(void *key);
+
 // 08063554
 void npc_apply_anim_looping(struct npc_state *npc, struct obj *obj, u8 anim_number) {
-    if (npc.field_1 & 0x8) return;
+    if (npc->bitfield2 & (npc_unpause_pending >> 8)) return;
     obj->anim_number = anim_number;
-    struct npc_image_anim_looping_info *tp = animtable_get_tp(obj->anim_table);
+    struct npc_image_anim_looping_info *tp = animtable_get_tp(obj->image_anims);
     if (tp) {
              if (obj->anim_frame == tp->l1.trigger) obj->anim_frame = tp->l1.trigger;
         else if (obj->anim_frame == tp->l2.trigger) obj->anim_frame = tp->l2.trigger;
@@ -637,13 +644,13 @@ void npc_hide_and_trainer_flag_clear_on_role_x66_at_pos(struct npc_state *npc) {
 
     npc_hide_by_local_id_and_map(
         npc->local_id,
-        sav1->location.map,
-        sav1->location.bank);
+        sav1i->location.map,
+        sav1i->location.group);
 
     u16 flag = rom_npc_by_local_id_and_map_get_trainer_flag(
         npc->local_id,
-        sav1->location.map,
-        sav1->location.bank);
+        sav1i->location.map,
+        sav1i->location.group);
 
     flag_clear(flag);
 }

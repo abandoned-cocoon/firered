@@ -2,6 +2,8 @@
 #include "types.h"
 #include "object.h"
 
+#define poke_ability ability
+
 enum pokemon_data_request {
 	req_pokemon_id_or_personality = 0x0,
 	req_trainer_id = 0x1,
@@ -95,6 +97,7 @@ enum pokemon_type {
 };
 
 enum poke_ability {
+	ab_none = 0,
 	ab_stench = 1,
 	ab_drizzle = 2,
 	ab_speed_boost = 3,
@@ -748,5 +751,8 @@ extern u16 parent_a_moveset[4]; // 0202455C
 extern u16 child_moveset[4]; // 02024564
 extern u16 eggmove_buffer[10]; // 0202456C
 extern u16 parent_b_moveset[4]; // 02024580
+// continue in save.h
 
 extern struct pokemon_base base_stats[]; // 08254784 // TODO: Rename
+
+extern u8 *pokemon_names[];

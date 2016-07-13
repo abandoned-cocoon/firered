@@ -1,13 +1,51 @@
+#include "memory.h"
+#include "object.h"
+#include "task.h"
+#include "u08078_intro.h"
+
+u16 word_0203AB00; // 0203AB00
+u16 word_0203AB02; // 0203AB02
+u16 word_0203AB04; // 0203AB04
+u16 word_0203AB06; // 0203AB06
+u16 word_0203AB08; // 0203AB08
+u16 word_0203AB0A; // 0203AB0A
+u16 word_0203AB0C; // 0203AB0C
+u16 word_0203AB0E; // 0203AB0E
+u16 word_0203AB10; // 0203AB10
+u16 word_0203AB12; // 0203AB12
+u16 word_0203AB14; // 0203AB14
+u16 word_0203AB16; // 0203AB16
+u16 word_0203AB18; // 0203AB18
+u16 word_0203AB1A; // 0203AB1A
+u16 word_0203AB1C; // 0203AB1C
+u16 word_0203AB1E; // 0203AB1E
+u16 word_0203AB20; // 0203AB20
+u16 spark_scaling_x; // 0203AB22
+u16 spark_scaling_y; // 0203AB24
+
 struct intro {
 	void (*funcptr)(struct intro*);
 	u8 field4;
 	u8 tid;
+	u8 padding6[0x18-0x6];
+	struct obj *field18;
 	// and 0x28BC total bytes
 };
 
+// TODO: Move to header
+void intro_sys_init();
+void intro_set_cb(struct intro *in, void (*funcptr)(struct intro*));
+void task03_intro_sys(u8 tid);
+void intro_1_load_stars(struct intro *in);
+void intro_end(struct intro *in);
+void objc_080EE580(struct obj *o);
+void sub_080EEA94(struct intro *in);
+void objc_080EEB08(struct obj *o);
+
+
 // 080ECA70
 void intro_sys_init() {
-	struct intro *in = malloc(sizeof(struct intro));
+	struct intro *in = mem_alloc(sizeof(struct intro));
 
 	intro_set_cb(in, &intro_1_load_stars);
 
@@ -23,13 +61,13 @@ void intro_set_cb(struct intro *in, void (*funcptr)(struct intro*)) {
 
 // 080ECAB0
 void task03_intro_sys(u8 tid) {
-	struct intro *in = (struct in*) task_get_priv_u32(tid, 0);
+	struct intro *in = (struct intro*) task_get_priv_u32(tid, 0);
 
-	if (super.button_held_remapped & (KEYPAD_A | KEYPAD_START | KEYPAD_SELECT))
+	if (super.buttons_held_remapped & (KEYPAD_A | KEYPAD_START | KEYPAD_SELECT))
 		if (in->funcptr != &intro_end)
 			intro_set_cb(in, &intro_end);
 
-	*in->funcptr(in);
+	(*in->funcptr)(in);
 }
 
 // 080ECAF0
@@ -219,7 +257,7 @@ void objc_080EE580(struct obj *o) { // for sub_080EE528
 
 	if (o->pos_1.x >= o->priv3) {
 		o->pos_1.x = o->priv3;
-		o->callback = &objc_nothing;
+		o->callback = &objc_nullsub;
 	}
 }
 
@@ -272,9 +310,9 @@ void sub_080EEA94(struct intro *in) { // intro 9 sub
 	word_0203AB04 = 0x03;
 	word_0203AB08 = 0x04;
 
-	o->field_3C = 0x24;
+	o->priv7 = 0x24;
 
-	obj_set_anim_and_bitfield_xxx0_x1xx(o, 2);
+	obj_anim_image_start(o, 2);
 	o->callback = &objc_080EEB08;
 }
 

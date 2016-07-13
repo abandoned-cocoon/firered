@@ -1,4 +1,5 @@
 #include "object.h"
+#include "object_anim.h"
 #include "overworld_navigation.h"
 #include "task.h"
 
@@ -13,10 +14,13 @@ struct fishing_priv {
 	u16 state;
 };
 
+void taskFF_fishing(u8 taskid);
+extern bool (*fishing_states[0x10])(struct task_t*);
+
 // 0805D2C0
 void fishing_start(u8 rod_quality) {
 	u8 taskid = task_add(&taskFF_fishing, 0xFF);
-	tasks[taskid].priv[15] = rod_quality;
+	task[taskid].priv[15] = rod_quality;
 	taskFF_fishing(taskid);
 	if (sub_08150474(2) == 1)
 		sub_08112C9C();
@@ -24,7 +28,7 @@ void fishing_start(u8 rod_quality) {
 
 // 0805D304
 void taskFF_fishing(u8 taskid) {
-	struct task_t *t = &tasks[taskid];
+	struct task_t *t = &task[taskid];
 	while (fishing_states[P->state](t));
 }
 
@@ -44,10 +48,10 @@ bool fishing1(struct task_t *t) {
 	struct npc_state *player_npc = &npc_states[walkrun_state.npc_id];
 	
 	t->priv[12] = 0;
-	t->priv[13] = unk_data[t->priv[15]] + rand() % some_unk_data[t->priv[15]];
+	t->priv[13] = wait_base[t->priv[15]] + rand() % wait_variance[t->priv[15]];
 	t->priv[14] = player_npc->type_id;
-	npc_unset_movement_behaviour_if_pause_stash_locked(player_npc)
-	player_npc->obj_anim_and_vis_control |= 8;
+	npc_unset_movement_behaviour_if_pause_stash_locked(player_npc);
+	player_npc->bitfield2 |= npc_unpause_pending;
 	sub_805CC2C(player_npc->direction & 0xF);
 	t->priv[0]++;
 	return false; 
@@ -78,7 +82,7 @@ bool fishing3(struct task_t *t) {
 
 // 0805D47C
 bool fishing4(struct task_t *t) {
-	sub_805D9C4(&objects[walkrun_state.oamid]);
+	sub_805D9C4(&objects[walkrun_state.objid]);
 	t->priv[1]++;
 	if (t->priv[1] < 19) {
 		t->priv[1] = 0;
@@ -101,11 +105,11 @@ bool fishing4(struct task_t *t) {
 */
 
 bool fishing5(struct task_t *t) {
-	struct obj *player_obj = &objects[walkrun_state.oamid];
+	struct obj *player_obj = &objects[walkrun_state.objid];
 	sub_805D9C4(player_obj); // animation. I think it's the shaking animation before hitting A
 	t->priv[0]++;
 	if ((get_wilddata_fishing_by_map() << 0x18) && !(rand() &1)) {
-		u8 anim_id = sub_8063510(player_get_direction_sp1AA(walkrun_state.oamid));
+		u8 anim_id = sub_8063510(player_get_direction_sp1AA(walkrun_state.objid));
 		obj_anim_image_start(player_obj, anim_id);
 	} else {
 		t->priv[0] = 11;
@@ -125,7 +129,7 @@ bool fishing6(struct task_t *t) {
 bool fishing7(struct task_t *t) {
 	// used to be memcpy
 	u16 rod_something[] = {0x24, 0x21, 0x1E};
-	sub_805D9C4(&objects[walkrun_state.oamid]);
+	sub_805D9C4(&objects[walkrun_state.objid]);
 	t->priv[1]++;
 	if (t->priv[1] >= rod_something[t->priv[15]]) {
 		t->priv[0] = 12;
@@ -141,7 +145,7 @@ bool fishing7(struct task_t *t) {
 /*sub_805D9C4 does some animation. Rod shaking maybe.*/
 bool fishing8(struct task_t *t) {
 	u16 rod_something[] = {0x0, 0x0, 0x28, 0xA, 0x46, 0x1E};
-	sub_805D9C4(&objects[walkrun_state.oamid]);	
+	sub_805D9C4(&objects[walkrun_state.objid]);	
 	t->priv[0]++;
 	if ((t->priv[12] < t->priv[13]) || (t->priv[12] <= 1) && 
 	(rod_something[2 * t->priv[15] + t->priv[12]]) > rand() % 100)
@@ -152,7 +156,7 @@ bool fishing8(struct task_t *t) {
 // 0805D66C
 /*sub_805D9C4 does some animation. Rod shaking maybe.*/
 bool fishing9(struct task_t *t) {
-	sub_805D9C4(&objects[walkrun_state.oamid]);
+	sub_805D9C4(&objects[walkrun_state.objid]);
 	rboxid_clear_pixels(0, 0x11); 
 	// box_related_one(unk, font, string, text_speed, unk, text_colour, text_bg_maybe, shadow);*/
 	box_related_one(0, 2, (char *)0x841D14E, 1, 0, 2, 1, 3);
@@ -165,7 +169,7 @@ bool fishing9(struct task_t *t) {
 /*sub_805D9C4 does some animation. Rod shaking maybe.
 sub_8082FB0 = setup_wild_battle_rod; gens a wild pokemon by rod type & does battle preparations */
 bool fishingA(struct task_t *t) {
-	struct obj *player_obj = &objects[walkrun_state.oamid];
+	struct obj *player_obj = &objects[walkrun_state.objid];
 
 	if (!t->priv[1])
 		sub_805D9C4(player_obj);
@@ -197,9 +201,9 @@ bool fishingA(struct task_t *t) {
   sub_8063500 gets some byte (anim id maybe) from a byte array depending on player facing dir
   (char *)0x841D169 - Not even a nibble */
 bool fishingB(struct task_t *t) {
-	struct obj *player_obj = &objects[walkrun_state.oamid];
+	struct obj *player_obj = &objects[walkrun_state.objid];
 	sub_805D9C4(player_obj);
-	u8 anim_id = sub_8063500(player_get_direction_sp1AA(walkrun_state.oamid));
+	u8 anim_id = sub_8063500(player_get_direction_sp1AA(walkrun_state.objid));
 	obj_anim_image_start(player_obj, anim_id);
 	rboxid_clear_pixels(0, 0x11);
 	// box_related_one(unk, font, string, text_speed, unk, text_colour, text_bg_maybe, shadow);*/
@@ -213,9 +217,9 @@ bool fishingB(struct task_t *t) {
   sub_8063500 gets some byte (anim id maybe) from a byte array depending on player facing dir
   (char *)0x841D17E - it got away */
 bool fishingC(struct task_t *t) {
-	struct obj *player_obj = &objects[walkrun_state.oamid];
+	struct obj *player_obj = &objects[walkrun_state.objid];
 	sub_805D9C4(player_obj);
-	u8 anim_id = sub_8063500(player_get_direction_sp1AA(walkrun_state.oamid));
+	u8 anim_id = sub_8063500(player_get_direction_sp1AA(walkrun_state.objid));
 	obj_anim_image_start(player_obj, anim_id);
 	// box_related_one(unk, font, string, text_speed, unk, text_colour, text_bg_maybe, shadow);*/
 	box_related_one(0, 2, (char *)0x841D17E, 1, 0, 2, 1, 3);
@@ -226,7 +230,7 @@ bool fishingC(struct task_t *t) {
 // 0805D8AC
 /*sub_805D9C4 does some animation. Rod shaking maybe.*/
 bool fishingD(struct task_t *t) {
-	sub_805D9C4(&objects[walkrun_state.oamid]);
+	sub_805D9C4(&objects[walkrun_state.objid]);
 	t->priv[0]++;
 	return false;
 }
@@ -234,14 +238,14 @@ bool fishingD(struct task_t *t) {
 // 0805D8D8
 /*sub_805D9C4 does some animation. Rod shaking maybe.*/
 bool fishingE(struct task_t *t) {
-	struct obj *player_obj = &objects[walkrun_state.oamid];
+	struct obj *player_obj = &objects[walkrun_state.objid];
 	struct npc_state *player_npc = &npc_states[walkrun_state.npc_id];
 	sub_805D9C4(player_obj);
 	if (player_obj->bitfield & 0x10) {
 		npc_change_type_maybe(player_npc, t->priv[14] & 0xFF);
 		npc_turn(player_npc, player_npc->direction & 0xF);
 		if (walkrun_state.bitfield & 8)
-			sub_80DC4A4(player_npc.objid_surfing, 0, 0);
+			sub_80DC4A4(player_npc->objid_surfing, 0, 0);
 		player_obj->pos_2.x = 0;
 		player_obj->pos_2.y = 0;
 	}

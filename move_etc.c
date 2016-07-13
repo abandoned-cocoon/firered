@@ -1,3 +1,4 @@
+#include "move_etc.h"
 #include "pokemon.h"
 
 struct pokemon_extended *party_of(int owner) {

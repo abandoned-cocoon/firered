@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include "uncategorized.h" // for coords32
 
 #define BLOCK_FIELD_ROLE 0
 #define BLOCK_FIELD_1 1
@@ -72,6 +73,12 @@ struct cameradata {
     int b_y;
 };
 
+struct npc_translate_info {
+    char active;
+    char padding[3];
+    struct coords32 delta;
+};
+
 //* 02031DB4
 extern struct warpdata warp0;
 //* 02031DBC
@@ -90,7 +97,12 @@ extern u16 wild_pokemon_index;
 extern u8 wild_pokemon_from_water_category;
 //* 02036DFC
 extern struct map current_mapheader;
-
+//* 02036E18
+extern struct npc_translate_info translate_info;
+//* 02036E24
+extern u32 adjacent_maps_presence_bitfield;
+//* 02036E27
+extern u8 color_filter;
 //* 03000FAE
 extern u32 bs1_time;
 //* 03000FB0
@@ -115,7 +127,7 @@ extern u16 *overworld_bg3_tilemap;
 extern void (*map_post_load_hook)(void);
 
 //* 03005024
-extern void (*hm_phase_1)(void); // type ok?
+extern bool (*hm_phase_1)(void);
 //* 03005028
 extern u16 c1_link_related_func_retvl;
 //* 0300502C
@@ -131,22 +143,22 @@ extern u16 nu_x;
 //* 03005070
 extern u32 script_env_locking_player;
 //* 03005074
-extern u32 context_npc; // the npc currently executing a script (context_npc instead?)
+extern u32 context_npc; // the npc currently executing a script
 
 //* 0826D320
 extern u32 overworld_bg_setup_data[];
 
 void mapdata_load_assets_to_gpu_and_full_redraw();
-struct map *mapheader_by_mapnumbers(u8 mapbank, u8 mapnr);
-void mliX_load_map(u8 mapbank, u8 mapnr);
+struct map *mapheader_by_mapnumbers(u8 mapgroup, u8 mapnr);
+void mliX_load_map(u8 mapgroup, u8 mapnr);
 void mli0_load_map();
 void sub_80559A8();
 void walkrun_find_lowest_active_bit_in_bitfield();
-void is_tile_grass_on_seafoam_island_maybe(u8);
+bool is_tile_grass_on_seafoam_island_maybe(u8);
 int  cur_mapdata_block_role_at_screen_center_acc_to_sav1();
 void wild_pokemon_reroll();
 bool sub_8056124(u16 arg0);
-u8   mapnumbers_get_light_level(i8 bank, i8 map);
+u8   mapnumbers_get_light_level(i8 group, i8 map);
 u8   warp_get_light_level(struct warpdata *w);
 u8   sav1_map_get_light_level();
 u8   warp0_get_light_level();
@@ -170,8 +182,21 @@ void c2_ov_to_battle_anim();
 void c2_overworld();
 void set_callback1(void (*c1)());
 void c2_new_game();
-void c2_whiteout_maybe();
+void c2_whiteout();
+void c2_temp_teleport_after_maybe();
+void c2_0805674C();
+void sub_8056788();
+void c2_80567AC();
+void c2_exit_to_overworld_2_switch();
+void c2_exit_to_overworld_2_local();
+void c2_exit_to_overworld_2_link();
+void c2_8056854();
+void c2_c5_trainer_card();
+void c2_exit_to_overworld_1_continue_scripts_and_music();
+void c2_exit_to_overworld_1_continue_scripts_restart_music();
 void sub_8056F08();
+void c2_0805726C();
+void c2_080572A8();
 bool map_loading_iteration_5();
 void c1_link_related();
 u8   sub_8058D44(s16 x, s16 y);
@@ -206,6 +231,8 @@ void script_env_12_start_and_stuff(u8 *scr);
 u8  *mapheader_get_tagged_pointer(u8 tag);
 u8  *mapheader_get_first_match_from_tagged_ptr_list(u8 tag);
 bool mapheader_run_first_tag2_script_list_match_conditionally();
+void sub_806C888(u8 *d); // struct dp20* actually
+void context_npc_set_0();
 void cur_mapheader_run_tileset_funcs_after_806FED8();
 void cur_mapheader_run_blockset1_func();
 void cur_mapheader_run_blockset2_func();

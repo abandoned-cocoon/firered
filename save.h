@@ -28,7 +28,7 @@ struct sav1
   u16 mapdata_idx_plus_1;
   u8  num_party_pokemon;
   u8  unknown_35[3];
-  struct pokemon_boxed party_pokemon[6];
+  struct pokemon_extended party_pokemon[6];
   u32 money_maybe;
   u8  pcitems[124];
   u32 bag_probably[42];
@@ -77,6 +77,10 @@ struct sav1
   u8  last_field;
 };
 
+
+// sav2->option_button_style value:
+#define L_IS_A 2
+
 struct sav2
 {
   u8  name[8];
@@ -123,6 +127,13 @@ struct sav3 {
   string9 box_names[14];
   u8  box_background[14];
 };
+
+// 02024588
+extern struct sav2 stdsav2;
+// 0202552C
+extern struct sav1 stdsav1;
+// 02029314
+extern struct sav3 stdsav3;
 
 extern struct sav1 *sav1i;
 extern struct sav2 *sav2i;

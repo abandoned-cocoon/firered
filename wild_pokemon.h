@@ -11,7 +11,7 @@ struct wild_pokemon_distribution_domain {
 };
 
 struct wild_pokemon_distribution {
-	u8 mapbank;
+	u8 mapgroup;
 	u8 mapnr;
 	u16 field_2;
 	struct wild_pokemon_distribution_domain *grass;
