@@ -51,8 +51,8 @@ struct mevent_srv *mevent_srv_ptr;
 extern struct mevent_cmd mevent_srv_init_data_A[];
 extern struct mevent_cmd mevent_srv_init_data_B[];
 void mevent_srv_init_common(struct mevent_srv *srv, struct mevent_cmd *init_data, u32 sub_arg1, u32 sub_arg2);
-void sub_0814490C();
-void sub_081449E0();
+void sub_814490C();
+void sub_81449E0();
 
 // 0814485C
 void mevent_srv_sub_init(struct mevent_srv_sub *sub, u32 arg1, u32 arg2) {
@@ -67,12 +67,12 @@ void mevent_srv_sub_init(struct mevent_srv_sub *sub, u32 arg1, u32 arg2) {
 	sub->field_8 = 0;
 	sub->field_1C = 0;
 	sub->field_18 = 0;
-	sub->funcptr_24 = &sub_081449E0;
-	sub->funcptr_20 = &sub_0814490C;
+	sub->funcptr_24 = &sub_81449E0;
+	sub->funcptr_20 = &sub_814490C;
 }
 
 // 08144888
-void sub_08144888(struct mevent_srv_sub *sub, u16 arg1, u32 arg2, u32 size) {
+void sub_8144888(struct mevent_srv_sub *sub, u16 arg1, u32 arg2, u32 size) {
 	sub->field_0 = (u32)0;
 	sub->field_E = arg1;
 	sub->field_10 = (u16)0;
@@ -82,10 +82,10 @@ void sub_08144888(struct mevent_srv_sub *sub, u16 arg1, u32 arg2, u32 size) {
 }
 
 // 0814490C
-//void sub_0814490C() {}
+//void sub_814490C() {}
 
 // 081449E0
-//void sub_081449E0() {}
+//void sub_81449E0() {}
 
 
 // 08144F1C
@@ -114,7 +114,7 @@ void mevent_srv_init_common(struct mevent_srv *srv, struct mevent_cmd *init_data
 }
 
 // 0814501C
-void sub_0814501C(struct mevent_srv *srv, u16 arg1, u32 arg2, u32 size) {
+void sub_814501C(struct mevent_srv *srv, u16 arg1, u32 arg2, u32 size) {
 	assert (size < ME_SEND_BUF_SIZE);
-	sub_08144888(&srv->sub, arg1, arg2, size);
+	sub_8144888(&srv->sub, arg1, arg2, size);
 }

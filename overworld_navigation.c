@@ -10,13 +10,13 @@ enum block_reason { /* TODO */ BR_NONE=0 };
 void player_step(u8 direction, u16 keypad_new, u16 keypad_held) {
     struct npc_state *avatar = &npc_states[walkrun_state.npc_id];
 
-    sub_0805CC40(avatar);
+    sub_805CC40(avatar);
 
     if (walkrun_state.lock)
         return;
     if (player_lock_for_tile_x54_x55_x56_x57()) // always 1 when (walkrun_state.bitfield & 0x40)
         return;
-    if (sub_0805B45C(avatar, direction))
+    if (sub_805B45C(avatar, direction))
         return;
 
     npc_clear_strange_bits(avatar);
@@ -369,7 +369,7 @@ bool onpress_a(struct npc_position *n, u8 role, u8 direction) {
 ow_script npc_get_script_by_npc_id(u8 npc_id);
 ow_script onpress_a_get_script_signpost(struct npc_position *n, u8 role, u8 direction);
 ow_script surf(struct npc_position *n, u8 role, u8 direction);
-ow_script sub_08069D8C(u16 var, ow_script script);
+ow_script sub_8069D8C(u16 var, ow_script script);
 
 // 0806CEE0
 ow_script onpress_a_get_script(struct npc_position *n, u8 role, u8 direction) {
@@ -401,12 +401,12 @@ ow_script onpress_a_get_script_npc(struct npc_position *n, u8 role, u8 direction
         );
         if (npc_id == MAX_NPCS || npc_states[npc_id].local_id == 0xFF) return 0;
     }
-    if (in_trade_center() && !sub_08063D68(&npc_states[npc_id])) return 0;
+    if (in_trade_center() && !sub_8063D68(&npc_states[npc_id])) return 0;
 
     context_npc = npc_id;
     var_800F = npc_states[npc_id].local_id;
     var_800C = direction;
-    return sub_08069D8C(var_800F, npc_get_script_by_npc_id(npc_id));
+    return sub_8069D8C(var_800F, npc_get_script_by_npc_id(npc_id));
 }
 
 // 0806D1F0

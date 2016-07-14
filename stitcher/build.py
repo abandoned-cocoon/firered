@@ -2,6 +2,8 @@
 import json
 from ast import literal_eval as leval
 
+confirm = False
+
 class SectionBreaker:
 	pass
 
@@ -27,7 +29,7 @@ class EntrypointThumb:
 		self.size = 0
 
 	def write(self):
-		return '\n\t.global {0}\n{0}:'.format(self.name)
+		return '\n\t.global {0}\n\t.thumb_func\n{0}:'.format(self.name)
 
 
 class Patch(SectionBreaker):
@@ -35,13 +37,15 @@ class Patch(SectionBreaker):
 		self.addr = original.addr
 		self.size = size
 		self.original = original
+		self.original.use = None
 
 	def write(self):
 		return "\n# patch for {}\n".format(self.original.name)
 
 	def write_ld(self):
+		if confirm:
+			return "\t\t. = 0x{1:08x};\n\t\t*(.text.{0})".format(self.original.name, self.addr)
 		return "\t\t*(.text.{}) /* {:08x} */".format(self.original.name, self.addr)
-		#return "\t\t. = 0x{1:08x};\n\t\t*(.text.{0})".format(self.original.name, self.addr)
 
 	def __repr__(self):
 		return repr(self.original.name)
@@ -120,9 +124,10 @@ def write(info, patches, symbols_thumb, symbols_ram, rom_path, out_s, out_ld):
 		assert begin <= end, "[{:08x}:{:08x}]".format(begin, end)
 
 		if section is None:
-			section = "s{:08x}".format(begin)
+			section = ".rom.{:08x}".format(begin)
 			print('.section', section, ', "ax"', file=out_s)
-			# print("\t\t. = 0x{:08x};".format(begin), file=out_ld)
+			if confirm:
+				print("\t\t. = 0x{:08x};".format(begin), file=out_ld)
 			print("\t\t*({})".format(section), file=out_ld)
 
 		if end-begin > 0:
@@ -282,6 +287,10 @@ def main():
 	leval_sym_addr = lambda ts: [(leval(addr_expr), name) for addr_expr, name in ts]
 	symbols_thumb = leval_sym_addr(info["symbols-thumb"])
 	symbols_ram = leval_sym_addr(info["symbols-ram"])
+
+	for func in funcs.values():
+		if not hasattr(func, "use"):
+			symbols_thumb.append((func.addr+1, func.name))
 
 	with open(p_asmfile, "w") as asmfile:
 		with open(p_ldscript, "w") as ldscript:

@@ -1,3 +1,4 @@
+#include "object.h"
 #include "engine_scripts.h"
 #include "overworld_effects.h"
 #include "hm.h" // for cut_ruin_valley

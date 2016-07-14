@@ -67,14 +67,14 @@ void objc_exec() {
 // 08006BA8
 void obj_sync_something() {
 	write_oam_coords();
-	sub_08006CB8();
-	sub_08006CF8();
+	sub_8006CB8();
+	sub_8006CF8();
 
 	u8 i = super.gpu_sprites_upload_skip & 1;
 	super.gpu_sprites_upload_skip |= 1;
 
-	sub_08006F04();
-	sub_08006EB8();
+	super_sprites_fill();
+	write_rotscale_coefficients();
 
 	super.gpu_sprites_upload_skip &= ~1;
 	super.gpu_sprites_upload_skip |= i;
@@ -88,12 +88,12 @@ void write_oam_coords() {
 }
 
 // 08006CB8
-void sub_08006CB8() {
+void sub_8006CB8() {
 	// TODO
 }
 
 // 08006CF8
-void sub_08006CF8() {
+void sub_8006CF8() {
 	// TODO (big)
 }
 

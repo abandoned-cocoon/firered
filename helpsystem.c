@@ -136,7 +136,7 @@ void help_system_enable_unless_flashback__sp199() {
 }
 
 // 0812B520
-void sub_0812B520(u16 *arg, struct help_top_item *items) {
+void sub_812B520(u16 *arg, struct help_top_item *items) {
 	u32 count = 0;
 	u8 *vis = help_top_item_visibility[help_system_context];
 	for (int i=0; i<6; i++) {

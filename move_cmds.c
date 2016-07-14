@@ -93,7 +93,7 @@ void mcmd00_0801D760() {
 
     if (b_features_bitfield & 0x02000000 == 0 &&
         batk->status2 & 0x00001000 == 0 &&
-        (x = sub_0801D438())) {
+        (x = sub_801D438())) {
 
         if (x == 2)
             b_features_bitfield |= 0x02000000;
@@ -106,7 +106,7 @@ void mcmd00_0801D760() {
 
     if (protect_structs[b_defender].flags & B_PR1_MAGIC_COAT &&
         move_data[b_move_to_execute_A].flags & MOVE_FLAG_AFFECTED_BY_MAGIC_COAT) {
-        sub_08016EC8(b_attacker,
+        sub_8016EC8(b_attacker,
                      b_defender,
                      0x115); // 277
         // strip magic coat
@@ -289,7 +289,7 @@ void mcmd49() {
 // 08025B74
 void mcmd60_08025B74() {
     if (battle_side_get_owner(b_attacker) == 0)
-        sub_08054E90(b_move_cursor[1]);
+        sub_8054E90(b_move_cursor[1]);
     b_move_cursor += 2;
 }
 
@@ -348,8 +348,8 @@ u8 get_battle_side_of(u8 whom) {
     case 3:
     case 5: return b_defender_partner;
     case 10: return b_side_unknown; // = byte_02023FC4[0x17];
-    case 11: return sub_080751E8(0);
-    case 12: return sub_080751E8(1);
+    case 11: return sub_80751E8(0);
+    case 12: return sub_80751E8(1);
     default: return 0;
     }
 }

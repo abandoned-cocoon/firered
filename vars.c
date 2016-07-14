@@ -41,12 +41,12 @@ u16 *var_access(u16 nr) {
     u8 m = pq_npc_recording;
     if (m == 1) {
         u16 *z;
-        if (z = (u16*)sub_08112D40(0, nr))
+        if (z = (u16*)sub_8112D40(0, nr))
             saveblock1_mapdata->var_4000[nr-0x3800] = *z;
     } else if (m == 2) {
-        if (sub_0806E528(nr-0x4000, 1)) {
+        if (sub_806E528(nr-0x4000, 1)) {
             *(u16*)0x0300507C = nr-0x4000;
-            sub_08112DB0(0, nr, saveblock1_mapdata->var_4000[nr-0x3800]);
+            sub_8112DB0(0, nr, saveblock1_mapdata->var_4000[nr-0x3800]);
         }
     }
     return &saveblock1_mapdata->var_4000[nr-0x3800];

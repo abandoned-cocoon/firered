@@ -66,7 +66,7 @@ void save_game(u8 mode) {
 	//   4 save newly started game
 	void *vblank_backup = super.vblank_callback;
 	super.vblank_callback = NULL;
-	sub_080DA1D4();
+	sub_80DA1D4();
 	switch (mode) {
 		case 1:
 			save_serialize_game();
@@ -87,8 +87,8 @@ void save_game(u8 mode) {
 			for (u8 i=0x1C; i<0x20; i++)
 				(*flash_c_erase_block)(i);
 		case 3:
-			if (sub_08054EC4(0xA) <= 0x3E6)
-				sub_08054E90(0xA);
+			if (sub_8054EC4(0xA) <= 0x3E6)
+				sub_8054E90(0xA);
 		default:
 			save_serialize_game();
 			save_write_to_flash(0xFFFF, &dword_030053B0);

@@ -11,7 +11,7 @@ void mainloop() {
 	init_irq();
 	m4aSoundInit();
 	lcd_enable_vcount_irq_at_150px();
-	sub_080F86C4(); // something about serial port
+	sub_80F86C4(); // something about serial port
 	flash_timeout_start_on_timer_2_when_flash_present();
 	init_saveblock_ptrs_and_copyright_message();
 	sound_sources_off();
@@ -34,12 +34,12 @@ void mainloop() {
 			           | KEYPAD_SELECT;
 			if (super.buttons_held & pattern == pattern) {
 				// something about resetting the game
-				sub_081E09D4();
-				sub_081E08F8();
-				sub_080008D8();
+				sub_81E09D4();
+				sub_81E08F8();
+				sub_80008D8();
 			}
 		}
-		if (sub_080582E0() == 1) {
+		if (sub_80582E0() == 1) {
 			byte_030030E4 = 0;
 			callback_wrapper();
 			byte_030030E4 = 0;
@@ -47,7 +47,7 @@ void mainloop() {
 			// again, something about link connection
 			byte_030030E4 = 0;
 			callback_wrapper();
-			if (sub_08058274() == 1) {
+			if (sub_8058274() == 1) {
 				super.buttons_new_remapped = 0;
 				copy_queue_clear();
 				byte_030030E4 = 0;

@@ -11,4 +11,4 @@ void bc_move_exec_toplevel();
 void b_stack_push_move_addr(u8 *value);
 void b_stack_push_move_cursor();
 void b_stack_pop_move_cursor();
-void sub_0801BC24(u8 *target);
+void sub_801BC24(u8 *target);

@@ -118,20 +118,20 @@ void anim_image_1_goto(struct obj *o) {
 // 08007B88
 void anim_image_0_unknown(struct obj *o) {
 	if (o->anim_unknown_counter)
-		sub_08007BE0(o);
+		sub_8007BE0(o);
 	else
-		sub_08007BA8(o);
+		sub_8007BA8(o);
 }
 
 // 08007BA8
-void sub_08007BA8(struct obj *o) {
+void sub_8007BA8(struct obj *o) {
 	o->anim_unknown_counter = IMAGE_FRAME(o).duration;
 	obj_anim_image_rewind_to_cmd00(o);
 	obj_anim_image_continue(o);
 }
 
 // 08007BE0
-void sub_08007BE0(struct obj *o) {
+void sub_8007BE0(struct obj *o) {
 	o->anim_unknown_counter--;
 	obj_anim_image_rewind_to_cmd00(o);
 	obj_anim_image_continue(o);
@@ -161,7 +161,7 @@ void obj_anim_rotscale_begin(struct obj *o) {
 	rotscale_load_frame(affidx, o, &f);
 	o->bitfield &= ~0x08;
 	o->bitfield &= ~0x20;
-	sub_0800834C(affidx, &f);
+	sub_800834C(affidx, &f);
 	rotscale_states[affidx].delay_countdown = f.duration;
 
 	if (o->bitfield & 0x80)
@@ -177,7 +177,7 @@ void obj_anim_rotscale_continue(struct obj *o) {
 }
 
 // 08007DBC
-void sub_08007DBC(u8 affidx, struct obj *o) {
+void sub_8007DBC(u8 affidx, struct obj *o) {
 	if (obj_anim_rotscale_delay_progress(o, affidx)) // if paused
 		return;
 
@@ -189,13 +189,13 @@ void sub_08007DBC(u8 affidx, struct obj *o) {
 // 08007DF0
 void anim_rotscale_0_unknown(u8 affidx, struct obj *o) {
 	if (rotscale_states[affidx].field_3)
-		sub_08007E60(affidx, o);
+		sub_8007E60(affidx, o);
 	else
-		sub_08007E24(affidx, o);
+		sub_8007E24(affidx, o);
 }
 
 // 08007E60
-void sub_08007E60(u8 affidx, struct obj *o) {
+void sub_8007E60(u8 affidx, struct obj *o) {
 	rotscale_states[affidx].field_3--;
 	obj_anim_rotscale_rewind_to_cmd00_maybe(affidx, o);
 	obj_anim_rotscale_continue(o);
@@ -225,7 +225,7 @@ void anim_rotscale_2_stop(u8 affidx, struct obj *o) {
 void anim_rotscale_3_normal_frame(u8 affidx, struct obj *o) {
 //	TODO
 //	rotscale_load_frame
-//	sub_0800834C
+//	sub_800834C
 //		(rotscale_frame_apply_absolute)
 //		rotscale_frame_apply_relative_and_sync
 }
@@ -237,10 +237,10 @@ void anim_rotscale_3_normal_frame(u8 affidx, struct obj *o) {
 // sprite_get_affidx_if_applicable
 
 // 08007FFC
-// sub_08007FFC
+// sub_8007FFC
 
 // 0800800C
-// sub_0800800C
+// sub_800800C
 
 // 08008038
 // obj_update_pos2
@@ -311,7 +311,7 @@ void rotscale_load_frame(u8 affidx, struct obj *o, struct rotscale_frame *r) {
 }
 
 // 0800834C
-void sub_0800834C(u8 affidx, struct rotscale_frame *f) {
+void sub_800834C(u8 affidx, struct rotscale_frame *f) {
 
 	if (f->duration > 0) {
 		f->duration--;

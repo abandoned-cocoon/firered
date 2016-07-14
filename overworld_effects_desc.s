@@ -10,7 +10,7 @@
 /* 081D96AC */
 oe_081D97C4:
 	.byte OEC_CALL
-	.long sub_08082544
+	.long sub_8082544
 	.byte OEC_END
 
 /* 081D97CA */
@@ -28,7 +28,7 @@ oe_cut2:
 /* 081D97D6 */
 oe_081D97D6:
 	.byte OEC_CALL
-	.long sub_080DB1DC
+	.long sub_80DB1DC
 	.byte OEC_END
 
 /* 081D96AC */

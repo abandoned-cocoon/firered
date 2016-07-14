@@ -39,11 +39,11 @@ void ma02_instanciate_template() {
 
 	ctrl &= ~80;
 
-	s8 iv = ((ctrl >= 0x40) ? (ctrl-0x40) : (-ctrl)) + sub_0807685C(battle_side);
+	s8 iv = ((ctrl >= 0x40) ? (ctrl-0x40) : (-ctrl)) + sub_807685C(battle_side);
 	if (iv >= 3) iv = 3;
 
-	u8 t1 = sub_08074480(b_anim_defender, 2);
-	u8 t2 = sub_08074480(b_anim_defender, 3);
+	u8 t1 = sub_8074480(b_anim_defender, 2);
+	u8 t2 = sub_8074480(b_anim_defender, 3);
 
 	template_instanciate_and_run_once(proto, t1, t2, iv);
 

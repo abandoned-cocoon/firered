@@ -22,8 +22,8 @@ void fishing_start(u8 rod_quality) {
 	u8 taskid = task_add(&taskFF_fishing, 0xFF);
 	task[taskid].priv[15] = rod_quality;
 	taskFF_fishing(taskid);
-	if (sub_08150474(2) == 1)
-		sub_08112C9C();
+	if (sub_8150474(2) == 1)
+		sub_8112C9C();
 }
 
 // 0805D304
@@ -59,7 +59,7 @@ bool fishing1(struct task_t *t) {
 
 // 0805D3F4
 bool fishing2(struct task_t *t) {
-	sub_0805D9C4(objects[walkrun_state.objid]);
+	sub_805D9C4(objects[walkrun_state.objid]);
 	if ((++t->priv[1]) >= 60) // wait one second
 		t->priv[0]++; // go to state 3
 	return false;
@@ -260,8 +260,8 @@ bool fishingF(struct task_t *t) {
 
 	walkrun_state.lock = false;
 	script_env_2_disable();
-	sub_08068A5C();
-	sub_080F6F54(0, 1);
+	sub_8068A5C();
+	sub_80F6F54(0, 1);
 	u8 taskid = task_find_by_funcptr(&taskFF_fishing);
 	task_del(taskid);
 	return false;

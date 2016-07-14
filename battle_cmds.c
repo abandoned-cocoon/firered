@@ -7,7 +7,7 @@ void bt1_29_blink_for_damage() {
 	if (o->bitfield2 & 0x7) {
 		bx_busy = true;
 		o->priv1 = 0;
-		sub_0804BE70(b_active_side);
+		sub_804BE70(b_active_side);
 		bx[b_active_side] = &bx1_blink_for_damage;
 	} else {
 		bt1_done();

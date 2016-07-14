@@ -1,27 +1,33 @@
 ROM = firered.gba
 TOOLCHAIN = arm-none-eabi
 OBJDIR = out
-PATCHES = $(OBJDIR)/patch.o
+PATCHES = $(OBJDIR)/patch.o #$(OBJDIR)/patch_asm.o
 
 LDS        = $(OBJDIR)/out.ldscript
-OUT_O      = $(OBJDIR)/out.o
-OUT_S      = $(OBJDIR)/out.s
+INC_S      = $(OBJDIR)/inc.s
+INC_O      = $(OBJDIR)/inc.o
 PATCH_JSON = $(OBJDIR)/patch.json
 PATCH_O    = $(OBJDIR)/patch.o
+ASM_O      = $(OBJDIR)/patch_asm.o
 OUT_ELF    = out.elf
 OUT_GBA    = out.gba
 
 
 PATCH_CFLAGS =
-PATCH_CFLAGS += -ffunction-sections -fno-inline -fomit-frame-pointer -mlong-calls
-PATCH_CFLAGS += -mthumb -mcpu=arm7tdmi
+PATCH_CFLAGS += -ffunction-sections -fomit-frame-pointer -mlong-calls #-fno-inline
+PATCH_CFLAGS += -nostdlib -mthumb -mcpu=arm7tdmi -mabi=apcs-gnu
 PATCH_CFLAGS += -O2 -gdwarf-2 -gstrict-dwarf # vbam forces dwarf version <=2
 
-$(OUT_ELF): $(LDS) $(OUT_O) $(PATCHES)
-	$(TOOLCHAIN)-ld -A arm7tdmi --fix-v4bx -o $(OUT_ELF) -T $(LDS) $(OUT_O) $(PATCHES)
+ASFLAGS = -meabi=gnu
 
 $(OUT_GBA): $(OUT_ELF)
 	$(TOOLCHAIN)-objcopy -S -O binary $(OUT_ELF) $(OUT_GBA)
+
+$(OUT_ELF): $(LDS) $(INC_O) $(PATCHES)
+	$(TOOLCHAIN)-ld -A arm7tdmi -o $(OUT_ELF) -T $(LDS) $(INC_O) $(PATCHES)
+
+$(ASM_O): ../helpers.s ../overworld_effects_desc.s
+	$(TOOLCHAIN)-as $(ASFLAGS) -o $(ASM_O) ../helpers.s ../overworld_effects_desc.s
 
 $(PATCH_O): patch.c Makefile
 	mkdir -p $(OBJDIR)
@@ -30,11 +36,11 @@ $(PATCH_O): patch.c Makefile
 $(PATCH_JSON): $(PATCH_O)
 	rabin2 -Sj $(PATCH_O) > $(PATCH_JSON)
 
-$(OUT_O): $(OUT_S)
-	$(TOOLCHAIN)-as -mthumb -o $(OUT_O) $(OUT_S)
+$(INC_O): $(INC_S)
+	$(TOOLCHAIN)-as $(ASFLAGS) -mthumb -o $(INC_O) $(INC_S)
 
-$(OUT_S) $(LDS): build.py info.json $(PATCH_JSON) $(ROM)
-	python build.py $(ROM) $(PATCH_JSON) $(OUT_S) $(LDS)
+$(INC_S) $(LDS): build.py info.json $(PATCH_JSON) $(ROM)
+	python build.py $(ROM) $(PATCH_JSON) $(INC_S) $(LDS)
 
 clean:
 	rm -rf out.gba out.sav ./$(OBJDIR)
@@ -64,6 +70,7 @@ $(PATCH_O): \
 	../gpu.c \
 	../gpu_alloc_pal.c \
 	../gpu_alloc_tile.c \
+	#../helpers.s \
 	../helpsystem.c \
 	../hm.c \
 	../intro.c \
@@ -86,7 +93,7 @@ $(PATCH_O): \
 	../overworld_loading.c \
 	../overworld_navigation.c \
 	../rbox.c \
-	../rfu.c \
+	#../rfu.c \
 	../save.c \
 	../startmenu.c \
 	../task.c \

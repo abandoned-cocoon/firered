@@ -48,7 +48,7 @@ u8 npc_id_by_local_id_ignore_map(u8 local_id) {
 // 0805E4B4
 void npc_hide(struct npc_state *npc) {
     npc->bitfield1 &= ~npc_nopause_1; // clear bit 2
-    sub_0805E510(npc); // TODO
+    sub_805E510(npc); // TODO
 }
 
 // 0805E4C8

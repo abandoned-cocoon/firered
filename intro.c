@@ -39,7 +39,7 @@ void task03_intro_sys(u8 tid);
 void intro_1_load_stars(struct intro *in);
 void intro_end(struct intro *in);
 void objc_080EE580(struct obj *o);
-void sub_080EEA94(struct intro *in);
+void sub_80EEA94(struct intro *in);
 void objc_080EEB08(struct obj *o);
 
 
@@ -92,7 +92,7 @@ void task03_intro_sys(u8 tid) {
 // task00_080ED0AC
 
 // 080ED118
-// sub_080ED118 (intro 6 sub)
+// sub_80ED118 (intro 6 sub)
 
 // 080ED140
 // task00_intro_zoom_in
@@ -107,10 +107,10 @@ void task03_intro_sys(u8 tid) {
 // task00_intro_7_080ED428
 
 // 080ED444
-// sub_080ED444 (intro 7 sub)
+// sub_80ED444 (intro 7 sub)
 
 // 080ED4A0
-// sub_080ED4A0 (intro 7 sub)
+// sub_80ED4A0 (intro 7 sub)
 
 // 080ED4C0
 // intro_8_scene_3
@@ -119,37 +119,37 @@ void task03_intro_sys(u8 tid) {
 // task00_080ED69C
 
 // 080ED6D8
-// sub_080ED6D8
+// sub_80ED6D8
 
 // 080ED6EC
-// sub_080ED6EC
+// sub_80ED6EC
 
 // 080ED714
-// sub_080ED714
+// sub_80ED714
 
 // 080ED760
-// sub_080ED760 (intro 9 sub)
+// sub_80ED760 (intro 9 sub)
 
 // 080ED788
-// sub_080ED788 (intro 9 sub)
+// sub_80ED788 (intro 9 sub)
 
 // 080ED7B0
-// sub_080ED7B0 (intro 9 sub)
+// sub_80ED7B0 (intro 9 sub)
 
 // 080ED714
-// sub_080ED714 (intro 8 sub)
+// sub_80ED714 (intro 8 sub)
 
 // 080ED760
-// sub_080ED760 (intro 9 sub)
+// sub_80ED760 (intro 9 sub)
 
 // 080ED788
-// sub_080ED788 (intro 9 sub)
+// sub_80ED788 (intro 9 sub)
 
 // 080ED7B0
-// sub_080ED7B0 (intro 9 sub)
+// sub_80ED7B0 (intro 9 sub)
 
 // 080ED7D4
-// sub_080ED7D4 (intro 8 sub)
+// sub_80ED7D4 (intro 8 sub)
 
 // 080ED818
 // objc_080ED818 (intro 8 object)
@@ -161,24 +161,24 @@ void task03_intro_sys(u8 tid) {
 // TBC
 
 // 080EDAF0
-// sub_080EDAF0 (intro 9 sub)
+// sub_80EDAF0 (intro 9 sub)
 
 // 080EDB70
-// sub_080EDB70 (intro 9 sub)
+// sub_80EDB70 (intro 9 sub)
 
 // 080EDBAC
-// sub_080EDBAC (intro 9 sub)
+// sub_80EDBAC (intro 9 sub)
 
 // 080EDBE8
 void intro_end(struct intro *in) {
 	if (in->field4 == 0) {
-		sub_08070424(0, 0, 0x400);
+		sub_8070424(0, 0, 0x400);
 		in->field4 = 1;
 	} else if (in->field4 == 1) {
-		if (sub_080F682C() == 0) {
+		if (sub_80F682C() == 0) {
 			task_del(in->tid);
 			memory_free(in);
-			sub_08000B94(2);
+			sub_8000B94(2);
 			hblank_handler_set(0);
 			set_callback2(&c2_intro_2);
 		}
@@ -189,40 +189,40 @@ void intro_end(struct intro *in) {
 // spawn_intro_star (intro 3 sub)
 
 // 080EDD28
-// sub_080EDD28 (for star)
+// sub_80EDD28 (for star)
 
 // 080EDDF0
-// sub_080EDDF0 (intro 3 sub)
+// sub_80EDDF0 (intro 3 sub)
 
 // 080EDE04
 // task01_intro_star_out
 
 // 080EDED8
-// sub_080EDED8 (intro 4 sub)
+// sub_80EDED8 (intro 4 sub)
 
 // 080EDEEC
 // task02_080EDEEC (launched by 080EDED8)
 
 // 080EDF68
-// sub_080EDF68 (intro 5 sub)
+// sub_80EDF68 (intro 5 sub)
 
 // 080EDF94
-// sub_080EDF94 (intro 9 sub)
+// sub_80EDF94 (intro 9 sub)
 
 // 080EDFD8
-// sub_080EDFD8 (intro 4 sub)
+// sub_80EDFD8 (intro 4 sub)
 
 // 080EE024
 // task04_080EE024 (launched by 080EDFD8)
 
 // 080EE160
-// sub_080EE160 (task04_080EE024 sub)
+// sub_80EE160 (task04_080EE024 sub)
 
 // 080EE1C4
-// objc_080EE1C4 (sub_080EE160 instanciated object callback)
+// objc_080EE1C4 (sub_80EE160 instanciated object callback)
 
 // 080EE200
-// sub_080EE200 (intro 8)
+// sub_80EE200 (intro 8)
 
 // 080EE29C
 // objc_star
@@ -237,13 +237,13 @@ void intro_end(struct intro *in) {
 // objc_sparks_2
 
 // 080EE4F8
-// sub_080EE4F8 (intro 8 sub)
+// sub_80EE4F8 (intro 8 sub)
 
 // 080EE528
-// sub_080EE528 (intro 8 sub)
+// sub_80EE528 (intro 8 sub)
 
 // 080EE580
-void objc_080EE580(struct obj *o) { // for sub_080EE528
+void objc_080EE580(struct obj *o) { // for sub_80EE528
 
 	// move with linear speed
 	// but from frame 40 on decrease the speed to 1
@@ -262,37 +262,37 @@ void objc_080EE580(struct obj *o) { // for sub_080EE528
 }
 
 // 080EE5C8
-// sub_080EE5C8 (intro 8 sub)
+// sub_80EE5C8 (intro 8 sub)
 
 // 080EE5E4
-// sub_080EE5E4 (intro 9 sub)
+// sub_80EE5E4 (intro 9 sub)
 
 // 080EE610
-// objc_080EE610 (for sub_080EE5E4)
+// objc_080EE610 (for sub_80EE5E4)
 
 // 080EE6A4
-// sub_080EE6A4 (intro 9 sub)
+// sub_80EE6A4 (intro 9 sub)
 
 // 080EE704
-// objc_080EE704 (for sub_080EE6A4)
+// objc_080EE704 (for sub_80EE6A4)
 
 // 080EE850
-// sub_080EE850 (intro 9 sub)
+// sub_80EE850 (intro 9 sub)
 
 // 080EE864
-// sub_080EE864 (objc_080EE704 sub)
+// sub_80EE864 (objc_080EE704 sub)
 
 // 080EE8E4
-// objc_080EE8E4 (for sub_080EE864)
+// objc_080EE8E4 (for sub_80EE864)
 
 // 080EE970
-// sub_080EE970 (intro 9 sub)
+// sub_80EE970 (intro 9 sub)
 
 // 080EE9D4
-// objc_080EE9D4 (for sub_080EE970)
+// objc_080EE9D4 (for sub_80EE970)
 
 // 080EEA94
-void sub_080EEA94(struct intro *in) { // intro 9 sub
+void sub_80EEA94(struct intro *in) { // intro 9 sub
 	struct obj *o = in->field18;
 
 	o->priv0 = 0;
@@ -317,10 +317,10 @@ void sub_080EEA94(struct intro *in) { // intro 9 sub
 }
 
 // 080EEB08
-// objc_080EEB08 (for sub_080EEA94)
+// objc_080EEB08 (for sub_80EEA94)
 
 // 080EEBE4
-// sub_080EEBE4 (intro 6 sub)
+// sub_80EEBE4 (intro 6 sub)
 
 // 080EEC0C
 // END

@@ -6,7 +6,7 @@
 
 #define NO_RAM
 
-#if 0
+#if 1
 #include "../gpu.c"
 #include "../task.c"
 #else

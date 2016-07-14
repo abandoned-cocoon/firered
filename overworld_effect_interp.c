@@ -80,9 +80,9 @@ u32 oe_read_word(u8 **cursor) {
 // 08083568
 void oec00_load_gfx_impl(u8 **cursor) {
 	gfxentry *bl = (gfxentry *)oe_read_word(cursor);
-	u16 unk1 = sub_08008804(bl->size);
+	u16 unk1 = sub_8008804(bl->size);
 	if (unk1 == 0xFFFF)
-		sub_080086DC(bl);
+		sub_80086DC(bl);
 	cursor += 4;
 }
 
@@ -101,7 +101,7 @@ void oec01_load_pal_impl(u8 **cursor) {
 		pal_tint(pal_num);
 	}
 	u16 unk3 = gpu_pal_tags_index_of(bl->size);
-	sub_0807AA8C(unk3);
+	sub_807AA8C(unk3);
 	cursor += 4;
 }
 
