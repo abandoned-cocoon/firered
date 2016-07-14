@@ -5,7 +5,7 @@ ELF files consist of sections. Sections have permissions (read/write/executable)
 ### The idea
 By putting every single function in its own .text.functioname section, and providing an ELF file that contains the old ROM we can use a linker script to interleave the two.
 ###Makefile
-I couldn't get clang to output .o files that declare they use EABI version 0.
+I couldn't get clang to output .o files that declare they use EABI version 0, so I'm using gcc.
 ```
 TOOLCHAIN = arm-none-eabi
 PATCH_CFLAGS =
@@ -44,7 +44,6 @@ Optimize for size. (Whether O2 or Os gives the smaller binary has to be determin
 
 	PATCH_CFLAGS += -Os
 
-
 Command for compiling C files :
 
 	$(TOOLCHAIN)-gcc $(PATCH_CFLAGS) -c -o patch1.o patch1.c
@@ -56,6 +55,14 @@ Command for compiling assembly files:
 Command for linking:
 
 	$(TOOLCHAIN)-ld -A arm7tdmi -o out.elf -T linkerscript patch1.o patch2.o
+
+### Example patch
+```c
+extern int game_var1, game_var2;
+int game_func1(int *x);
+int func_a(int *x) { int q = game_func1(x); q += game_func1(x); return q; }
+int func_b() { return game_var1 * game_var2; }
+```
 
 ### Linker script
 ```
@@ -70,10 +77,8 @@ SECTIONS {
 		*(.orig.08000050)
 		*(.text.func_b)
 		*(.orig.08000130)
-		*(.text.func_c)
-		*(.orig.08000270)
 
-		/* fill the following gap in the rom with remaining functions */
+		/* fill the following free space in the rom with remaining functions */
 
 		/* I copied this straight from a gcc-generated linker script */
 		*(.text .stub .text.* .gnu.linkonce.t.*)
@@ -84,7 +89,7 @@ SECTIONS {
 		*(COMMON)
 		/* end copy */
 
-		. = 0x4000; /* seek to end of gap */
+		. = 0x4000; /* seek to end of free space */
 		*(.orig.4000)
 	}
 
